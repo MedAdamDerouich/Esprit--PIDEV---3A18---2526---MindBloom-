@@ -5,7 +5,7 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Status; // <- enum status dans Entity
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: \App\Repository\ReservationRepository::class)]
 #[ORM\Table(name: "reservation")]
 class Reservation
 {

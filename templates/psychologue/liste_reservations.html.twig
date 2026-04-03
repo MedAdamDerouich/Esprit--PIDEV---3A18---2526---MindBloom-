@@ -1,0 +1,103 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mes Réservations — Espace Psychologue{% endblock %}
+
+{% block body %}
+<header style="background:linear-gradient(to right,#6FBF9B,#4A90E2);height:70px;
+               padding:0 20px;display:flex;align-items:center;gap:15px;">
+
+    <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom"
+         style="height:60px;width:auto;object-fit:contain;flex-shrink:0;">
+
+    <span style="font-size:20px;font-weight:700;color:white;">🍃 MindBloom — Espace Psychologue</span>
+
+    <div style="flex:1;"></div>
+
+    <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:14px;font-weight:700;color:white;">
+            Bonjour, {{ app.user.fullName }}
+        </span>
+    </div>
+
+    <div style="width:1px;height:30px;background:rgba(255,255,255,0.3);margin:0 5px;"></div>
+
+    <a href="{{ path('app_logout') }}"
+       style="padding:8px 15px;font-size:13px;font-weight:700;color:white;
+              border:1px solid rgba(255,255,255,0.5);border-radius:20px;
+              text-decoration:none;background:transparent;">
+        Déconnexion
+    </a>
+</header>
+
+<div style="background:#F5F3EF;min-height:calc(100vh - 70px); padding:40px; display:flex; flex-direction:column; align-items:center; gap:25px;">
+    
+    <!-- Title -->
+    <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:24px;">📋</span>
+        <h1 style="color:#2C3E50; font-size:24px; font-weight:bold; margin:0;">Mes Réservations</h1>
+    </div>
+
+    <!-- Conteneur principal blanc -->
+    <div style="background:white; border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.05); width:100%; max-width:900px; overflow:hidden;">
+        
+        <!-- GridPane d'en-tête -->
+        <div style="display:grid; grid-template-columns: 180px 100px 120px 100px 100px 122px; gap:15px; padding:15px 20px; background:white;">
+            <span style="font-size:15px; font-weight:bold; color:#2C3E50; padding:5px 0 10px 0;">Patient</span>
+            <span style="font-size:15px; font-weight:bold; color:#2C3E50; padding:5px 0 10px 0;">Jour</span>
+            <span style="font-size:15px; font-weight:bold; color:#2C3E50; padding:5px 0 10px 0;">Date</span>
+            <span style="font-size:15px; font-weight:bold; color:#2C3E50; padding:5px 0 10px 0;">Heure</span>
+            <span style="font-size:15px; font-weight:bold; color:#2C3E50; padding:5px 0 10px 0;">Durée</span>
+            <span style="font-size:15px; font-weight:bold; color:#2C3E50; padding:5px 0 10px 0; text-align:center;">Statut</span>
+        </div>
+
+        <hr style="border:0; border-top:1px solid rgba(0,0,0,0.1); margin:0;" />
+
+        <!-- VBox dynamique pour les réservations -->
+        <div style="padding:20px; display:flex; flex-direction:column; gap:10px;">
+            {% if reservations is empty %}
+                <div style="text-align:center; padding: 20px; color:#8E8E8E; font-size:15px;">Aucune réservation trouvée.</div>
+            {% else %}
+                {% for r in reservations %}
+                    <div style="display:grid; grid-template-columns: 180px 100px 120px 100px 100px 122px; gap:15px; align-items:center;">
+                        <span style="font-size:14px; color:#34495E; font-weight:bold;">{{ r.patient.fullName }}</span>
+                        <span style="font-size:14px; color:#34495E;">{{ r.creneau.jour.value|capitalize }}</span>
+                        <span style="font-size:14px; color:#34495E;">{{ r.creneau.dateCreneau|date('Y-m-d') }}</span> <!-- format brut comme dans JavaFX toString() -->
+                        <span style="font-size:14px; color:#34495E;">{{ r.creneau.heureDebut|date('H:i:s') }}</span>
+                        <span style="font-size:14px; color:#34495E;">{{ r.creneau.dureeMinutes }} min</span>
+                        
+                        <div style="display:flex; justify-content:center;">
+                            {% set isPast = false %}
+                            {% set todayDate = "now"|date("Y-m-d") %}
+                            {% set resDateStr = r.creneau.dateCreneau|date("Y-m-d") %}
+                            
+                            {% if resDateStr < todayDate %}
+                                {% set isPast = true %}
+                            {% elseif resDateStr == todayDate %}
+                                {% set nowTime = "now"|date("H:i") %}
+                                {% set resTime = r.creneau.heureDebut|date("H:i") %}
+                                {% if resTime < nowTime %}
+                                    {% set isPast = true %}
+                                {% endif %}
+                            {% endif %}
+
+                            {% if isPast %}
+                                <span style="background:#95A5A6; color:white; padding:4px 12px; border-radius:15px; font-size:11px; font-weight:bold; text-transform:lowercase;">passé</span>
+                            {% elseif r.status.value == 'Confirmé' %}
+                                <span style="background:#6FBF9B; color:white; padding:4px 12px; border-radius:15px; font-size:11px; font-weight:bold; text-transform:lowercase;">{{ r.status.value }}</span>
+                            {% else %}
+                                <span style="background:#E74C3C; color:white; padding:4px 12px; border-radius:15px; font-size:11px; font-weight:bold; text-transform:lowercase;">{{ r.status.value }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- Retour au dashboard -->
+    <div style="width:100%; max-width:900px;">
+        <a href="{{ path('app_dashboard') }}" style="text-decoration:none; color:#8E8E8E; font-size:14px; cursor:pointer;">← Retour</a>
+    </div>
+
+</div>
+{% endblock %}

@@ -40,4 +40,21 @@ class CreneauRepository extends ServiceEntityRepository
         $this->getEntityManager()->remove($creneau);
         $this->getEntityManager()->flush();
     }
+
+    /**
+     * Equivalent de addEntity() et addEntity2()
+     */
+    public function addCreneau(Creneau $creneau): void
+    {
+        $this->getEntityManager()->persist($creneau);
+        $this->getEntityManager()->flush();
+    }
+
+    /**
+     * Equivalent de updateEntity()
+     */
+    public function updateCreneau(Creneau $creneau): void
+    {
+        $this->getEntityManager()->flush();
+    }
 }

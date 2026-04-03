@@ -35,7 +35,7 @@
     <div style="display:flex; align-items:center; margin-bottom:25px;">
         <h1 style="color:#2C3E50; font-size:24px; font-weight:bold; margin:0;">📅 Gestion des Créneaux</h1>
         <div style="flex:1;"></div>
-        <button style="background:#6FBF9B; color:white; font-size:14px; font-weight:bold; padding:10px 20px; border-radius:10px; border:none; cursor:pointer;" onclick="alert('L\'ajout de créneau n\'est pas encore fusionné.');">+ Ajouter un créneau</button>
+        <a href="{{ path('app_creneau_nouveau') }}" style="background:#6FBF9B; color:white; font-size:14px; font-weight:bold; padding:10px 20px; border-radius:10px; border:none; cursor:pointer; text-decoration:none;">+ Ajouter un créneau</a>
     </div>
 
     {% if groupedCreneaux is empty %}
@@ -83,7 +83,7 @@
                                 <div style="flex:1;"></div>
 
                                 {% if not isPast %}
-                                    <button style="background:transparent; border:none; cursor:pointer; font-size:16px; color:#8E8E8E;">✎</button>
+                                    <a href="{{ path('app_creneau_editer', {'id': c.id}) }}" style="background:transparent; border:none; cursor:pointer; font-size:16px; color:#8E8E8E; text-decoration:none;">✎</a>
                                 {% endif %}
                                 <form method="post" action="{{ path('app_creneau_supprimer', {'id': c.id}) }}" onsubmit="return confirm('Voulez-vous vraiment supprimer ce créneau ?');" style="margin:0;">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ c.id) }}">

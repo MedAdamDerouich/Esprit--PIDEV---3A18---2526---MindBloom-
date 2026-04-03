@@ -1,0 +1,107 @@
+{% extends 'base.html.twig' %}
+{% block title %}Gestion des Créneaux — Espace Psychologue{% endblock %}
+
+{% block body %}
+{# ── HEADER ── #}
+<header style="background:linear-gradient(to right,#6FBF9B,#4A90E2);height:70px;
+               padding:0 20px;display:flex;align-items:center;gap:15px;">
+
+    <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom"
+         style="height:60px;width:auto;object-fit:contain;flex-shrink:0;">
+
+    <span style="font-size:20px;font-weight:700;color:white;">🍃 MindBloom — Espace Psychologue</span>
+
+    <div style="flex:1;"></div>
+
+    <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:14px;font-weight:700;color:white;">
+            Bonjour, {{ app.user.fullName }}
+        </span>
+    </div>
+
+    <div style="width:1px;height:30px;background:rgba(255,255,255,0.3);margin:0 5px;"></div>
+
+    <a href="{{ path('app_logout') }}"
+       style="padding:8px 15px;font-size:13px;font-weight:700;color:white;
+              border:1px solid rgba(255,255,255,0.5);border-radius:20px;
+              text-decoration:none;background:transparent;">
+        Déconnexion
+    </a>
+</header>
+
+<div style="background:#F5F3EF;min-height:calc(100vh - 70px); padding:30px 150px;">
+    
+    <!-- Titre + bouton ajout -->
+    <div style="display:flex; align-items:center; margin-bottom:25px;">
+        <h1 style="color:#2C3E50; font-size:24px; font-weight:bold; margin:0;">📅 Gestion des Créneaux</h1>
+        <div style="flex:1;"></div>
+        <button style="background:#6FBF9B; color:white; font-size:14px; font-weight:bold; padding:10px 20px; border-radius:10px; border:none; cursor:pointer;" onclick="alert('L\'ajout de créneau n\'est pas encore fusionné.');">+ Ajouter un créneau</button>
+    </div>
+
+    {% if groupedCreneaux is empty %}
+        <div style="padding: 20px; color: #8E8E8E; font-size: 16px;">Aucun créneau trouvé.</div>
+    {% else %}
+        {% set mois_fr = {'01':'Janvier', '02':'Février', '03':'Mars', '04':'Avril', '05':'Mai', '06':'Juin', '07':'Juillet', '08':'Août', '09':'Septembre', '10':'Octobre', '11':'Novembre', '12':'Décembre'} %}
+        <div style="display:flex; flex-direction:column; gap:25px;">
+            {% for dateKey, creneaux in groupedCreneaux %}
+                {% set dateObj = creneaux[0].dateCreneau %}
+                
+                <!-- CreneauCard (Carte par date) -->
+                <div style="background:white; border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.05); overflow:hidden;">
+                    
+                    <!-- Header Date -->
+                    <div style="background:#F8F9FA; padding:15px; display:flex; align-items:center;">
+                        <span style="color:#2C3E50; font-size:16px; font-weight:bold; margin-right:15px;">
+                            {{ creneaux[0].jour.value|capitalize }}
+                        </span>
+                        <span style="color:#2C3E50; font-size:16px; font-weight:bold;">
+                            {{ dateObj|date('d') }} {{ mois_fr[dateObj|date('m')] }} {{ dateObj|date('Y') }}
+                        </span>
+                    </div>
+
+                    <!-- Lignes des créneaux (HBox) -->
+                    <div style="padding:10px; display:flex; flex-direction:column; gap:10px;">
+                        {% for c in creneaux %}
+                            {% set isDatePast = dateObj < date('today') %}
+                            {% set isHourPast = (dateObj|date('Y-m-d') == date('today')|date('Y-m-d')) and (c.heureDebut|date('H:i') < date()|date('H:i')) %}
+                            {% set isPast = isDatePast or isHourPast %}
+
+                            <div style="display:flex; align-items:center; padding:10px; gap:10px; {{ isPast ? 'opacity:0.6;' : '' }}">
+                                <span style="font-weight:bold; font-size:14px; min-width:50px;">{{ c.heureDebut|date('H:i') }}</span>
+                                <span style="color:#8E8E8E; min-width:80px;">({{ c.dureeMinutes }} min)</span>
+
+                                {% if isDatePast %}
+                                    <span style="background:#EEEEEE; color:#757575; padding:5px 12px; border-radius:15px; font-weight:bold; font-size:12px;">📅 Date passée</span>
+                                {% elseif isHourPast %}
+                                    <span style="background:#EEEEEE; color:#757575; padding:5px 12px; border-radius:15px; font-weight:bold; font-size:12px;">⏰ Heure passée</span>
+                                {% elseif c.disponible %}
+                                    <span style="background:#E8F5E9; color:#6FBF9B; padding:5px 12px; border-radius:15px; font-weight:bold; font-size:12px;">✔ Disponible</span>
+                                {% else %}
+                                    <span style="background:#FDEDEC; color:#E74C3C; padding:5px 12px; border-radius:15px; font-weight:bold; font-size:12px;">✘ Indisponible</span>
+                                {% endif %}
+
+                                <div style="flex:1;"></div>
+
+                                {% if not isPast %}
+                                    <button style="background:transparent; border:none; cursor:pointer; font-size:16px; color:#8E8E8E;">✎</button>
+                                {% endif %}
+                                <form method="post" action="{{ path('app_creneau_supprimer', {'id': c.id}) }}" onsubmit="return confirm('Voulez-vous vraiment supprimer ce créneau ?');" style="margin:0;">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ c.id) }}">
+                                    <button type="submit" style="background:transparent; border:none; cursor:pointer; font-size:16px; color:#E74C3C;">🗑</button>
+                                </form>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Bouton Retour -->
+    <div style="margin-top:25px;">
+        <a href="{{ path('app_dashboard') }}" style="text-decoration:none; color:#8E8E8E; font-size:14px; font-weight:bold;">← Retour</a>
+    </div>
+
+</div>
+{% endblock %}

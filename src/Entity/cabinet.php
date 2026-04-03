@@ -12,7 +12,7 @@ class Cabinet
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(name: "id_cabinet", type: "integer")]
     private ?int $idCabinet = null;
 
     #[ORM\Column(type: "string", length: 255)]

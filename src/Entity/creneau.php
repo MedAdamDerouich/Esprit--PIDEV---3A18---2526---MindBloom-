@@ -7,13 +7,13 @@ use App\Entity\JourSemaine; // <- Import correct car enum est dans Entity
 
 
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: \App\Repository\CreneauRepository::class)]
 #[ORM\Table(name: "creneau")]
 class Creneau
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
+    #[ORM\Column(name: "id_creneau", type: "integer")]
     private ?int $id = null;
 
 #[ORM\Column(type: "string", enumType: JourSemaine::class)]
@@ -32,7 +32,7 @@ private ?JourSemaine $jour = null;
     private bool $disponible = true;
 
     #[ORM\ManyToOne(targetEntity: Cabinet::class, inversedBy: "creneaux")]
-    #[ORM\JoinColumn(name: "id_cabinet", referencedColumnName: "idCabinet", nullable: false)]
+    #[ORM\JoinColumn(name: "id_cabinet", referencedColumnName: "id_cabinet", nullable: false)]
     private ?Cabinet $cabinet = null;
 
     #[ORM\OneToOne(mappedBy: "creneau", targetEntity: Reservation::class)]

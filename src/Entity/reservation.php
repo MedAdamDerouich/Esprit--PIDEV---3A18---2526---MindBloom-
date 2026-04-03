@@ -17,8 +17,8 @@ class Reservation
     #[ORM\Column(type: "string", enumType: Status::class)]
     private ?status $status = null;
 
-    #[ORM\OneToOne]
-    #[ORM\JoinColumn(name: "id_creneau", referencedColumnName: "id", unique: true)]
+    #[ORM\OneToOne(targetEntity: Creneau::class, inversedBy: "reservation")]
+    #[ORM\JoinColumn(name: "id_creneau", referencedColumnName: "id_creneau", unique: true)]
     private ?Creneau $creneau = null;
 
     #[ORM\ManyToOne]

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Cabinet;
+use App\Form\CabinetType;
 use App\Repository\CabinetRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -47,41 +48,23 @@ class CabinetController extends AbstractController
     {
         $user = $this->getUser();
         $cabinet = $cabinetRepository->findOneBy(['psychologue' => $user]);
+        $isNew = false;
 
-        if ($request->isMethod('POST')) {
-            $nomCabinet = $request->request->get('nomCabinet');
-            $adresse = $request->request->get('adresseCabinet');
-            $specialite = $request->request->get('specialiteCabinet');
-            $telephone = $request->request->get('telephoneCabinet');
-            $description = $request->request->get('descriptionCabinet');
+        if (!$cabinet) {
+            $cabinet = new Cabinet();
+            $cabinet->setPsychologue($user);
+            $isNew = true;
+        }
 
-            if (empty($nomCabinet)) {
-                $this->addFlash('error', 'Le nom du cabinet est obligatoire !');
-                return $this->render('psychologue/ajout_cabinet.html.twig', [
-                    'cabinet' => $cabinet,
-                ]);
-            }
+        // Créer le formulaire Symfony
+        $form = $this->createForm(CabinetType::class, $cabinet);
+        $form->handleRequest($request);
 
-            if (!$cabinet) {
-                // Equivalent de "if (cabinet == null)"
-                $newCabinet = new Cabinet();
-                $newCabinet->setPsychologue($user);
-                $newCabinet->setNomCabinet($nomCabinet);
-                $newCabinet->setAdresse($adresse);
-                $newCabinet->setSpecialite($specialite);
-                $newCabinet->setTelephone($telephone);
-                $newCabinet->setDescription($description);
-
-                $cabinetRepository->addCabinet($newCabinet);
+        if ($form->isSubmitted() && $form->isValid()) {
+            if ($isNew) {
+                $cabinetRepository->addCabinet($cabinet);
                 $this->addFlash('success', 'Cabinet ajouté avec succès.');
             } else {
-                // Equivalent de "else (modification)"
-                $cabinet->setNomCabinet($nomCabinet);
-                $cabinet->setAdresse($adresse);
-                $cabinet->setSpecialite($specialite);
-                $cabinet->setTelephone($telephone);
-                $cabinet->setDescription($description);
-
                 $cabinetRepository->updateCabinet($cabinet);
                 $this->addFlash('success', 'Cabinet modifié avec succès.');
             }
@@ -90,7 +73,8 @@ class CabinetController extends AbstractController
         }
 
         return $this->render('psychologue/ajout_cabinet.html.twig', [
-            'cabinet' => $cabinet,
+            'form' => $form->createView(),
+            'cabinet' => $cabinet->getIdCabinet() ? $cabinet : null, // keep null if new for UI logic
         ]);
     }
 }

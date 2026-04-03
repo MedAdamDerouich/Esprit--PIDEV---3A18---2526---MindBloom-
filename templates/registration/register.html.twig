@@ -1,0 +1,176 @@
+{% extends 'base.html.twig' %}
+{% block title %}Inscription — MindBloom{% endblock %}
+
+{% block body %}
+<div class="auth-wrapper">
+
+    {# ── LEFT PANEL ── #}
+    <div class="auth-left">
+        <div class="auth-logo">
+            <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom">
+            <span>Rejoignez notre communauté</span>
+        </div>
+
+        <div class="feature-item">
+            <div class="feature-icon">✅</div>
+            <div class="feature-text">
+                <h4>Inscription gratuite</h4>
+                <p>Créez votre compte en moins de 2 minutes.</p>
+            </div>
+        </div>
+        <div class="feature-item">
+            <div class="feature-icon">🔒</div>
+            <div class="feature-text">
+                <h4>Données sécurisées</h4>
+                <p>Vos informations personnelles sont protégées.</p>
+            </div>
+        </div>
+        <div class="feature-item">
+            <div class="feature-icon">💚</div>
+            <div class="feature-text">
+                <h4>Accompagnement continu</h4>
+                <p>Un suivi personnalisé tout au long de votre parcours.</p>
+            </div>
+        </div>
+
+        <div class="auth-stats">
+            <div class="stat"><div class="stat-num">500+</div><div class="stat-lbl">Patients</div></div>
+            <div class="stat"><div class="stat-num">50+</div><div class="stat-lbl">Psychologues</div></div>
+            <div class="stat"><div class="stat-num">98%</div><div class="stat-lbl">Satisfaction</div></div>
+        </div>
+    </div>
+
+    {# ── RIGHT PANEL ── #}
+    <div class="auth-right" style="padding:30px;">
+        <div class="auth-form-box" style="max-width:500px;padding:36px 40px;">
+            <h2>Créer un compte</h2>
+            <p class="auth-sub">Rejoignez MindBloom et prenez soin de vous</p>
+
+            {# Role selector #}
+            <div class="mb-form-group">
+                <label>Je suis un(e)</label>
+                <div class="role-selector" id="roleSelector">
+                    <div class="role-option selected" onclick="selectRole('ROLE_PATIENT', this)">
+                        <div class="role-icon">🧘</div>
+                        Patient
+                    </div>
+                    <div class="role-option" onclick="selectRole('ROLE_PSYCHOLOGUE', this)">
+                        <div class="role-icon">⚕️</div>
+                        Psychologue
+                    </div>
+                </div>
+            </div>
+
+            {{ form_errors(registrationForm) }}
+
+            {{ form_start(registrationForm, {action: path('app_register'), method: 'post'}) }}
+                {{ form_widget(registrationForm.roles, {attr: {id: 'roleInput'}}) }}
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="mb-form-group" style="margin-bottom:0;">
+                            <label>Nom complet</label>
+                            <div class="mb-input-icon-wrap">
+                                <span class="input-icon">👤</span>
+                                {{ form_widget(registrationForm.fullName, {
+                                    'attr': {'class': 'mb-input', 'placeholder': 'Prénom Nom'}
+                                }) }}
+                            </div>
+                            {{ form_errors(registrationForm.fullName) }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-form-group" style="margin-bottom:0;">
+                            <label>Nom d'utilisateur</label>
+                            {{ form_widget(registrationForm.username, {
+                                'attr': {'class': 'mb-input', 'placeholder': 'username'}
+                            }) }}
+                            {{ form_errors(registrationForm.username) }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-form-group" style="margin-bottom:0;">
+                            <label>Email</label>
+                            {{ form_widget(registrationForm.email, {
+                                'attr': {'class': 'mb-input', 'placeholder': 'email@exemple.com'}
+                            }) }}
+                            {{ form_errors(registrationForm.email) }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-form-group" style="margin-bottom:0;">
+                            <label>Téléphone</label>
+                            {{ form_widget(registrationForm.phone, {
+                                'attr': {'class': 'mb-input', 'placeholder': '+213...'}
+                            }) }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-form-group" style="margin-bottom:0;">
+                            <label>Date de naissance</label>
+                            {{ form_widget(registrationForm.dateOfBirth, {
+                                'attr': {'class': 'mb-input'}
+                            }) }}
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="mb-form-group" style="margin-bottom:0;">
+                            <label>Adresse</label>
+                            {{ form_widget(registrationForm.address, {
+                                'attr': {'class': 'mb-input', 'placeholder': 'Votre adresse'}
+                            }) }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-form-group" style="margin-bottom:0;">
+                            <label>Mot de passe</label>
+                            {{ form_widget(registrationForm.plainPassword.first, {
+                                'attr': {'class': 'mb-input', 'placeholder': '••••••••'}
+                            }) }}
+                            {{ form_errors(registrationForm.plainPassword) }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-form-group" style="margin-bottom:0;">
+                            <label>Confirmer</label>
+                            {{ form_widget(registrationForm.plainPassword.second, {
+                                'attr': {'class': 'mb-input', 'placeholder': '••••••••'}
+                            }) }}
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-mb-primary w-100 mt-4" style="padding:14px;">
+                    Créer mon compte
+                </button>
+            {{ form_end(registrationForm) }}
+
+            <hr class="mb-divider mt-4">
+            <p style="text-align:center;font-size:13px;color:var(--text-mid);">
+                Déjà inscrit ?
+                <a href="{{ path('app_login') }}" style="color:var(--primary);font-weight:700;">
+                    Se connecter
+                </a>
+            </p>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+function selectRole(role, el) {
+    document.querySelectorAll('.role-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('roleInput').value = role;
+}
+</script>
+{% endblock %}

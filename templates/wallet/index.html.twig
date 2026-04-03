@@ -1,0 +1,139 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mon Wallet — MindBloom{% endblock %}
+
+{% block body %}
+
+{# Navbar #}
+<nav class="mb-navbar">
+    <div class="brand d-flex align-items-center gap-2">
+        <span style="font-size:24px;">🌸</span>
+        <span>MindBloom</span>
+    </div>
+    <div class="nav-links">
+        <a href="{{ path('app_patient_dashboard') }}">🏠 Accueil</a>
+        <a href="#">📅 Rendez-vous</a>
+        <a href="#">📋 Mes Tests</a>
+        <a href="{{ path('app_wallet') }}" class="active">💳 Wallet</a>
+    </div>
+    <div class="nav-actions">
+        <a href="{{ path('app_profile') }}" class="d-flex align-items-center gap-2" style="text-decoration:none;">
+            <div class="mb-avatar" style="width:38px;height:38px;font-size:14px;">
+                {{ app.user.fullName|first|upper }}
+            </div>
+            <span style="font-size:13px;font-weight:700;color:var(--text-dark);">
+                {{ app.user.fullName|split(' ')|first }}
+            </span>
+        </a>
+        <a href="{{ path('app_logout') }}" class="btn-mb-danger" style="font-size:13px;padding:8px 14px;border-radius:8px;">
+            Déconnexion
+        </a>
+    </div>
+</nav>
+
+<div style="padding:30px 40px;background:var(--bg-warm);min-height:calc(100vh - 70px);">
+
+    <div class="mb-page-header">
+        <h1>💳 Mon Wallet</h1>
+        <p>Gérez votre solde et vos transactions</p>
+    </div>
+
+    <div class="row g-4">
+
+        {# Balance Card #}
+        <div class="col-md-5">
+            <div class="wallet-balance-card mb-4">
+                <div class="balance-label">Solde disponible</div>
+                <div class="balance-amount">
+                    {{ wallet.balance|number_format(2, '.', ' ') }} <small style="font-size:22px;">DT</small>
+                </div>
+                <div class="balance-status">
+                    {% if wallet.status == 'ACTIVE' %}
+                        ✅ Wallet actif
+                    {% else %}
+                        🚫 Wallet suspendu
+                    {% endif %}
+                </div>
+                {% if wallet.lastRechargeDate %}
+                <div style="margin-top:12px;font-size:12px;opacity:0.7;">
+                    Dernière recharge : {{ wallet.lastRechargeDate|date('d/m/Y à H:i') }}
+                </div>
+                {% endif %}
+            </div>
+
+            {# Recharge form #}
+            {% if wallet.status == 'ACTIVE' %}
+            <div class="mb-card">
+                <h6 style="font-weight:700;margin-bottom:16px;">⚡ Recharger le wallet</h6>
+
+                {# Quick amount buttons #}
+                <div class="d-flex gap-2 mb-3 flex-wrap">
+                    {% for amount in [10, 25, 50, 100] %}
+                    <button type="button" class="btn-mb-outline"
+                            style="padding:8px 16px;font-size:13px;"
+                            onclick="setAmount({{ amount }})">
+                        {{ amount }} DT
+                    </button>
+                    {% endfor %}
+                </div>
+
+                <form method="post" action="{{ path('app_wallet_recharge') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('wallet-recharge') }}">
+                    <div class="mb-form-group">
+                        <label>Montant (DT)</label>
+                        <div class="mb-input-icon-wrap">
+                            <span class="input-icon">💰</span>
+                            <input type="number" name="amount" id="amountInput" class="mb-input"
+                                   min="1" max="10000" step="0.01" placeholder="Ex: 50.00" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-mb-teal w-100" style="padding:12px;">
+                        Recharger maintenant
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+
+        {# Transaction History #}
+        <div class="col-md-7">
+            <div class="mb-card" style="height:100%;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 style="font-weight:700;margin:0;">📜 Historique des transactions</h6>
+                    <span class="mb-badge mb-badge-gray">{{ transactions|length }} opération(s)</span>
+                </div>
+
+                {% if transactions is empty %}
+                    <div style="text-align:center;padding:40px;color:var(--text-mid);">
+                        <div style="font-size:48px;margin-bottom:12px;">💳</div>
+                        <p>Aucune transaction pour le moment</p>
+                    </div>
+                {% else %}
+                    {% for tx in transactions %}
+                    <div class="transaction-row">
+                        <div class="transaction-icon {{ tx.type == 'RECHARGE' ? 'credit' : 'debit' }}">
+                            {{ tx.type == 'RECHARGE' ? '⬆️' : (tx.type == 'PAYMENT' ? '🛍️' : '⬇️') }}
+                        </div>
+                        <div class="flex-fill">
+                            <div class="tx-desc">{{ tx.description ?? tx.type }}</div>
+                            <div class="tx-date">{{ tx.transactionDate|date('d/m/Y à H:i') }}</div>
+                        </div>
+                        <div class="tx-amount {{ tx.type == 'RECHARGE' ? 'credit' : 'debit' }}">
+                            {{ tx.type == 'RECHARGE' ? '+' : '-' }}{{ tx.amount|number_format(2, '.', ' ') }} DT
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+function setAmount(val) {
+    document.getElementById('amountInput').value = val;
+}
+</script>
+{% endblock %}

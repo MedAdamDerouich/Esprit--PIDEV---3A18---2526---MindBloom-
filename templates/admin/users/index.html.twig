@@ -1,0 +1,151 @@
+{% extends 'base.html.twig' %}
+{% block title %}Gestion des utilisateurs — MindBloom{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {{ include('admin/_sidebar.html.twig') }}
+
+    <div class="admin-content" style="flex:1;">
+
+        {# Header #}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="mb-page-header" style="margin:0;">
+                <h1>👥 Utilisateurs</h1>
+                <p>Gérez les comptes de la plateforme</p>
+            </div>
+            <a href="{{ path('app_admin_user_new') }}" class="btn-mb-primary">
+                + Nouvel utilisateur
+            </a>
+        </div>
+
+        {# Search & Filters #}
+        <div class="mb-card mb-3" style="padding:16px 20px;">
+            <div class="d-flex gap-3 align-items-center flex-wrap">
+                <div class="mb-search" style="flex:1;min-width:200px;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Rechercher par nom, email..."
+                           oninput="filterTable(this.value)">
+                </div>
+                <select class="mb-input" style="width:160px;" id="roleFilter" onchange="filterTable()">
+                    <option value="">Tous les rôles</option>
+                    <option value="ROLE_PATIENT">Patient</option>
+                    <option value="ROLE_PSYCHOLOGUE">Psychologue</option>
+                    <option value="ROLE_ADMIN">Admin</option>
+                </select>
+                <select class="mb-input" style="width:160px;" id="statusFilter" onchange="filterTable()">
+                    <option value="">Tous les statuts</option>
+                    <option value="ACTIVE">Actif</option>
+                    <option value="SUSPENDED">Suspendu</option>
+                </select>
+            </div>
+        </div>
+
+        {# Table #}
+        <div class="mb-card" style="padding:0;overflow:hidden;">
+            <table class="mb-table" id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Email</th>
+                        <th>Téléphone</th>
+                        <th>Rôle</th>
+                        <th>Statut</th>
+                        <th>Inscrit le</th>
+                        <th style="text-align:right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr data-role="{{ user.roles|join(',') }}" data-status="{{ user.status }}">
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="mb-avatar" style="width:38px;height:38px;font-size:14px;">
+                                    {% if user.profileImage %}
+                                        <img src="{{ asset('uploads/profiles/' ~ user.profileImage) }}" alt="">
+                                    {% else %}
+                                        {{ user.fullName|first|upper }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div style="font-weight:700;">{{ user.fullName }}</div>
+                                    <div style="font-size:12px;color:var(--text-mid);">@{{ user.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="color:var(--text-mid);">{{ user.email }}</td>
+                        <td style="color:var(--text-mid);">{{ user.phone ?? '—' }}</td>
+                        <td>
+                            {% if 'ROLE_ADMIN' in user.roles %}
+                                <span class="mb-badge mb-badge-red">Admin</span>
+                            {% elseif 'ROLE_PSYCHOLOGUE' in user.roles %}
+                                <span class="mb-badge mb-badge-primary">Psychologue</span>
+                            {% else %}
+                                <span class="mb-badge mb-badge-teal">Patient</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.status == 'ACTIVE' %}
+                                <span class="mb-badge mb-badge-green">● Actif</span>
+                            {% else %}
+                                <span class="mb-badge mb-badge-gray">● Suspendu</span>
+                            {% endif %}
+                        </td>
+                        <td style="color:var(--text-mid);font-size:13px;">
+                            {{ user.createdAt|date('d/m/Y') }}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="{{ path('app_admin_user_edit', {id: user.id}) }}"
+                                   class="btn-mb-secondary" style="padding:6px 12px;font-size:12px;">
+                                    ✏️
+                                </a>
+                                <form method="post"
+                                      action="{{ path('app_admin_user_toggle', {id: user.id}) }}"
+                                      style="display:inline;">
+                                    <input type="hidden" name="_token"
+                                           value="{{ csrf_token('toggle-user-' ~ user.id) }}">
+                                    <button type="submit"
+                                            class="{{ user.status == 'ACTIVE' ? 'btn-mb-danger' : 'btn-mb-teal' }}"
+                                            style="padding:6px 12px;font-size:12px;border-radius:8px;">
+                                        {{ user.status == 'ACTIVE' ? '🚫' : '✅' }}
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" style="text-align:center;color:var(--text-mid);padding:40px;">
+                            Aucun utilisateur trouvé
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+function filterTable(value) {
+    const search = (document.getElementById('searchInput').value || '').toLowerCase();
+    const role   = document.getElementById('roleFilter').value;
+    const status = document.getElementById('statusFilter').value;
+
+    document.querySelectorAll('#usersTable tbody tr[data-role]').forEach(row => {
+        const text    = row.innerText.toLowerCase();
+        const rowRole = row.dataset.role || '';
+        const rowStat = row.dataset.status || '';
+
+        const matchSearch = !search || text.includes(search);
+        const matchRole   = !role   || rowRole.includes(role);
+        const matchStatus = !status || rowStat === status;
+
+        row.style.display = (matchSearch && matchRole && matchStatus) ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}

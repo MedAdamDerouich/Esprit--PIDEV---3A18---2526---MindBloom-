@@ -1,0 +1,42 @@
+{# Admin Sidebar — include this in every admin page #}
+<aside class="mb-sidebar">
+    <div class="sidebar-logo">
+        <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom">
+        <div class="logo-sub">Admin Panel</div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a href="{{ path('app_admin_dashboard') }}"
+           class="{{ app.request.attributes.get('_route') == 'app_admin_dashboard' ? 'active' : '' }}">
+            <span class="nav-icon">📊</span> Dashboard
+        </a>
+        <a href="{{ path('app_admin_users') }}"
+           class="{{ app.request.attributes.get('_route') starts with 'app_admin_user' ? 'active' : '' }}">
+            <span class="nav-icon">👥</span> Utilisateurs
+        </a>
+        <a href="#">
+            <span class="nav-icon">💰</span> Wallets
+        </a>
+        <a href="#">
+            <span class="nav-icon">📅</span> Évènements
+        </a>
+        <a href="#">
+            <span class="nav-icon">🛍️</span> Produits
+        </a>
+        <a href="#">
+            <span class="nav-icon">📦</span> Commandes
+        </a>
+        <a href="#">
+            <span class="nav-icon">📋</span> Tests
+        </a>
+
+        <hr class="mb-divider">
+
+        <a href="{{ path('app_profile') }}">
+            <span class="nav-icon">👤</span> Mon Profil
+        </a>
+        <a href="{{ path('app_logout') }}" class="nav-logout">
+            <span class="nav-icon">🚪</span> Déconnexion
+        </a>
+    </nav>
+</aside>

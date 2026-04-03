@@ -1,0 +1,154 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mon Profil — MindBloom{% endblock %}
+
+{% block body %}
+
+<nav class="mb-navbar">
+    <div class="brand d-flex align-items-center gap-2">
+        <span style="font-size:24px;">🌸</span>
+        <span>MindBloom</span>
+    </div>
+    <div class="nav-links">
+        <a href="{{ path('app_patient_dashboard') }}">🏠 Accueil</a>
+        <a href="{{ path('app_wallet') }}">💳 Wallet</a>
+        <a href="{{ path('app_profile') }}" class="active">👤 Profil</a>
+    </div>
+    <div class="nav-actions">
+        <a href="{{ path('app_logout') }}" class="btn-mb-danger"
+           style="font-size:13px;padding:8px 14px;border-radius:8px;">Déconnexion</a>
+    </div>
+</nav>
+
+<div style="padding:30px 40px;background:var(--bg-warm);min-height:calc(100vh - 70px);">
+
+    <div class="mb-page-header">
+        <h1>👤 Mon Profil</h1>
+        <p>Gérez vos informations personnelles</p>
+    </div>
+
+    <div class="row g-4">
+
+        {# Avatar + info #}
+        <div class="col-md-3">
+            <div class="mb-card" style="text-align:center;padding:30px 20px;">
+                <div class="mb-avatar mb-avatar-xl mx-auto mb-3">
+                    {% if app.user.profileImage %}
+                        <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}" alt="">
+                    {% else %}
+                        {{ app.user.fullName|first|upper }}
+                    {% endif %}
+                </div>
+                <div style="font-weight:800;font-size:17px;">{{ app.user.fullName }}</div>
+                <div style="color:var(--text-mid);font-size:13px;margin-top:4px;">
+                    @{{ app.user.username }}
+                </div>
+                <div class="mt-2">
+                    {% if 'ROLE_ADMIN' in app.user.roles %}
+                        <span class="mb-badge mb-badge-red">Admin</span>
+                    {% elseif 'ROLE_PSYCHOLOGUE' in app.user.roles %}
+                        <span class="mb-badge mb-badge-primary">Psychologue</span>
+                    {% else %}
+                        <span class="mb-badge mb-badge-teal">Patient</span>
+                    {% endif %}
+                </div>
+                <button class="btn-mb-outline mt-3" style="font-size:12px;padding:8px 16px;width:100%;">
+                    📷 Changer la photo
+                </button>
+            </div>
+        </div>
+
+        {# Edit form #}
+        <div class="col-md-9">
+            <div class="mb-card">
+                <h6 style="font-weight:700;margin-bottom:20px;">✏️ Modifier mes informations</h6>
+
+                {{ form_start(profileForm) }}
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="mb-form-group">
+                            {{ form_label(profileForm.fullName, 'Nom complet') }}
+                            {{ form_widget(profileForm.fullName, {attr: {class: 'mb-input'}}) }}
+                            {{ form_errors(profileForm.fullName) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-form-group">
+                            {{ form_label(profileForm.phone, 'Téléphone') }}
+                            {{ form_widget(profileForm.phone, {attr: {class: 'mb-input'}}) }}
+                            {{ form_errors(profileForm.phone) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-form-group">
+                            {{ form_label(profileForm.dateOfBirth, 'Date de naissance') }}
+                            {{ form_widget(profileForm.dateOfBirth, {attr: {class: 'mb-input'}}) }}
+                            {{ form_errors(profileForm.dateOfBirth) }}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-form-group">
+                            <label>Email</label>
+                            <input type="text" class="mb-input"
+                                   value="{{ app.user.email }}" disabled
+                                   style="opacity:0.6;cursor:not-allowed;">
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="mb-form-group">
+                            {{ form_label(profileForm.address, 'Adresse') }}
+                            {{ form_widget(profileForm.address, {attr: {class: 'mb-input'}}) }}
+                            {{ form_errors(profileForm.address) }}
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="mb-divider">
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn-mb-primary">
+                        💾 Enregistrer les modifications
+                    </button>
+                </div>
+
+                {{ form_end(profileForm) }}
+            </div>
+
+            {# Change password #}
+            <div class="mb-card mt-3">
+                <h6 style="font-weight:700;margin-bottom:16px;">🔒 Changer le mot de passe</h6>
+                <form method="post" action="{{ path('app_change_password') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('change-password') }}">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="mb-form-group" style="margin-bottom:0;">
+                                <label>Mot de passe actuel</label>
+                                <input type="password" name="current_password" class="mb-input"
+                                       placeholder="••••••••" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-form-group" style="margin-bottom:0;">
+                                <label>Nouveau mot de passe</label>
+                                <input type="password" name="new_password" class="mb-input"
+                                       placeholder="••••••••" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-form-group" style="margin-bottom:0;">
+                                <label>Confirmer</label>
+                                <input type="password" name="confirm_password" class="mb-input"
+                                       placeholder="••••••••" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-mb-secondary mt-3">
+                        Mettre à jour le mot de passe
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

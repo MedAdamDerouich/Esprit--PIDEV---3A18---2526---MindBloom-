@@ -1,0 +1,196 @@
+{% extends 'base.html.twig' %}
+{% block title %}Dashboard Admin — MindBloom{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+
+    {# Sidebar #}
+    {{ include('admin/_sidebar.html.twig') }}
+
+    {# Main content #}
+    <div class="admin-content" style="flex:1;">
+
+        {# Top header bar #}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 style="font-weight:800;color:var(--text-dark);margin:0;">Tableau de bord</h4>
+                <span style="font-size:13px;color:var(--text-mid);">Vue d'ensemble de la plateforme</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <button class="mb-icon-btn">🔔</button>
+                <div class="mb-avatar" style="width:38px;height:38px;font-size:14px;">
+                    {% if app.user.profileImage %}
+                        <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}" alt="">
+                    {% else %}
+                        {{ app.user.fullName|first|upper }}
+                    {% endif %}
+                </div>
+                <div>
+                    <div style="font-size:13px;font-weight:700;color:var(--text-dark);">
+                        {{ app.user.fullName }}
+                    </div>
+                    <div style="font-size:11px;color:var(--text-mid);">Administrateur</div>
+                </div>
+            </div>
+        </div>
+
+        {# Stat cards #}
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-label">Utilisateurs</div>
+                    <div class="stat-value" style="color:var(--primary);">{{ stats.users ?? 0 }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card teal">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-label">Réservations</div>
+                    <div class="stat-value" style="color:var(--teal);">{{ stats.reservations ?? 0 }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card green">
+                    <div class="stat-icon">🛍️</div>
+                    <div class="stat-label">Commandes</div>
+                    <div class="stat-value" style="color:#27ae60;">{{ stats.orders ?? 0 }}</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card orange">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-label">Revenus (DT)</div>
+                    <div class="stat-value" style="color:#E67E22;">{{ stats.revenue ?? '0.00' }}</div>
+                </div>
+            </div>
+        </div>
+
+        {# Charts row #}
+        <div class="row g-3 mb-4">
+            <div class="col-md-8">
+                <div class="mb-card">
+                    <h6 style="font-weight:700;margin-bottom:16px;">📈 Activité des utilisateurs</h6>
+                    <canvas id="activityChart" height="100"></canvas>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-card">
+                    <h6 style="font-weight:700;margin-bottom:16px;">🍩 Répartition des rôles</h6>
+                    <canvas id="rolesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# Recent users #}
+        <div class="mb-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 style="font-weight:700;margin:0;">👥 Derniers utilisateurs inscrits</h6>
+                <a href="{{ path('app_admin_users') }}" class="btn-mb-outline" style="font-size:12px;padding:7px 16px;">
+                    Voir tous
+                </a>
+            </div>
+            <table class="mb-table">
+                <thead>
+                    <tr>
+                        <th>Utilisateur</th>
+                        <th>Email</th>
+                        <th>Rôle</th>
+                        <th>Statut</th>
+                        <th>Inscrit le</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in recentUsers ?? [] %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="mb-avatar" style="width:34px;height:34px;font-size:13px;">
+                                    {% if user.profileImage %}
+                                        <img src="{{ asset('uploads/profiles/' ~ user.profileImage) }}" alt="">
+                                    {% else %}
+                                        {{ user.fullName|first|upper }}
+                                    {% endif %}
+                                </div>
+                                <span style="font-weight:600;">{{ user.fullName }}</span>
+                            </div>
+                        </td>
+                        <td style="color:var(--text-mid);">{{ user.email }}</td>
+                        <td>
+                            {% if 'ROLE_ADMIN' in user.roles %}
+                                <span class="mb-badge mb-badge-red">Admin</span>
+                            {% elseif 'ROLE_PSYCHOLOGUE' in user.roles %}
+                                <span class="mb-badge mb-badge-primary">Psychologue</span>
+                            {% else %}
+                                <span class="mb-badge mb-badge-teal">Patient</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.status == 'ACTIVE' %}
+                                <span class="mb-badge mb-badge-green">Actif</span>
+                            {% else %}
+                                <span class="mb-badge mb-badge-gray">Suspendu</span>
+                            {% endif %}
+                        </td>
+                        <td style="color:var(--text-mid);font-size:13px;">
+                            {{ user.createdAt|date('d/m/Y') }}
+                        </td>
+                        <td>
+                            <a href="{{ path('app_admin_user_edit', {id: user.id}) }}"
+                               class="btn-mb-secondary" style="font-size:12px;padding:6px 12px;">
+                                ✏️ Modifier
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align:center;color:var(--text-mid);padding:30px;">
+                            Aucun utilisateur trouvé
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Activity chart
+new Chart(document.getElementById('activityChart'), {
+    type: 'line',
+    data: {
+        labels: ['Jan','Fév','Mar','Avr','Mai','Jun','Jul'],
+        datasets: [{
+            label: 'Utilisateurs',
+            data: [12, 19, 15, 25, 22, 30, 28],
+            borderColor: '#4A90E2',
+            backgroundColor: 'rgba(74,144,226,0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } } }
+});
+
+// Roles chart
+new Chart(document.getElementById('rolesChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Patients', 'Psychologues', 'Admins'],
+        datasets: [{
+            data: [70, 25, 5],
+            backgroundColor: ['#5FBF9F', '#4A90E2', '#E67E22'],
+            borderWidth: 0
+        }]
+    },
+    options: { responsive: true, cutout: '65%' }
+});
+</script>
+{% endblock %}

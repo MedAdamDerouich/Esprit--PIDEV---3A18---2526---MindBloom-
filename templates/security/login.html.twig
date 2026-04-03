@@ -1,0 +1,104 @@
+{% extends 'base.html.twig' %}
+{% block title %}Connexion — MindBloom{% endblock %}
+
+{% block body %}
+<div class="auth-wrapper">
+
+    {# ── LEFT PANEL ── #}
+    <div class="auth-left">
+        <div class="auth-logo">
+            <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom">
+            <span>Votre plateforme de bien-être mental</span>
+        </div>
+
+        <div class="feature-item">
+            <div class="feature-icon">🧠</div>
+            <div class="feature-text">
+                <h4>Tests Psychologiques</h4>
+                <p>Évaluez votre bien-être mental avec nos tests certifiés.</p>
+            </div>
+        </div>
+        <div class="feature-item">
+            <div class="feature-icon">📅</div>
+            <div class="feature-text">
+                <h4>Rendez-vous en ligne</h4>
+                <p>Réservez facilement avec un psychologue qualifié.</p>
+            </div>
+        </div>
+        <div class="feature-item">
+            <div class="feature-icon">🌿</div>
+            <div class="feature-text">
+                <h4>Suivi personnalisé</h4>
+                <p>Un accompagnement adapté à votre parcours de santé.</p>
+            </div>
+        </div>
+
+        <div class="auth-stats">
+            <div class="stat"><div class="stat-num">500+</div><div class="stat-lbl">Patients</div></div>
+            <div class="stat"><div class="stat-num">50+</div><div class="stat-lbl">Psychologues</div></div>
+            <div class="stat"><div class="stat-num">98%</div><div class="stat-lbl">Satisfaction</div></div>
+        </div>
+    </div>
+
+    {# ── RIGHT PANEL ── #}
+    <div class="auth-right">
+        <div class="auth-form-box">
+            <h2>Bon retour 👋</h2>
+            <p class="auth-sub">Connectez-vous à votre espace MindBloom</p>
+
+            {# Error message #}
+            {% if error %}
+                <div class="flash-error mb-3">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
+
+            <form method="post" action="{{ path('app_login') }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <div class="mb-form-group">
+                    <label for="email">Adresse email</label>
+                    <div class="mb-input-icon-wrap">
+                        <span class="input-icon">✉️</span>
+                        <input type="email" id="email" name="_username" class="mb-input"
+                               placeholder="votre@email.com"
+                               value="{{ last_username }}" autocomplete="email" required>
+                    </div>
+                </div>
+
+                <div class="mb-form-group">
+                    <label for="password">Mot de passe</label>
+                    <div class="mb-input-icon-wrap">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="password" name="_password" class="mb-input"
+                               placeholder="••••••••" autocomplete="current-password" required>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <label style="font-size:13px;color:var(--text-mid);cursor:pointer;">
+                        <input type="checkbox" name="_remember_me" style="margin-right:6px;">
+                        Se souvenir de moi
+                    </label>
+                    <a href="#"
+                       style="font-size:13px;color:var(--primary);font-weight:600;">
+                        Mot de passe oublié ?
+                    </a>
+                </div>
+
+                <button type="submit" class="btn-mb-primary w-100" style="padding:14px;">
+                    Se connecter
+                </button>
+            </form>
+
+            <hr class="mb-divider mt-4">
+
+            <p style="text-align:center;font-size:13px;color:var(--text-mid);">
+                Pas encore de compte ?
+                <a href="{{ path('app_register') }}" style="color:var(--primary);font-weight:700;">
+                    Créer un compte
+                </a>
+            </p>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

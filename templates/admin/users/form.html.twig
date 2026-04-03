@@ -1,0 +1,131 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ user.id is defined and user.id ? 'Modifier' : 'Nouvel' }} utilisateur — MindBloom{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {{ include('admin/_sidebar.html.twig') }}
+
+    <div class="admin-content" style="flex:1;">
+
+        {# Header #}
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <a href="{{ path('app_admin_users') }}" class="btn-mb-secondary" style="padding:8px 14px;">
+                ← Retour
+            </a>
+            <div>
+                <h4 style="font-weight:800;margin:0;">
+                    {{ user.id is defined and user.id ? '✏️ Modifier l\'utilisateur' : '➕ Nouvel utilisateur' }}
+                </h4>
+                <span style="font-size:13px;color:var(--text-mid);">
+                    Remplissez les informations ci-dessous
+                </span>
+            </div>
+        </div>
+
+        <div class="row g-4">
+
+            {# Avatar preview #}
+            <div class="col-md-3">
+                <div class="mb-card" style="text-align:center;padding:30px 20px;">
+                    <div class="mb-avatar mb-avatar-xl mx-auto mb-3">
+                        {% if user.profileImage is defined and user.profileImage %}
+                            <img src="{{ asset('uploads/profiles/' ~ user.profileImage) }}" alt="">
+                        {% else %}
+                            {{ user.fullName is defined and user.fullName ? user.fullName|first|upper : '?' }}
+                        {% endif %}
+                    </div>
+                    <p style="font-size:13px;color:var(--text-mid);margin-bottom:12px;">
+                        Photo de profil
+                    </p>
+                    <button type="button" class="btn-mb-outline" style="font-size:12px;padding:8px 16px;">
+                        📷 Changer
+                    </button>
+                </div>
+            </div>
+
+            {# Form #}
+            <div class="col-md-9">
+                <div class="mb-card">
+                    {{ form_start(userForm, {attr: {novalidate: 'novalidate'}}) }}
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="mb-form-group">
+                                {{ form_label(userForm.fullName, 'Nom complet') }}
+                                {{ form_widget(userForm.fullName, {attr: {class: 'mb-input'}}) }}
+                                {{ form_errors(userForm.fullName) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-form-group">
+                                {{ form_label(userForm.username, 'Nom d\'utilisateur') }}
+                                {{ form_widget(userForm.username, {attr: {class: 'mb-input'}}) }}
+                                {{ form_errors(userForm.username) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-form-group">
+                                {{ form_label(userForm.email, 'Email') }}
+                                {{ form_widget(userForm.email, {attr: {class: 'mb-input'}}) }}
+                                {{ form_errors(userForm.email) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-form-group">
+                                {{ form_label(userForm.phone, 'Téléphone') }}
+                                {{ form_widget(userForm.phone, {attr: {class: 'mb-input', placeholder: '+213...'}}) }}
+                                {{ form_errors(userForm.phone) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-form-group">
+                                {{ form_label(userForm.dateOfBirth, 'Date de naissance') }}
+                                {{ form_widget(userForm.dateOfBirth, {attr: {class: 'mb-input'}}) }}
+                                {{ form_errors(userForm.dateOfBirth) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-form-group">
+                                {{ form_label(userForm.role, 'Rôle') }}
+                                {{ form_widget(userForm.role, {attr: {class: 'mb-input'}}) }}
+                                {{ form_errors(userForm.role) }}
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-form-group">
+                                {{ form_label(userForm.address, 'Adresse') }}
+                                {{ form_widget(userForm.address, {attr: {class: 'mb-input'}}) }}
+                                {{ form_errors(userForm.address) }}
+                            </div>
+                        </div>
+
+                        {% if userForm.plainPassword is defined %}
+                        <div class="col-md-6">
+                            <div class="mb-form-group">
+                                {{ form_label(userForm.plainPassword, 'Mot de passe') }}
+                                {{ form_widget(userForm.plainPassword, {attr: {class: 'mb-input'}}) }}
+                                {{ form_errors(userForm.plainPassword) }}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <hr class="mb-divider">
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ path('app_admin_users') }}" class="btn-mb-secondary">
+                            Annuler
+                        </a>
+                        <button type="submit" class="btn-mb-primary">
+                            💾 Enregistrer
+                        </button>
+                    </div>
+
+                    {{ form_end(userForm) }}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

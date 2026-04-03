@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ event.titre }} — MindBloom{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {{ include('admin/_sidebar.html.twig') }}
+    
+    <div class="admin-content" style="flex:1;">
+        <div class="event-top-bar">
+            <h4>👁️ Détails de l'événement</h4>
+            <a href="{{ path('app_admin_event_index') }}" class="btn-back">
+                ⬅️ Retour
+            </a>
+        </div>
+
+        <div class="event-form-card">
+            {% if event.photo %}
+                <img src="{{ asset('uploads/events/' ~ event.photo) }}" 
+                     alt="{{ event.titre }}" 
+                     style="max-width: 100%; border-radius: 10px; margin: 20px 0;">
+            {% endif %}
+            
+            <h2>{{ event.titre }}</h2>
+            
+            <div class="row g-3 mt-3">
+                <div class="col-md-6">
+                    <p><strong>📝 Description:</strong><br>{{ event.description ?? 'Aucune description' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>📍 Lieu:</strong> {{ event.lieu ?? 'Non précisé' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>📅 Date début:</strong> {{ event.dateDebut|date('d/m/Y H:i') }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>📅 Date fin:</strong> {{ event.dateFin ? event.dateFin|date('d/m/Y H:i') : 'Non définie' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>👥 Capacité:</strong> {{ event.capaciteMax ?? 'Illimitée' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>✅ Participants:</strong> {{ participants|length }} personne(s)</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>💰 Prix:</strong> {{ event.isGratuit ? 'Gratuit' : event.prix ~ ' DT' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>📊 Statut:</strong> 
+                        {% if event.statut == 'actif' %}
+                            <span class="badge-status badge-actif">{{ event.statut|capitalize }}</span>
+                        {% elseif event.statut == 'annulé' %}
+                            <span class="badge-status badge-annule">{{ event.statut|capitalize }}</span>
+                        {% else %}
+                            <span class="badge-status badge-termine">{{ event.statut|capitalize }}</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>👤 Organisateur:</strong> {{ event.organisateur ?? 'Non précisé' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>🕐 Créé le:</strong> {{ event.dateCreation|date('d/m/Y H:i') }}</p>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <a href="{{ path('app_admin_event_edit', {id: event.id}) }}" class="btn-submit">
+                    ✏️ Modifier cet événement
+                </a>
+                <a href="{{ path('app_admin_event_participants', {id: event.id}) }}" class="btn-event-add" style="margin-left: 10px;">
+                    👥 Voir les participants
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

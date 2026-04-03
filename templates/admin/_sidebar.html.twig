@@ -17,7 +17,8 @@
         <a href="#">
             <span class="nav-icon">💰</span> Wallets
         </a>
-        <a href="#">
+        <a href="{{ path('app_admin_event_index') }}"
+           class="{{ app.request.attributes.get('_route') starts with 'app_admin_event' ? 'active' : '' }}">
             <span class="nav-icon">📅</span> Évènements
         </a>
         <a href="#">

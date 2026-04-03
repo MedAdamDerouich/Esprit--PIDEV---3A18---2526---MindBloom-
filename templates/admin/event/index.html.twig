@@ -1,0 +1,160 @@
+{% extends 'base.html.twig' %}
+{% block title %}Gestion des Événements — MindBloom{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {{ include('admin/_sidebar.html.twig') }}
+    
+    <div class="admin-content" style="flex:1;">
+        <div class="event-top-bar">
+            <div>
+                <h4 class="page-title">📅 Gestion des Événements</h4>
+                <span class="page-subtitle">Gérer tous les événements de la plateforme</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Rechercher un événement..." value="{{ search }}" class="search-input">
+                </div>
+                <a href="{{ path('app_admin_event_new') }}" class="btn-event-add">
+                    ➕ Ajouter un événement
+                </a>
+            </div>
+        </div>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="events-table-container">
+            <table class="events-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">ID</th>
+                        <th style="width: 100px;">🖼️ Photo</th>
+                        <th>Titre</th>
+                        <th style="width: 120px;">💰 Prix</th>
+                        <th>Lieu</th>
+                        <th style="width: 90px;">Capacité</th>
+                        <th>Organisateur</th>
+                        <th style="width: 100px;">Statut</th>
+                        <th style="width: 140px;">Date début</th>
+                        <th style="width: 200px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="eventsTableBody">
+                    {% for event in events %}
+                    <tr>
+                        <td class="text-center">{{ event.id }}</td>
+                        <td>
+                            {% if event.photo %}
+                                <img src="{{ asset('uploads/events/' ~ event.photo) }}" alt="{{ event.titre }}" class="event-thumbnail">
+                            {% else %}
+                                <div class="event-thumbnail-placeholder">📷</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ event.titre }}</strong>
+                            {% if event.description %}
+                                <br><small class="text-muted">{{ event.description|length > 50 ? event.description|slice(0, 50) ~ '...' : event.description }}</small>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if event.isGratuit %}
+                                <span class="price-gratuit">Gratuit</span>
+                            {% else %}
+                                <span class="price-paid">{{ event.prix|number_format(2, '.', ',') }} DT</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ event.lieu ?? '-' }}</td>
+                        <td class="text-center">
+                            {{ event.capaciteMax ?? '∞' }}
+                            <br><small class="text-muted">({{ event.countParticipants }} inscrits)</small>
+                        </td>
+                        <td>{{ event.organisateur ?? '-' }}</td>
+                        <td>
+                            {% if event.statut == 'actif' %}
+                                <span class="badge-status badge-actif">Actif</span>
+                            {% elseif event.statut == 'annulé' %}
+                                <span class="badge-status badge-annule">Annulé</span>
+                            {% else %}
+                                <span class="badge-status badge-termine">Terminé</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted" style="font-size: 13px;">
+                            {{ event.dateDebut|date('d/m/Y H:i') }}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{{ path('app_admin_event_show', {id: event.id}) }}" 
+                                   class="btn-action btn-view" 
+                                   title="Voir">
+                                    👁️
+                                </a>
+                                <a href="{{ path('app_admin_event_participants', {id: event.id}) }}" 
+                                   class="btn-action btn-participants" 
+                                   title="Participants">
+                                    👥
+                                </a>
+                                <a href="{{ path('app_admin_event_edit', {id: event.id}) }}" 
+                                   class="btn-action btn-edit" 
+                                   title="Modifier">
+                                    ✏️
+                                </a>
+                                <form method="post" 
+                                      action="{{ path('app_admin_event_delete', {id: event.id}) }}" 
+                                      style="display: inline;"
+                                      onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ event.id) }}">
+                                    <button type="submit" class="btn-action btn-delete" title="Supprimer">
+                                        🗑️
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="10" class="text-center" style="padding: 40px;">
+                            <div style="font-size: 48px;">📭</div>
+                            <p style="color: #7f8c8d; margin-top: 10px;">Aucun événement trouvé</p>
+                            <a href="{{ path('app_admin_event_new') }}" class="btn-event-add" style="margin-top: 10px;">
+                                ➕ Créer le premier événement
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="event-footer">
+            <span>© 2026 MindBloom — Gestion des Événements</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    const searchValue = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('#eventsTableBody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchValue) ? '' : 'none';
+    });
+});
+</script>
+{% endblock %}

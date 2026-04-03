@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mes Participations — MindBloom{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+{% endblock %}
+
+{% block body %}
+<div style="background: #f5f7fa; min-height: 100vh; padding: 30px;">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 style="font-weight: 700; color: #2c3e50;">📋 Mes Participations</h2>
+            <a href="{{ path('app_patient_event_index') }}" class="btn-event-add">
+                ⬅️ Retour aux événements
+            </a>
+        </div>
+        
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="events-table-container">
+            <table class="events-table">
+                <thead>
+                    <tr>
+                        <th>Événement</th>
+                        <th>Date</th>
+                        <th>Lieu</th>
+                        <th>Inscription</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for participation in participations %}
+                    {% set event = participation.evenement %}
+                    <tr>
+                        <td>
+                            <strong>{{ event.titre }}</strong>
+                            <br><small class="text-muted">{{ event.organisateur }}</small>
+                        </td>
+                        <td>{{ event.dateDebut|date('d/m/Y H:i') }}</td>
+                        <td>{{ event.lieu }}</td>
+                        <td>{{ participation.dateInscription|date('d/m/Y') }}</td>
+                        <td>
+                            <span class="badge" style="background: #27ae60; color: white; padding: 5px 10px; border-radius: 4px;">
+                                ✓ {{ participation.statut }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ path('app_patient_event_show', {id: event.id}) }}" 
+                               class="btn-action btn-view">👁️</a>
+                            <form method="post" 
+                                  action="{{ path('app_patient_event_cancel', {id: event.id}) }}" 
+                                  style="display: inline;"
+                                  onsubmit="return confirm('Êtes-vous sûr de vouloir annuler votre participation ?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ event.id) }}">
+                                <button type="submit" class="btn-action btn-delete">❌</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center" style="padding: 40px;">
+                            <div style="font-size: 48px;">📭</div>
+                            <p style="color: #7f8c8d; margin-top: 10px;">Vous n'êtes inscrit à aucun événement</p>
+                            <a href="{{ path('app_patient_event_index') }}" class="btn-event-add" style="margin-top: 10px;">
+                                Découvrir les événements
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,7 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\joursemaine; // <- Import correct car enum est dans Entity
+use App\Entity\JourSemaine; // <- Import correct car enum est dans Entity
 
 
 

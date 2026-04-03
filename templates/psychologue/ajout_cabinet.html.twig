@@ -1,0 +1,115 @@
+{% extends 'base.html.twig' %}
+{% block title %}Modification du Cabinet — Espace Psychologue{% endblock %}
+
+{% block body %}
+{# ── HEADER ── #}
+<header style="background:linear-gradient(to right,#6FBF9B,#4A90E2);height:70px;
+               padding:0 20px;display:flex;align-items:center;gap:15px;">
+
+    <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom"
+         style="height:60px;width:auto;object-fit:contain;flex-shrink:0;">
+
+    <span style="font-size:20px;font-weight:700;color:white;">🍃 MindBloom — Espace Psychologue</span>
+
+    <div style="flex:1;"></div>
+
+    <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:14px;font-weight:700;color:white;">
+            Bonjour, {{ app.user.fullName }}
+        </span>
+    </div>
+
+    <div style="width:1px;height:30px;background:rgba(255,255,255,0.3);margin:0 5px;"></div>
+
+    <a href="{{ path('app_logout') }}"
+       style="padding:8px 15px;font-size:13px;font-weight:700;color:white;
+              border:1px solid rgba(255,255,255,0.5);border-radius:20px;
+              text-decoration:none;background:transparent;">
+        Déconnexion
+    </a>
+</header>
+
+<div style="background:#F5F3EF;min-height:calc(100vh - 70px); padding:30px 80px 40px; display:flex; flex-direction:column; gap:25px; align-items:center;">
+    
+    <div style="width: 100%; max-width: 1000px;">
+        {% for message in app.flashes('error') %}
+            <div style="background: #fdeaea; color: #d32f2f; padding: 10px 15px; border-radius: 8px; margin-bottom: 10px; font-weight: bold;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <form method="post" action="{{ path('app_cabinet_editer') }}" style="width: 100%; display:flex; flex-direction:column; gap:25px; align-items:center;">
+        
+        <!-- HEADER CARTE (Enregistrer) -->
+        <div style="width: 100%; max-width: 1000px; height:110px; background:linear-gradient(to right, #6FBF9B, #4A90E2); border-radius:15px; padding:0 30px; display:flex; align-items:center;">
+            <div style="display:flex; flex-direction:column; justify-content:center;">
+                <span style="color:white; font-size:22px; font-weight:bold;">Modification du Cabinet</span>
+                <span style="color:white; font-size:14px; opacity:0.9;">Mettez à jour les informations visibles par vos patients</span>
+            </div>
+            
+            <div style="flex:1;"></div>
+            
+            <button type="submit" style="background:white; color:#6FBF9B; border-radius:25px; padding:10px 25px; border:none; font-size:14px; font-weight:bold; cursor:pointer;">
+                💾 {{ cabinet ? 'Modifier' : 'Ajouter' }}
+            </button>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:25px; width: 100%; max-width: 1000px;">
+            <!-- NOM -->
+            <div style="background:white; border-radius:15px; padding:20px; box-shadow:0 4px 10px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <svg fill="#6FBF9B" width="20" height="20" viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm4 8H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V9h2v2zm6 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V9h2v2z"/></svg>
+                    <span style="color:#8E8E8E; font-size:11px; font-weight:bold; text-transform:uppercase;">Nom du cabinet</span>
+                </div>
+                <input type="text" name="nomCabinet" value="{{ cabinet ? cabinet.nomCabinet : '' }}" style="background:#F9F9F9; border:1px solid #E0E0E0; border-radius:5px; padding:10px; font-size:14px; width:100%; box-sizing:border-box;" required />
+            </div>
+
+            <!-- ADRESSE -->
+            <div style="background:white; border-radius:15px; padding:20px; box-shadow:0 4px 10px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <svg fill="#6FBF9B" width="20" height="20" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                    <span style="color:#8E8E8E; font-size:11px; font-weight:bold; text-transform:uppercase;">Adresse</span>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" name="adresseCabinet" id="adresseCabinetInput" value="{{ cabinet ? cabinet.adresse : '' }}" style="background:#F9F9F9; border:1px solid #E0E0E0; border-radius:5px; padding:10px; font-size:14px; flex:1; box-sizing:border-box;" />
+                    <button type="button" onclick="alert('L\'intégration technique de la map se fera dans le composant MapSelection.fxml.');" style="background:#E0E0E0; border:none; border-radius:5px; padding:10px 15px; font-size:13px; cursor:pointer; color:#333;">Choisir sur la carte</button>
+                </div>
+            </div>
+
+            <!-- SPÉCIALITÉ -->
+            <div style="background:white; border-radius:15px; padding:20px; box-shadow:0 4px 10px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <svg fill="#6FBF9B" width="20" height="20" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 11h-4v4h-4v-4H6v-4h4V6h4v4h4v4z"/></svg>
+                    <span style="color:#8E8E8E; font-size:11px; font-weight:bold; text-transform:uppercase;">Spécialité</span>
+                </div>
+                <input type="text" name="specialiteCabinet" value="{{ cabinet ? cabinet.specialite : '' }}" style="background:#F9F9F9; border:1px solid #E0E0E0; border-radius:5px; padding:10px; font-size:14px; width:100%; box-sizing:border-box;" />
+            </div>
+
+            <!-- TÉLÉPHONE -->
+            <div style="background:white; border-radius:15px; padding:20px; box-shadow:0 4px 10px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <svg fill="#6FBF9B" width="20" height="20" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                    <span style="color:#8E8E8E; font-size:11px; font-weight:bold; text-transform:uppercase;">Téléphone</span>
+                </div>
+                <input type="text" name="telephoneCabinet" placeholder="+216" value="{{ cabinet ? cabinet.telephone : '' }}" style="background:#F9F9F9; border:1px solid #E0E0E0; border-radius:5px; padding:10px; font-size:14px; width:100%; box-sizing:border-box;" />
+            </div>
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div style="background:white; border-radius:15px; padding:25px; box-shadow:0 4px 10px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:12px; width:100%; max-width:1000px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <svg fill="#6FBF9B" width="20" height="20" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                <span style="color:#8E8E8E; font-size:11px; font-weight:bold; text-transform:uppercase;">Description</span>
+            </div>
+            <textarea name="descriptionCabinet" placeholder="Décrivez votre cabinet..." style="background:#F9F9F9; border:1px solid #E0E0E0; border-radius:5px; padding:15px; font-size:15px; width:100%; box-sizing:border-box; height:100px; resize:vertical; font-family:inherit;">{{ cabinet ? cabinet.description : '' }}</textarea>
+        </div>
+
+        <div style="width:100%; max-width:1000px; display:flex; justify-content:flex-start;">
+            <button type="button" onclick="window.history.back();" style="background:#95A5A6; border:none; border-radius:20px; color:white; font-size:14px; font-weight:bold; cursor:pointer; padding:8px 20px;">
+                ← Annuler
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

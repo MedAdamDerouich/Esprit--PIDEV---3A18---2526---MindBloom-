@@ -21,12 +21,13 @@
 
     <div style="width:1px;height:30px;background:rgba(255,255,255,0.3);margin:0 5px;"></div>
 
-    <a href="{{ path('app_logout') }}"
-       style="padding:8px 15px;font-size:13px;font-weight:700;color:white;
-              border:1px solid rgba(255,255,255,0.5);border-radius:20px;
-              text-decoration:none;background:transparent;">
-        Déconnexion
-    </a>
+    <form method="post" action="{{ path('app_logout') }}" style="display:inline;">
+        <button type="submit" style="padding:8px 15px;font-size:13px;font-weight:700;color:white;
+                  border:1px solid rgba(255,255,255,0.5);border-radius:20px;
+                  text-decoration:none;background:transparent;cursor:pointer;">
+            Déconnexion
+        </button>
+    </form>
 </header>
 
 <div style="background:#F5F3EF;min-height:calc(100vh - 70px); padding:30px 80px 40px; display:flex; flex-direction:column; gap:25px; align-items:center;">

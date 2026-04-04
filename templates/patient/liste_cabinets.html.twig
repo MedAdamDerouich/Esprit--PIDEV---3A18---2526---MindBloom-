@@ -1,0 +1,167 @@
+{% extends 'base.html.twig' %}
+{% block title %}Cabinets disponibles — MindBloom{% endblock %}
+
+{% block body %}
+
+{# ── NAVBAR ── #}
+<header style="background:white;height:80px;padding:0 50px;display:flex;align-items:center;
+               gap:30px;box-shadow:0 5px 10px rgba(0,0,0,0.05);position:sticky;top:0;z-index:1000;">
+
+    {# Logo + brand name #}
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom"
+             style="height:50px;width:50px;object-fit:contain;">
+        <span style="font-size:22px;font-weight:700;color:#2C3E50;">MindBloom</span>
+    </div>
+
+    {# Navigation links — centered, takes all available space #}
+    <nav style="flex:1;display:flex;justify-content:center;gap:25px;align-items:center;">
+        <a href="{{ path('app_patient_dashboard') }}"
+           style="font-size:14px;color:#2C3E50;text-decoration:none;">Accueil</a>
+        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Produits</a>
+        <a href="{{ path('app_patient_cabinets_index') }}" style="font-size:14px;color:#4A90E2;text-decoration:none;font-weight:500;
+                  border-bottom:2px solid #4A90E2;padding-bottom:2px;">Rendez-vous</a>
+        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Tests</a>
+        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Événements</a>
+        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Mes Réservations</a>
+    </nav>
+
+    {# Right actions #}
+    <div style="display:flex;align-items:center;gap:20px;flex-shrink:0;">
+
+        {# Cart #}
+        <button style="background:#E8E8E8;border:none;border-radius:10px;padding:10px 15px;
+                       font-size:20px;cursor:pointer;line-height:1;">🛒</button>
+
+        {# Wallet badge #}
+        <div style="display:flex;align-items:center;gap:8px;background:#EDF9F5;
+                    border-radius:20px;padding:8px 15px;">
+            <span style="font-size:16px;">💳</span>
+            <span style="font-size:14px;font-weight:700;color:#5FBF9F;">0.00 TND</span>
+            <a href="{{ path('app_wallet') }}"
+               style="background:#5FBF9F;color:white;border-radius:15px;padding:5px 12px;
+                      text-decoration:none;font-size:12px;font-weight:700;line-height:1;">+</a>
+        </div>
+
+        {# Profile pill #}
+        <div style="display:flex;align-items:center;gap:10px;background:#F8F9FA;
+                    border-radius:25px;padding:6px 15px 6px 8px;">
+            <div style="width:40px;height:40px;border-radius:50%;border:2px solid #4A90E2;
+                        background:white;display:flex;align-items:center;justify-content:center;
+                        overflow:hidden;flex-shrink:0;">
+                {% if app.user.profileImage %}
+                    <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}"
+                         style="width:100%;height:100%;object-fit:cover;" alt="">
+                {% else %}
+                    <span style="font-size:20px;color:#4A90E2;">👤</span>
+                {% endif %}
+            </div>
+            <div style="display:flex;flex-direction:column;">
+                <span style="font-size:9px;color:#999;">Bonjour,</span>
+                <span style="font-size:12px;font-weight:700;color:#2C3E50;">{% if app.user %}{{ app.user.fullName|split(' ')|first }}{% else %}Invité{% endif %}</span>
+            </div>
+        </div>
+
+        {# Modifier button #}
+        <a href="{{ path('app_profile') }}"
+           style="background:#4A90E2;color:white;border-radius:20px;padding:8px 18px;
+                  font-size:11px;font-weight:600;text-decoration:none;">Modifier</a>
+
+        {# Déconnexion button #}
+        <form method="post" action="{{ path('app_logout') }}" style="display:inline;">
+            <button type="submit" style="background:#e74c3c;color:white;border:none;border-radius:20px;padding:8px 18px;
+                      font-size:11px;font-weight:600;cursor:pointer;">Déconnexion</button>
+        </form>
+    </div>
+</header>
+
+<div style="background:#F5F3EF; min-height:calc(100vh - 80px); padding:40px; display:flex; flex-direction:column; align-items:center;">
+    
+    <!-- Hero Header (RendezVous.fxml Translation) -->
+    <div style="width:100%; max-width:1200px; display:flex; flex-direction:column; align-items:center; gap:5px; margin-bottom:30px;">
+        <span style="font-size:32px; font-weight:bold; color:#2D3748;">Prenez rendez-vous avec un</span>
+        <span style="font-size:32px; font-weight:bold; color:#4A90E2;">professionnel</span>
+        <span style="color:#718096; font-size:16px; margin-top:10px;">Trouvez le psychologue qui vous convient et réservez votre consultation.</span>
+    </div>
+
+    <!-- Barre de Recherche Dynamique -->
+    <div style="width:100%; max-width:650px; background:white; border-radius:15px; padding:15px 20px; display:flex; align-items:center; gap:15px; box-shadow:0 4px 10px rgba(0,0,0,0.05); margin-bottom:40px;">
+        <span style="font-size:18px; color:#A0AEC0;">🔍</span>
+        <input type="text" id="searchField" placeholder="Rechercher par nom ou spécialité..." style="border:none; outline:none; font-size:15px; width:100%; color:#2D3748;" />
+    </div>
+
+    {# Grille des Cabinets #}
+    <div id="cardsContainer" style="display:flex; flex-wrap:wrap; gap:30px; width:100%; max-width:1200px; justify-content:center;">
+        
+        {% if cabinets is empty %}
+            <div style="width:100%; text-align:center; padding:50px; background:white; border-radius:15px; color:#8E8E8E;">
+                Aucun cabinet n'est disponible pour le moment.
+            </div>
+        {% else %}
+            {% for cabinet in cabinets %}
+                {# CARD CABINET (Traduction exacte de CardCabinet.fxml) #}
+                <div class="psychologist-card" data-nom="{% if cabinet.psychologue %}{{ cabinet.psychologue.fullName|lower }}{% endif %}" data-specialite="{{ cabinet.specialite|lower }}" style="width:350px; background:white; border-radius:25px; overflow:hidden; box-shadow:0 15px 30px rgba(0,0,0,0.08); display:flex; flex-direction:column; transition: transform 0.2s ease-in-out;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                    
+                    {# Image Placeholder #}
+                    <div style="width:350px; height:200px; background:#E2E8F0; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:25px 25px 0 0;">
+                        {% if cabinet.psychologue and cabinet.psychologue.profileImage %}
+                            <img src="{{ asset('uploads/profiles/' ~ cabinet.psychologue.profileImage) }}" style="width:100%; height:100%; object-fit:cover;" />
+                        {% else %}
+                            <span style="font-size:80px; color:rgba(74,144,226,0.3);">👤</span>
+                        {% endif %}
+                    </div>
+
+                    {# Contenu #}
+                    <div style="padding:20px; display:flex; flex-direction:column; gap:15px; flex:1;">
+                        
+                        <div style="display:flex; flex-direction:column; gap:5px;">
+                            <span style="font-size:18px; font-weight:bold; color:#2C3E50;">{% if cabinet.psychologue %}Dr. {{ cabinet.psychologue.fullName }}{% else %}Sans Nom{% endif %}</span>
+                            <span style="color:#718096; font-size:14px;">{{ cabinet.specialite }}</span>
+                        </div>
+
+                        <span style="font-size:12px; color:#A0AEC0;">⌂ {{ cabinet.adresse }}</span>
+                        
+                        {# Bouton Maps #}
+                        {# Masqué pour le moment selon la demande du client #}
+                        <a href="https://www.google.com/maps/search/?api=1&query={{ cabinet.adresse|url_encode }}" target="_blank" style="display:none; align-self:flex-start; background:rgba(74,144,226,0.2); color:#4A90E2; border-radius:15px; font-weight:bold; padding:6px 15px; font-size:12px; text-decoration:none; transition: background 0.2s;" onmouseover="this.style.background='rgba(74,144,226,0.4)'" onmouseout="this.style.background='rgba(74,144,226,0.2)'">⌂ Maps</a>
+                        
+                        <div style="flex:1;"></div>
+
+                        {# Bouton Réserver #}
+                        <a href="#" onclick="alert('Module de prise de Rendez-vous non fusionné'); return false;" style="display:block; text-align:center; background:#5FBF9F; color:white; font-size:15px; font-weight:bold; padding:12px 0; border-radius:15px; text-decoration:none; width:100%; transition: background 0.2s;" onmouseover="this.style.background='#4DAE8E'" onmouseout="this.style.background='#5FBF9F'">Prenez un Rendez-Vous</a>
+
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+    </div>
+
+</div>
+
+<!-- Script de recherche dynamique -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchField = document.getElementById('searchField');
+    const cards = document.querySelectorAll('.psychologist-card');
+
+    if (searchField) {
+        searchField.addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase().trim();
+
+            cards.forEach(card => {
+                const nom = card.getAttribute('data-nom') || '';
+                const specialite = card.getAttribute('data-specialite') || '';
+
+                if (nom.includes(query) || specialite.includes(query)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
+
+{% endblock %}

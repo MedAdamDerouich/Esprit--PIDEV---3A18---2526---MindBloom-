@@ -25,6 +25,15 @@ class CabinetRepository extends ServiceEntityRepository
         }
     }
 
+    public function findAllWithPsychologue(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->leftJoin('c.psychologue', 'p')
+            ->addSelect('p')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function remove(Cabinet $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);

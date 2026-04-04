@@ -20,7 +20,7 @@
            style="font-size:14px;color:#4A90E2;text-decoration:none;font-weight:500;
                   border-bottom:2px solid #4A90E2;padding-bottom:2px;">Accueil</a>
         <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Produits</a>
-        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Rendez-vous</a>
+        <a href="{{ path('app_patient_cabinets_index') }}" style="font-size:14px;color:#2C3E50;text-decoration:none;">Rendez-vous</a>
         <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Tests</a>
         <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Événements</a>
         <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Mes Réservations</a>
@@ -68,9 +68,10 @@
                   font-size:11px;font-weight:600;text-decoration:none;">Modifier</a>
 
         {# Déconnexion button #}
-        <a href="{{ path('app_logout') }}"
-           style="background:#e74c3c;color:white;border-radius:20px;padding:8px 18px;
-                  font-size:11px;font-weight:600;text-decoration:none;">Déconnexion</a>
+        <form method="post" action="{{ path('app_logout') }}" style="display:inline;">
+            <button type="submit" style="background:#e74c3c;color:white;border:none;border-radius:20px;padding:8px 18px;
+                      font-size:11px;font-weight:600;cursor:pointer;">Déconnexion</button>
+        </form>
     </div>
 </header>
 
@@ -149,7 +150,7 @@
                 <span style="color:#95A5A6;font-size:14px;line-height:1.5;">
                     Consultez nos psychologues certifiés en ligne ou en présentiel
                 </span>
-                <a href="#" style="color:#4A90E2;text-decoration:none;font-size:14px;
+                <a href="{{ path('app_patient_cabinets_index') }}" style="color:#4A90E2;text-decoration:none;font-size:14px;
                                    background:transparent;margin-top:auto;">Découvrir →</a>
             </div>
 

@@ -15,7 +15,7 @@ class ReservationController extends AbstractController
     public function index(ReservationRepository $reservationRepository): Response
     {
         $psychologue = $this->getUser();
-        $reservations = $reservationRepository->getReservationsByPsychologue($psychologue);
+        $reservations = $reservationRepository->getReservationsByPsychologue($psychologue->getId());
 
         return $this->render('psychologue/liste_reservations.html.twig', [
             'reservations' => $reservations,
@@ -70,6 +70,34 @@ class ReservationController extends AbstractController
 
         $em->flush();
 
+        return $this->redirectToRoute('app_patient_reservations');
+    }
+
+    #[Route('/patient/reservations/{id}/delete', name: 'app_patient_reservations_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_PATIENT')]
+    public function deleteReservation(int $id, ReservationRepository $reservationRepository, \Doctrine\ORM\EntityManagerInterface $em): Response
+    {
+        $reservation = $reservationRepository->find($id);
+
+        if (!$reservation) {
+            $this->addFlash('error', 'Réservation introuvable.');
+            return $this->redirectToRoute('app_patient_reservations');
+        }
+
+        if ($reservation->getPatient() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à supprimer cette réservation.');
+        }
+
+        if ($reservation->getStatus() !== \App\Entity\Status::ANNULE) {
+            $this->addFlash('error', 'Seules les réservations annulées peuvent être supprimées de l\'historique.');
+            return $this->redirectToRoute('app_patient_reservations');
+        }
+
+        $em->remove($reservation);
+        $em->flush();
+
+        $this->addFlash('success', 'La réservation a été supprimée de votre historique.');
+        
         return $this->redirectToRoute('app_patient_reservations');
     }
 

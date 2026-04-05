@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier {{ test.nomTest }} — MindBloom{% endblock %}
+
+{% block body %}
+{# ── HEADER — gradient #6FBF9B → #4A90E2 from psychologue dashboard ── #}
+<header style="background:linear-gradient(to right,#6FBF9B,#4A90E2);height:70px;
+               padding:0 20px;display:flex;align-items:center;gap:15px;position:sticky;top:0;z-index:1000;">
+
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom"
+             style="height:50px;width:auto;object-fit:contain;flex-shrink:0;">
+        <span style="font-size:20px;font-weight:700;color:white;">MindBloom — Espace Psychologue</span>
+    </div>
+
+    <div style="flex:1;"></div>
+
+    <nav style="display:flex;gap:20px;align-items:center;margin-right:20px;">
+        <a href="{{ path('app_psychologue_dashboard') }}" style="color:white;text-decoration:none;font-size:14px;font-weight:600;">Accueil</a>
+        <a href="{{ path('app_test_manage') }}" style="color:white;text-decoration:none;font-size:14px;font-weight:600;border-bottom:2px solid white;padding-bottom:2px;">Mes Tests</a>
+    </nav>
+
+    <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:14px;font-weight:700;color:white;">
+            Bonjour, Dr. {% if app.user %}{{ app.user.fullName|split(' ')|last }}{% endif %}
+        </span>
+    </div>
+</header>
+
+<div style="background:#FAFAF8; min-height: calc(100vh - 70px); padding: 50px;">
+    <div style="max-width: 800px; margin: 0 auto;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <a href="{{ path('app_test_manage') }}" style="color: #7F8C8D; text-decoration: none; font-size: 14px; font-weight: 500;">
+                ← Retour à mes tests
+            </a>
+            
+            <div style="background: white; border-radius: 12px; padding: 5px; display: inline-block;">
+                {{ include('test/_delete_form.html.twig') }}
+            </div>
+        </div>
+
+        <div style="background: white; border-radius: 20px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); margin-bottom: 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <span style="display:inline-block;background:#FCF3CF;color:#F39C12;border-radius:20px;padding:6px 15px;font-size:13px;margin-bottom:15px;font-weight:700;">
+                    ✏️ Modification
+                </span>
+                <h1 style="font-size: 32px; font-weight: 800; color: #2C3E50;">{{ test.nomTest }}</h1>
+                <p style="color: #7F8C8D; margin-top: 10px;">Modifiez les paramètres de ce test.</p>
+            </div>
+
+            {{ include('test/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

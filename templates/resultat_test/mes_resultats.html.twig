@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Résultats de Tests — MindBloom{% endblock %}
+
+{% block body %}
+{# ── NAVBAR Reused ── #}
+<header style="background:white;height:80px;padding:0 50px;display:flex;align-items:center;
+               gap:30px;box-shadow:0 5px 10px rgba(0,0,0,0.05);position:sticky;top:0;z-index:1000;">
+
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom"
+             style="height:50px;width:50px;object-fit:contain;">
+        <span style="font-size:22px;font-weight:700;color:#2C3E50;">MindBloom</span>
+    </div>
+
+    <nav style="flex:1;display:flex;justify-content:center;gap:25px;align-items:center;">
+        <a href="{{ path('app_dashboard') }}" style="font-size:14px;color:#2C3E50;text-decoration:none;">Accueil</a>
+        <a href="{{ path('app_test_index') }}" style="font-size:14px;color:#4A90E2;text-decoration:none;font-weight:500;border-bottom:2px solid #4A90E2;padding-bottom:2px;">Tests</a>
+    </nav>
+</header>
+
+<div style="background:#FAFAF8; min-height: calc(100vh - 80px); padding: 50px;">
+    <div style="max-width: 1000px; margin: 0 auto;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+            <div>
+                <span style="display:inline-block;background:#E8F1FC;color:#4A90E2;border-radius:20px;padding:6px 15px;font-size:13px;margin-bottom:10px;font-weight:600;">
+                    📊 Historique
+                </span>
+                <h1 style="font-size:36px;font-weight:900;color:#2C3E50;">Mes Résultats de Tests</h1>
+            </div>
+            
+            <a href="{{ path('app_test_index') }}" style="background: white; color: #4A90E2; padding: 12px 25px; border-radius: 12px; font-weight: 700; text-decoration: none; border: 2px solid #4A90E2; transition: all 0.2s;" onmouseover="this.style.background='#4A90E2'; this.style.color='white'" onmouseout="this.style.background='white'; this.style.color='#4A90E2'">
+                Passer un nouveau test
+            </a>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            {% for resultat in resultat_tests %}
+                <div style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; border-left: 6px solid {% if resultat.score > 80 %}#27AE60{% elseif resultat.score > 50 %}#F39C12{% else %}#E74C3C{% endif %};">
+                    
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <h3 style="font-size: 20px; font-weight: 800; color: #34495E; margin: 0;">{{ resultat.test.nomTest }}</h3>
+                        <div style="display: flex; gap: 15px; font-size: 13px; color: #7F8C8D;">
+                            <span>Catégorie: <b>{{ resultat.test.categorie }}</b></span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
+                        <span style="font-size: 24px; font-weight: 900; color: {% if resultat.score > 80 %}#27AE60{% elseif resultat.score > 50 %}#F39C12{% else %}#E74C3C{% endif %};">
+                            {{ resultat.score }} pts
+                        </span>
+                        <span style="font-size: 13px; font-weight: 700; color: #95A5A6; background: #F4F6F6; padding: 4px 10px; border-radius: 6px;">
+                            {{ resultat.etat }}
+                        </span>
+                    </div>
+
+                    <a href="{{ path('app_resultat_test_show', {'id': resultat.id}) }}" style="background:#EDF9F5; color:#5FBF9F; border-radius:10px; padding:10px 20px; text-decoration:none; font-weight:700; font-size:14px; transition:0.2s;"
+                       onmouseover="this.style.background='#5FBF9F'; this.style.color='white'" onmouseout="this.style.background='#EDF9F5'; this.style.color='#5FBF9F'">
+                        Voir détails →
+                    </a>
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 60px; background: white; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.03);">
+                    <div style="font-size: 40px; margin-bottom: 20px;">🏜️</div>
+                    <h4 style="font-size: 20px; font-weight: 700; color: #2C3E50; margin-bottom: 10px;">Vous n'avez passé aucun test</h4>
+                    <p style="color: #7F8C8D;">Passez votre premier test pour suivre l'évolution de votre bien-être.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

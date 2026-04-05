@@ -21,7 +21,7 @@
                   border-bottom:2px solid #4A90E2;padding-bottom:2px;">Accueil</a>
         <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Produits</a>
         <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Rendez-vous</a>
-        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Tests</a>
+        <a href="{{ path('app_test_index') }}" style="font-size:14px;color:#2C3E50;text-decoration:none;">Tests</a>
         <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Événements</a>
         <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Mes Réservations</a>
     </nav>
@@ -94,7 +94,7 @@
                 et une communauté bienveillante pour vous accompagner.
             </span>
             <div style="margin-top:10px;">
-                <a href="#"
+                <a href="{{ path('app_test_index') }}"
                    style="display:inline-block;background:#4A90E2;color:white;padding:0 0;
                           border-radius:10px;font-weight:700;text-decoration:none;font-size:14px;
                           width:250px;height:50px;line-height:50px;text-align:center;">
@@ -162,8 +162,21 @@
                 <span style="color:#95A5A6;font-size:14px;line-height:1.5;">
                     Évaluez votre bien-être mental avec nos tests validés scientifiquement
                 </span>
-                <a href="#" style="color:#5FBF9F;text-decoration:none;font-size:14px;
+                <a href="{{ path('app_test_index') }}" style="color:#5FBF9F;text-decoration:none;font-size:14px;
                                    background:transparent;margin-top:auto;">Découvrir →</a>
+            </div>
+
+            {# Gérer Tests Autoévaluation #}
+            <div onclick="window.location.href='{{ path('app_test_manage') }}';" style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
+                        box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;cursor:pointer;">
+                <div style="width:45px;height:45px;background:#E8F1FC;border-radius:10px;
+                             display:flex;align-items:center;justify-content:center;font-size:22px;">📝</div>
+                <span style="font-size:20px;font-weight:700;color:#2C3E50;">Gérer test autoevaluations</span>
+                <span style="color:#95A5A6;font-size:14px;line-height:1.5;">
+                    Gérer et voir les tests que j'ai déjà créés
+                </span>
+                <a href="{{ path('app_test_manage') }}" style="color:#4A90E2;text-decoration:none;font-size:14px;
+                                   background:transparent;margin-top:auto;">Gérer →</a>
             </div>
 
             {# Événements #}

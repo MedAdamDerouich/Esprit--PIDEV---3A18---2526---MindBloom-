@@ -31,13 +31,22 @@
                             </td>
                             <td class="py-4 border-0">
                                 <div class="d-flex align-items-center">
-                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 12px;">
-                                        {{ facture.user.fullName|first|upper }}
-                                    </div>
-                                    <div>
-                                        <h6 class="mb-0 small fw-bold">{{ facture.user.fullName }}</h6>
-                                        <small class="text-muted" style="font-size: 11px;">{{ facture.user.email }}</small>
-                                    </div>
+                                    {% if facture.user %}
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 12px;">
+                                            {{ facture.user.fullName|first|upper }}
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 small fw-bold">{{ facture.user.fullName }}</h6>
+                                            <small class="text-muted" style="font-size: 11px;">{{ facture.user.email }}</small>
+                                        </div>
+                                    {% else %}
+                                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 12px;">
+                                            ?
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 small fw-bold text-muted">Utilisateur supprimé</h6>
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </td>
                             <td class="py-4 border-0 fw-bold">

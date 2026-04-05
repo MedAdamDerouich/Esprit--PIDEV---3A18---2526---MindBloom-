@@ -36,8 +36,12 @@
                     <div class="row mb-5 py-4 border-top border-bottom">
                         <div class="col-sm-6">
                             <h6 class="fw-bold mb-3 small text-uppercase text-muted">Destinataire</h6>
-                            <p class="fw-bold mb-1">{{ facture.user.fullName }}</p>
-                            <p class="text-muted small mb-0">{{ facture.user.email }}</p>
+                            {% if facture.user %}
+                                <p class="fw-bold mb-1">{{ facture.user.fullName }}</p>
+                                <p class="text-muted small mb-0">{{ facture.user.email }}</p>
+                            {% else %}
+                                <p class="fw-bold mb-1 text-muted">Utilisateur supprimé</p>
+                            {% endif %}
                         </div>
                         <div class="col-sm-6 text-sm-end mt-4 mt-sm-0">
                             <h6 class="fw-bold mb-3 small text-uppercase text-muted">Adresse de livraison</h6>

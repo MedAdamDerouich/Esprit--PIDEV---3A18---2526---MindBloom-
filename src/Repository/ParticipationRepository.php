@@ -54,31 +54,34 @@ class ParticipationRepository extends ServiceEntityRepository
     }
 
     /**
-     * Récupère les participations confirmées d'un événement
+     * Récupère les participations actives d'un événement (toutes sauf annulées)
      */
     public function findConfirmedByEvent(Event $event): array
     {
         return $this->createQueryBuilder('p')
+            ->innerJoin('p.user', 'u')
+            ->addSelect('u')
             ->where('p.evenement = :event')
-            ->andWhere('p.statut = :confirmed')
+            ->andWhere('p.statut != :cancelled')
             ->setParameter('event', $event)
-            ->setParameter('confirmed', Participation::STATUT_CONFIRME)
+            ->setParameter('cancelled', Participation::STATUT_ANNULE)
             ->orderBy('p.dateInscription', 'ASC')
             ->getQuery()
             ->getResult();
     }
 
     /**
-     * Compte le nombre de participants confirmés pour un événement
+     * Compte le nombre de participants actifs pour un événement (hors annulés)
      */
     public function countConfirmedByEvent(Event $event): int
     {
         return (int) $this->createQueryBuilder('p')
             ->select('COUNT(p.id)')
+            ->innerJoin('p.user', 'u')
             ->where('p.evenement = :event')
-            ->andWhere('p.statut = :confirmed')
+            ->andWhere('p.statut != :cancelled')
             ->setParameter('event', $event)
-            ->setParameter('confirmed', Participation::STATUT_CONFIRME)
+            ->setParameter('cancelled', Participation::STATUT_ANNULE)
             ->getQuery()
             ->getSingleScalarResult();
     }

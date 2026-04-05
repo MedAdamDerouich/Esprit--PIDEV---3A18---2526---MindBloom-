@@ -29,11 +29,11 @@
                         <th>Email</th>
                         <th>Date d'inscription</th>
                         <th>Statut</th>
-                        <th>QR Code</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for participation in participants %}
+                    {% set statutLabel = participation.statut is not empty ? participation.statut : 'inscrit' %}
                     <tr>
                         <td>
                             <strong>{{ participation.user.fullName }}</strong>
@@ -41,25 +41,16 @@
                         <td>{{ participation.user.email }}</td>
                         <td>{{ participation.dateInscription|date('d/m/Y H:i') }}</td>
                         <td>
-                            {% if participation.statut == 'confirmé' %}
-                                <span class="badge-status badge-actif">{{ participation.statut|capitalize }}</span>
+                            {% if statutLabel|lower in ['confirmé', 'confirme', 'inscrit', 'en_attente'] %}
+                                <span class="badge-status badge-actif">{{ statutLabel|capitalize }}</span>
                             {% else %}
-                                <span class="badge-status badge-termine">{{ participation.statut|capitalize }}</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if participation.qrCode %}
-                                <code style="background: #f8f9fa; padding: 5px 10px; border-radius: 4px;">
-                                    {{ participation.qrCode }}
-                                </code>
-                            {% else %}
-                                -
+                                <span class="badge-status badge-termine">{{ statutLabel|capitalize }}</span>
                             {% endif %}
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="5" class="text-center" style="padding: 40px;">
+                        <td colspan="4" class="text-center" style="padding: 40px;">
                             <div style="font-size: 48px;">👥</div>
                             <p style="color: #7f8c8d; margin-top: 10px;">Aucun participant inscrit pour le moment</p>
                         </td>

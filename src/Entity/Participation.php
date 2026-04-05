@@ -16,6 +16,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 )]
 class Participation
 {
+    const STATUT_INSCRIT = 'inscrit';
     const STATUT_CONFIRME = 'confirmé';
     const STATUT_EN_ATTENTE = 'en_attente';
     const STATUT_ANNULE = 'annulé';
@@ -37,7 +38,7 @@ class Participation
     private ?\DateTimeInterface $dateInscription = null;
 
     #[ORM\Column(type: 'string', length: 50)]
-    private string $statut = self::STATUT_CONFIRME;
+    private string $statut = self::STATUT_INSCRIT;
 
     // Champ qr_code désactivé car non présent dans la base
     // #[ORM\Column(name: 'qr_code', type: 'string', length: 255, nullable: true)]

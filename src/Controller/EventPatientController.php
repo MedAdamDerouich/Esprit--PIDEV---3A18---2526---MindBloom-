@@ -73,7 +73,7 @@ class EventPatientController extends AbstractController
         $participation = new Participation();
         $participation->setEvenement($event);
         $participation->setUser($user);
-        $participation->setStatut(Participation::STATUT_CONFIRME);
+        $participation->setStatut(Participation::STATUT_INSCRIT);
 
         // QR Code désactivé (colonne non présente dans la base)
         // $qrCode = 'QR-' . strtoupper(substr(md5(uniqid()), 0, 10));

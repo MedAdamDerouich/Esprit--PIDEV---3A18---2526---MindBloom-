@@ -136,7 +136,7 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+function initReserverScript() {
     const clickableCards = document.querySelectorAll('.creneau-card.clickable');
     const btnConfirmer = document.getElementById('btnConfirmer');
     const reservationForm = document.getElementById('reservationForm');
@@ -160,8 +160,13 @@ document.addEventListener('DOMContentLoaded', function() {
             reservationForm.action = '/patient/reserver/creneau/' + id;
         });
     });
+}
 
-});
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initReserverScript);
+} else {
+    initReserverScript();
+}
 </script>
 
 {% endblock %}

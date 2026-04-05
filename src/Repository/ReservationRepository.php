@@ -19,6 +19,24 @@ class ReservationRepository extends ServiceEntityRepository
     /**
      * Equivalent de getReservationsByPsychologue dans reservationservice.java
      */
+    /**
+     * Equivalent de getReservationsByPatient dans reservationservice.java
+     */
+    public function getReservationsByPatient(\Symfony\Component\Security\Core\User\UserInterface $patient): array
+    {
+        return $this->createQueryBuilder('r')
+            ->select('r', 'c', 'cab', 'psy')
+            ->join('r.creneau', 'c')
+            ->join('c.cabinet', 'cab')
+            ->join('cab.psychologue', 'psy')
+            ->where('r.patient = :patient')
+            ->setParameter('patient', $patient)
+            ->orderBy('c.dateCreneau', 'ASC')
+            ->addOrderBy('c.heureDebut', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function getReservationsByPsychologue(int $idPsychologue): array
     {
         return $this->createQueryBuilder('r')

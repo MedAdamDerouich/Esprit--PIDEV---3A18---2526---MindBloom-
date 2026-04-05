@@ -193,7 +193,7 @@
                         {% if r.status.value == 'Annulé' %}
                             <form action="{{ path('app_patient_reservations_delete', {id: r.idReservation}) }}" method="post" style="margin:0;" title="Supprimer de l'historique">
                                 <button type="submit" onclick="return confirm('Voulez-vous supprimer définitivement cette réservation de votre historique ?');" style="background:transparent; color:#EF4444; border-radius:5px; display:flex; align-items:center; justify-content:center; width:26px; height:26px; border:1px solid #EF4444; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#FFE5E5'" onmouseout="this.style.background='transparent'">
-                                    <span style="font-size:14px;">🗑️</span>
+                                    <span style="font-size:14px; font-weight:bold;">✕</span>
                                 </button>
                             </form>
                         {% endif %}

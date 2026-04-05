@@ -6,6 +6,29 @@
     
     {# MODAL CONTAINER #}
     <div style="background:#FAFAF8; border-radius:15px; width:450px; display:flex; flex-direction:column; box-shadow:0 15px 35px rgba(0,0,0,0.1); overflow:hidden; position:relative;">
+        <style>
+            /* Styling scrollbar for webkit */
+            ::-webkit-scrollbar { width: 6px; }
+            ::-webkit-scrollbar-track { background: transparent; }
+            ::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 10px; }
+            ::-webkit-scrollbar-thumb:hover { background: #A0AEC0; }
+            
+            .creneau-card {
+                position: relative;
+            }
+            .creneau-card.clickable:hover {
+                transform: scale(1.02);
+                box-shadow: 0 10px 15px rgba(0,0,0,0.08);
+                z-index: 10;
+            }
+            .creneau-card.selected {
+                border-color: #4A90E2 !important;
+                background: #E0F0FF !important; /* Bleu très clair visible */
+                box-shadow: 0 6px 15px rgba(74, 144, 226, 0.25) !important;
+                transform: scale(1.03);
+                z-index: 15;
+            }
+        </style>
         
         <div style="padding:20px 25px;">
             {# HEADER (Image + Infos + Close) #}
@@ -117,23 +140,7 @@
 </div>
 
 <!-- Styles inline et script -->
-<style>
-    /* Styling scrollbar for webkit */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #A0AEC0; }
-    
-    .creneau-card.clickable:hover {
-        transform: scale(1.02);
-        box-shadow: 0 10px 15px rgba(0,0,0,0.08);
-        z-index: 10;
-    }
-    .creneau-card.selected {
-        border-color: #4A90E2 !important;
-        background: #F0F7FF !important;
-    }
-</style>
+    <!-- Script en bas -->
 
 <script>
 function initReserverScript() {

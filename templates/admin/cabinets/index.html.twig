@@ -34,6 +34,7 @@
                         <th>Cabinet & Médecin</th>
                         <th>Spécialité</th>
                         <th>Adresse</th>
+                        <th>Description</th>
                         <th style="text-align:center;">Créneaux Configurés</th>
                         <th style="text-align:center;">Réservations (Anonyme)</th>
                     </tr>
@@ -62,8 +63,35 @@
                         <td>
                             <span style="font-weight:600;color:#2C3E50;font-size:14px;">{{ cabinet.specialite|default('Non spécifiée') }}</span>
                         </td>
-                        <td style="color:var(--text-mid); font-size:13px; max-width:250px; text-overflow:ellipsis; overflow:hidden; white-space:nowrap;" title="{{ cabinet.adresse|default('') }}">
-                            ⌂ {{ cabinet.adresse|default('Non renseignée') }}
+                        <td style="color:var(--text-mid); font-size:13px; max-width:200px; line-height:1.5;">
+                            {% set addrFull = cabinet.adresse|default('Non renseignée') %}
+                            {% set needsToggleAddr = (addrFull|length > 40) %}
+                            
+                            <div class="details-short">
+                                ⌂ {{ addrFull|length > 40 ? addrFull|slice(0, 40) ~ '...' : addrFull }}
+                                {% if needsToggleAddr %}
+                                    <br><a href="#" onclick="toggleViewMore(this, event)" style="color:#4A90E2; font-size:12px; font-weight:bold; text-decoration:none; margin-top:5px; display:inline-block;">Voir plus ↓</a>
+                                {% endif %}
+                            </div>
+                            <div class="details-long" style="display:none;">
+                                ⌂ {{ addrFull }}
+                                <br><a href="#" onclick="toggleViewMore(this, event)" style="color:#4A90E2; font-size:12px; font-weight:bold; text-decoration:none; margin-top:5px; display:inline-block;">Voir moins ↑</a>
+                            </div>
+                        </td>
+                        <td style="color:var(--text-mid); font-size:13px; max-width:250px; line-height:1.5;">
+                            {% set descFull = cabinet.description|default('Aucune description') %}
+                            {% set needsToggleDesc = (descFull|length > 40) %}
+                            
+                            <div class="details-short">
+                                📝 {{ descFull|length > 40 ? descFull|slice(0, 40) ~ '...' : descFull }}
+                                {% if needsToggleDesc %}
+                                    <br><a href="#" onclick="toggleViewMore(this, event)" style="color:#4A90E2; font-size:12px; font-weight:bold; text-decoration:none; margin-top:5px; display:inline-block;">Voir plus ↓</a>
+                                {% endif %}
+                            </div>
+                            <div class="details-long" style="display:none;">
+                                <div style="white-space: pre-wrap;">📝 {{ descFull }}</div>
+                                <a href="#" onclick="toggleViewMore(this, event)" style="color:#4A90E2; font-size:12px; font-weight:bold; text-decoration:none; margin-top:5px; display:inline-block;">Voir moins ↑</a>
+                            </div>
                         </td>
                         <td style="text-align:center;">
                             <span class="mb-badge mb-badge-teal" style="font-size:14px; padding:6px 15px;">
@@ -78,7 +106,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="5" style="text-align:center;color:var(--text-mid);padding:40px;">
+                        <td colspan="6" style="text-align:center;color:var(--text-mid);padding:40px;">
                             Aucun cabinet enregistré pour le moment.
                         </td>
                     </tr>
@@ -102,6 +130,21 @@ function filterTable(value) {
             row.style.display = text.includes(search) ? '' : 'none';
         }
     });
+}
+
+function toggleViewMore(btn, currentEvent) {
+    currentEvent.preventDefault();
+    const cell = btn.closest('td');
+    const shortView = cell.querySelector('.details-short');
+    const longView = cell.querySelector('.details-long');
+
+    if (longView.style.display === 'none') {
+        shortView.style.display = 'none';
+        longView.style.display = 'block';
+    } else {
+        longView.style.display = 'none';
+        shortView.style.display = 'block';
+    }
 }
 </script>
 {% endblock %}

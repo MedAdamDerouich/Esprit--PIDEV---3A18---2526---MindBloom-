@@ -14,6 +14,7 @@ class ReservationController extends AbstractController
     #[IsGranted('ROLE_PSYCHOLOGUE')]
     public function index(ReservationRepository $reservationRepository): Response
     {
+        /** @var \App\Entity\User $psychologue */
         $psychologue = $this->getUser();
         $reservations = $reservationRepository->getReservationsByPsychologue($psychologue->getId());
 
@@ -126,6 +127,6 @@ class ReservationController extends AbstractController
 
         $this->addFlash('success', 'Votre réservation a été confirmée avec succès !');
 
-        return $this->redirectToRoute('app_patient_dashboard');
+        return $this->redirectToRoute('app_patient_cabinets_index');
     }
 }

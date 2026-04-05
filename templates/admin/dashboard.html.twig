@@ -1,23 +1,220 @@
 {% extends 'base.html.twig' %}
-{% block title %}Dashboard Admin — MindBloom{% endblock %}
+{% block title %}Tableau de bord — MindBloom{% endblock %}
+
+{% block stylesheets %}
+<style>
+/* ── Top bar ── */
+.dash-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #EFEFEF;
+}
+.dash-topbar h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0 0 4px;
+}
+.dash-topbar .date {
+    font-size: 12px;
+    color: #aaa;
+    font-weight: 400;
+}
+.dash-topbar .admin-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.dash-topbar .admin-info .name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    text-align: right;
+}
+.dash-topbar .admin-info .role {
+    font-size: 11px;
+    color: #aaa;
+    text-align: right;
+}
+
+/* ── Numbers strip ── */
+.numbers-strip {
+    display: flex;
+    background: white;
+    border: 1px solid #EFEFEF;
+    border-radius: 10px;
+    margin-bottom: 28px;
+    overflow: hidden;
+}
+.num-block {
+    flex: 1;
+    padding: 22px 28px;
+    border-right: 1px solid #F3F3F3;
+}
+.num-block:last-child { border-right: none; }
+.num-block .n {
+    font-size: 32px;
+    font-weight: 800;
+    color: #1a1a2e;
+    line-height: 1;
+    margin-bottom: 6px;
+}
+.num-block .l {
+    font-size: 12px;
+    color: #999;
+}
+.num-block .n.green  { color: #27ae60; }
+.num-block .n.blue   { color: #4A90E2; }
+.num-block .n.teal   { color: #5FBF9F; }
+.num-block .n.orange { color: #E67E22; }
+
+/* ── Middle columns ── */
+.mid-left {
+    background: white;
+    border: 1px solid #EFEFEF;
+    border-radius: 10px;
+    padding: 24px;
+}
+.mid-left .section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+.mid-left .section-hint {
+    font-size: 11px;
+    color: #bbb;
+    margin-bottom: 20px;
+}
+
+.mid-right {
+    background: white;
+    border: 1px solid #EFEFEF;
+    border-radius: 10px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ── Role bars ── */
+.role-bar-row { display: flex; flex-direction: column; gap: 4px; }
+.role-bar-row .rb-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+.role-bar-row .rb-name { font-size: 13px; color: #444; font-weight: 500; }
+.role-bar-row .rb-count { font-size: 13px; font-weight: 700; color: #1a1a2e; }
+.role-bar-track {
+    height: 6px;
+    background: #F3F3F3;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.role-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1s ease;
+}
+
+/* ── Recent users table ── */
+.recent-wrap {
+    background: white;
+    border: 1px solid #EFEFEF;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 28px;
+}
+.recent-wrap .rw-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid #F3F3F3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.recent-wrap .rw-header h6 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+.recent-wrap .rw-header a {
+    font-size: 12px;
+    color: #4A90E2;
+    text-decoration: none;
+}
+.rw-table { width: 100%; border-collapse: collapse; }
+.rw-table thead th {
+    padding: 10px 24px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #bbb;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #FAFAFA;
+    border-bottom: 1px solid #F3F3F3;
+    text-align: left;
+}
+.rw-table tbody td {
+    padding: 14px 24px;
+    font-size: 13px;
+    color: #444;
+    border-bottom: 1px solid #F9F9F9;
+    vertical-align: middle;
+}
+.rw-table tbody tr:last-child td { border-bottom: none; }
+.rw-table tbody tr:hover td { background: #FAFCFF; }
+
+.u-name { font-weight: 600; color: #1a1a2e; font-size: 13px; }
+.u-username { font-size: 11px; color: #bbb; }
+
+/* status pill — simple text, no bold background */
+.pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.pill-green  { background: #eafaf1; color: #27ae60; }
+.pill-grey   { background: #F3F3F3; color: #999; }
+.pill-blue   { background: #eaf2fb; color: #4A90E2; }
+.pill-teal   { background: #eafaf5; color: #5FBF9F; }
+.pill-red    { background: #fdecea; color: #e74c3c; }
+
+.edit-link {
+    font-size: 12px;
+    color: #4A90E2;
+    text-decoration: none;
+    padding: 4px 12px;
+    border: 1px solid #d4e8f7;
+    border-radius: 6px;
+}
+.edit-link:hover { background: #eaf2fb; }
+</style>
+{% endblock %}
 
 {% block body %}
 <div class="d-flex">
-
-    {# Sidebar #}
     {{ include('admin/_sidebar.html.twig') }}
 
-    {# Main content #}
     <div class="admin-content" style="flex:1;">
 
-        {# Top header bar #}
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        {# Top bar #}
+        <div class="dash-topbar">
             <div>
-                <h4 style="font-weight:800;color:var(--text-dark);margin:0;">Tableau de bord</h4>
-                <span style="font-size:13px;color:var(--text-mid);">Vue d'ensemble de la plateforme</span>
+                <h1>Tableau de bord</h1>
+                <span class="date">{{ "now"|date("d/m/Y") }}</span>
             </div>
-            <div class="d-flex align-items-center gap-3">
-                <button class="mb-icon-btn">🔔</button>
+            <div class="admin-info">
+                <div>
+                    <div class="name">{{ app.user.fullName }}</div>
+                    <div class="role">Administrateur</div>
+                </div>
                 <div class="mb-avatar" style="width:38px;height:38px;font-size:14px;">
                     {% if app.user.profileImage %}
                         <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}" alt="">
@@ -25,80 +222,117 @@
                         {{ app.user.fullName|first|upper }}
                     {% endif %}
                 </div>
-                <div>
-                    <div style="font-size:13px;font-weight:700;color:var(--text-dark);">
-                        {{ app.user.fullName }}
-                    </div>
-                    <div style="font-size:11px;color:var(--text-mid);">Administrateur</div>
-                </div>
             </div>
         </div>
 
-        {# Stat cards #}
-        <div class="row g-3 mb-4">
-            <div class="col-md-3">
-                <div class="stat-card">
-                    <div class="stat-icon">👥</div>
-                    <div class="stat-label">Utilisateurs</div>
-                    <div class="stat-value" style="color:var(--primary);">{{ stats.users ?? 0 }}</div>
-                </div>
+        {# Numbers strip #}
+        <div class="numbers-strip">
+            <div class="num-block">
+                <div class="n">{{ stats.users }}</div>
+                <div class="l">Utilisateurs au total</div>
             </div>
-            <div class="col-md-3">
-                <div class="stat-card teal">
-                    <div class="stat-icon">📅</div>
-                    <div class="stat-label">Réservations</div>
-                    <div class="stat-value" style="color:var(--teal);">{{ stats.reservations ?? 0 }}</div>
-                </div>
+            <div class="num-block">
+                <div class="n green">{{ stats.active }}</div>
+                <div class="l">Comptes actifs</div>
             </div>
-            <div class="col-md-3">
-                <div class="stat-card green">
-                    <div class="stat-icon">🛍️</div>
-                    <div class="stat-label">Commandes</div>
-                    <div class="stat-value" style="color:#27ae60;">{{ stats.orders ?? 0 }}</div>
-                </div>
+            <div class="num-block">
+                <div class="n blue">{{ stats.psychologues }}</div>
+                <div class="l">Psychologues</div>
             </div>
-            <div class="col-md-3">
-                <div class="stat-card orange">
-                    <div class="stat-icon">💰</div>
-                    <div class="stat-label">Revenus (DT)</div>
-                    <div class="stat-value" style="color:#E67E22;">{{ stats.revenue ?? '0.00' }}</div>
-                </div>
+            <div class="num-block">
+                <div class="n orange">{{ stats.revenue }} DT</div>
+                <div class="l">Total en wallets</div>
             </div>
         </div>
 
-        {# Charts row #}
-        <div class="row g-3 mb-4">
+        {# Middle row #}
+        <div class="row g-3 mb-0">
+
+            {# Line chart #}
             <div class="col-md-8">
-                <div class="mb-card">
-                    <h6 style="font-weight:700;margin-bottom:16px;">📈 Activité des utilisateurs</h6>
-                    <canvas id="activityChart" height="100"></canvas>
+                <div class="mid-left">
+                    <div class="section-label">Inscriptions</div>
+                    <div class="section-hint">Nouveaux comptes créés par mois</div>
+                    <canvas id="activityChart" height="120"></canvas>
                 </div>
             </div>
+
+            {# Role breakdown #}
             <div class="col-md-4">
-                <div class="mb-card">
-                    <h6 style="font-weight:700;margin-bottom:16px;">🍩 Répartition des rôles</h6>
-                    <canvas id="rolesChart"></canvas>
+                <div class="mid-right">
+                    <div>
+                        <div class="section-label" style="font-size:13px;font-weight:600;color:#333;margin-bottom:4px;">
+                            Répartition
+                        </div>
+                        <div style="font-size:11px;color:#bbb;margin-bottom:20px;">par type de compte</div>
+
+                        {% set total = stats.users > 0 ? stats.users : 1 %}
+
+                        <div class="role-bar-row">
+                            <div class="rb-top">
+                                <span class="rb-name">Patients</span>
+                                <span class="rb-count">{{ stats.patients }}</span>
+                            </div>
+                            <div class="role-bar-track">
+                                <div class="role-bar-fill" style="width:{{ ((stats.patients/total)*100)|round }}%;background:#5FBF9F;"></div>
+                            </div>
+                        </div>
+
+                        <div class="role-bar-row" style="margin-top:16px;">
+                            <div class="rb-top">
+                                <span class="rb-name">Psychologues</span>
+                                <span class="rb-count">{{ stats.psychologues }}</span>
+                            </div>
+                            <div class="role-bar-track">
+                                <div class="role-bar-fill" style="width:{{ ((stats.psychologues/total)*100)|round }}%;background:#4A90E2;"></div>
+                            </div>
+                        </div>
+
+                        <div class="role-bar-row" style="margin-top:16px;">
+                            <div class="rb-top">
+                                <span class="rb-name">Admins</span>
+                                <span class="rb-count">{{ stats.admins }}</span>
+                            </div>
+                            <div class="role-bar-track">
+                                <div class="role-bar-fill" style="width:{{ ((stats.admins/total)*100)|round }}%;background:#E67E22;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="border-top:1px solid #F3F3F3;padding-top:16px;">
+                        <div style="font-size:11px;color:#bbb;margin-bottom:10px;">accès rapide</div>
+                        <a href="{{ path('app_admin_user_new') }}"
+                           style="display:block;padding:10px 14px;background:#4A90E2;color:white;
+                                  border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;
+                                  text-align:center;margin-bottom:8px;">
+                            + Nouvel utilisateur
+                        </a>
+                        <a href="{{ path('app_admin_users') }}"
+                           style="display:block;padding:10px 14px;background:#F3F3F3;color:#444;
+                                  border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;
+                                  text-align:center;">
+                            Voir tous les utilisateurs
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
 
         {# Recent users #}
-        <div class="mb-card">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 style="font-weight:700;margin:0;">👥 Derniers utilisateurs inscrits</h6>
-                <a href="{{ path('app_admin_users') }}" class="btn-mb-outline" style="font-size:12px;padding:7px 16px;">
-                    Voir tous
-                </a>
+        <div class="recent-wrap">
+            <div class="rw-header">
+                <h6>Derniers inscrits</h6>
+                <a href="{{ path('app_admin_users') }}">Voir tous →</a>
             </div>
-            <table class="mb-table">
+            <table class="rw-table">
                 <thead>
                     <tr>
-                        <th>Utilisateur</th>
+                        <th>Nom</th>
                         <th>Email</th>
                         <th>Rôle</th>
                         <th>Statut</th>
                         <th>Inscrit le</th>
-                        <th>Actions</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -106,47 +340,49 @@
                     <tr>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <div class="mb-avatar" style="width:34px;height:34px;font-size:13px;">
+                                <div class="mb-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">
                                     {% if user.profileImage %}
                                         <img src="{{ asset('uploads/profiles/' ~ user.profileImage) }}" alt="">
                                     {% else %}
                                         {{ user.fullName|first|upper }}
                                     {% endif %}
                                 </div>
-                                <span style="font-weight:600;">{{ user.fullName }}</span>
+                                <div>
+                                    <div class="u-name">{{ user.fullName }}</div>
+                                    <div class="u-username">@{{ user.username }}</div>
+                                </div>
                             </div>
                         </td>
-                        <td style="color:var(--text-mid);">{{ user.email }}</td>
+                        <td style="color:#999;">{{ user.email }}</td>
                         <td>
                             {% if 'ROLE_ADMIN' in user.roles %}
-                                <span class="mb-badge mb-badge-red">Admin</span>
+                                <span class="pill pill-red">Admin</span>
                             {% elseif 'ROLE_PSYCHOLOGUE' in user.roles %}
-                                <span class="mb-badge mb-badge-primary">Psychologue</span>
+                                <span class="pill pill-blue">Psychologue</span>
                             {% else %}
-                                <span class="mb-badge mb-badge-teal">Patient</span>
+                                <span class="pill pill-teal">Patient</span>
                             {% endif %}
                         </td>
                         <td>
                             {% if user.status == 'ACTIVE' %}
-                                <span class="mb-badge mb-badge-green">Actif</span>
+                                <span class="pill pill-green">Actif</span>
                             {% else %}
-                                <span class="mb-badge mb-badge-gray">Suspendu</span>
+                                <span class="pill pill-grey">Suspendu</span>
                             {% endif %}
                         </td>
-                        <td style="color:var(--text-mid);font-size:13px;">
-                            {{ user.createdAt|date('d/m/Y') }}
+                        <td style="color:#bbb;font-size:12px;">
+                            {{ user.createdAt ? user.createdAt|date('d/m/Y') : '—' }}
                         </td>
                         <td>
-                            <a href="{{ path('app_admin_user_edit', {id: user.id}) }}"
-                               class="btn-mb-secondary" style="font-size:12px;padding:6px 12px;">
-                                ✏️ Modifier
+                            <a href="{{ path('app_admin_user_edit', {id: user.id}) }}" class="edit-link">
+                                Modifier
                             </a>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" style="text-align:center;color:var(--text-mid);padding:30px;">
-                            Aucun utilisateur trouvé
+                        <td colspan="6" style="text-align:center;color:#ccc;padding:32px;font-size:13px;">
+                            Aucun utilisateur pour le moment.
                         </td>
                     </tr>
                     {% endfor %}
@@ -161,36 +397,40 @@
 {% block javascripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Activity chart
 new Chart(document.getElementById('activityChart'), {
     type: 'line',
     data: {
-        labels: ['Jan','Fév','Mar','Avr','Mai','Jun','Jul'],
+        labels: {{ chartLabels|json_encode|raw }},
         datasets: [{
-            label: 'Utilisateurs',
-            data: [12, 19, 15, 25, 22, 30, 28],
+            label: 'Inscriptions',
+            data: {{ chartData|json_encode|raw }},
             borderColor: '#4A90E2',
-            backgroundColor: 'rgba(74,144,226,0.1)',
+            backgroundColor: 'rgba(74,144,226,0.06)',
             borderWidth: 2,
             fill: true,
-            tension: 0.4
+            tension: 0.4,
+            pointBackgroundColor: '#fff',
+            pointBorderColor: '#4A90E2',
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6
         }]
     },
-    options: { responsive: true, plugins: { legend: { display: false } } }
-});
-
-// Roles chart
-new Chart(document.getElementById('rolesChart'), {
-    type: 'doughnut',
-    data: {
-        labels: ['Patients', 'Psychologues', 'Admins'],
-        datasets: [{
-            data: [70, 25, 5],
-            backgroundColor: ['#5FBF9F', '#4A90E2', '#E67E22'],
-            borderWidth: 0
-        }]
-    },
-    options: { responsive: true, cutout: '65%' }
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: '#F5F5F5' },
+                ticks: { color: '#ccc', font: { size: 11 }, stepSize: 1 }
+            },
+            x: {
+                grid: { display: false },
+                ticks: { color: '#ccc', font: { size: 11 } }
+            }
+        }
+    }
 });
 </script>
 {% endblock %}

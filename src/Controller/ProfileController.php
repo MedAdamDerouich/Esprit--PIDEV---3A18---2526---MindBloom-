@@ -34,6 +34,52 @@ class ProfileController extends AbstractController
         ]);
     }
 
+    #[Route('/profile/photo', name: 'app_profile_photo', methods: ['POST'])]
+    public function uploadPhoto(Request $request, EntityManagerInterface $em): Response
+    {
+        if (!$this->isCsrfTokenValid('upload-photo', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token invalide.');
+            return $this->redirectToRoute('app_profile');
+        }
+
+        $file = $request->files->get('photo');
+        if (!$file) {
+            $this->addFlash('error', 'Aucun fichier reçu.');
+            return $this->redirectToRoute('app_profile');
+        }
+
+        $allowed = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!in_array($file->getMimeType(), $allowed)) {
+            $this->addFlash('error', 'Format non autorisé. Utilisez JPG, PNG ou WebP.');
+            return $this->redirectToRoute('app_profile');
+        }
+
+        if ($file->getSize() > 3 * 1024 * 1024) {
+            $this->addFlash('error', 'Fichier trop volumineux (max 3 Mo).');
+            return $this->redirectToRoute('app_profile');
+        }
+
+        /** @var User $user */
+        $user       = $this->getUser();
+        $uploadsDir = $this->getParameter('kernel.project_dir') . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'profiles';
+
+        if ($user->getProfileImage()) {
+            $old = $uploadsDir . DIRECTORY_SEPARATOR . $user->getProfileImage();
+            if (file_exists($old)) {
+                unlink($old);
+            }
+        }
+
+        $filename = uniqid() . '.' . $file->guessExtension();
+        $file->move($uploadsDir, $filename);
+
+        $user->setProfileImage($filename);
+        $em->flush();
+
+        $this->addFlash('success', 'Photo de profil mise à jour !');
+        return $this->redirectToRoute('app_profile');
+    }
+
     #[Route('/profile/change-password', name: 'app_change_password', methods: ['POST'])]
     public function changePassword(
         Request $request,

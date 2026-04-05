@@ -31,13 +31,35 @@
         {# Avatar + info #}
         <div class="col-md-3">
             <div class="mb-card" style="text-align:center;padding:30px 20px;">
-                <div class="mb-avatar mb-avatar-xl mx-auto mb-3">
-                    {% if app.user.profileImage %}
-                        <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}" alt="">
-                    {% else %}
-                        {{ app.user.fullName|first|upper }}
-                    {% endif %}
+
+                {# Avatar — clickable to trigger file input #}
+                <div id="avatarClickable"
+                     style="position:relative;width:110px;height:110px;margin:0 auto 16px;cursor:pointer;"
+                     onclick="document.getElementById('photoInput').click()" title="Changer la photo">
+                    <div class="mb-avatar mb-avatar-xl" id="avatarPreview"
+                         style="width:110px;height:110px;font-size:38px;border:3px solid var(--teal);">
+                        {% if app.user.profileImage %}
+                            <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}" alt="" id="avatarImg">
+                        {% else %}
+                            <span id="avatarInitial">{{ app.user.fullName|first|upper }}</span>
+                        {% endif %}
+                    </div>
+                    {# Hover overlay #}
+                    <div style="position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,0.35);
+                                display:flex;align-items:center;justify-content:center;
+                                opacity:0;transition:opacity 0.2s;font-size:22px;color:white;"
+                         id="avatarOverlay">📷</div>
                 </div>
+
+                {# Hidden upload form #}
+                <form id="photoForm" method="post"
+                      action="{{ path('app_profile_photo') }}"
+                      enctype="multipart/form-data" style="display:none;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('upload-photo') }}">
+                    <input type="file" id="photoInput" name="photo"
+                           accept="image/jpeg,image/png,image/webp">
+                </form>
+
                 <div style="font-weight:800;font-size:17px;">{{ app.user.fullName }}</div>
                 <div style="color:var(--text-mid);font-size:13px;margin-top:4px;">
                     @{{ app.user.username }}
@@ -51,11 +73,43 @@
                         <span class="mb-badge mb-badge-teal">Patient</span>
                     {% endif %}
                 </div>
-                <button class="btn-mb-outline mt-3" style="font-size:12px;padding:8px 16px;width:100%;">
-                    📷 Changer la photo
-                </button>
+
+                <label for="photoInput"
+                       class="btn-mb-outline mt-3"
+                       style="font-size:12px;padding:8px 16px;width:100%;display:block;
+                              text-align:center;cursor:pointer;">
+                    Changer la photo
+                </label>
+                <div style="font-size:10px;color:#bbb;margin-top:6px;">JPG, PNG, WebP — max 3 Mo</div>
             </div>
         </div>
+
+        {% block javascripts %}
+        <script>
+        const overlay    = document.getElementById('avatarOverlay');
+        const photoInput = document.getElementById('photoInput');
+        const avatarWrap = document.getElementById('avatarClickable');
+
+        avatarWrap.addEventListener('mouseenter', () => overlay.style.opacity = '1');
+        avatarWrap.addEventListener('mouseleave', () => overlay.style.opacity = '0');
+
+        photoInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            // Show local preview instantly
+            const reader = new FileReader();
+            reader.onload = e => {
+                document.getElementById('avatarPreview').innerHTML =
+                    `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+            };
+            reader.readAsDataURL(file);
+
+            // Submit the form to upload
+            document.getElementById('photoForm').submit();
+        });
+        </script>
+        {% endblock %}
 
         {# Edit form #}
         <div class="col-md-9">

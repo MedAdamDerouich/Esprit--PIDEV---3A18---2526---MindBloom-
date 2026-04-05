@@ -1,0 +1,94 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion des commandes - MindBloom Admin{% endblock %}
+
+{% block admin_header %}Gestion des commandes{% endblock %}
+
+{% block admin_content %}
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3 border-0">N° Facture</th>
+                        <th class="py-3 border-0">Date</th>
+                        <th class="py-3 border-0">Client</th>
+                        <th class="py-3 border-0">Montant</th>
+                        <th class="py-3 border-0">Paiement</th>
+                        <th class="py-3 border-0">Statut</th>
+                        <th class="py-3 border-0 pe-4 text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for facture in factures %}
+                        <tr>
+                            <td class="ps-4 py-4 border-0">
+                                <span class="fw-bold">#{{ facture.id }}</span>
+                            </td>
+                            <td class="py-4 border-0 small text-muted">
+                                {{ facture.dateFacture|date('d/m/Y H:i') }}
+                            </td>
+                            <td class="py-4 border-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 12px;">
+                                        {{ facture.user.fullName|first|upper }}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 small fw-bold">{{ facture.user.fullName }}</h6>
+                                        <small class="text-muted" style="font-size: 11px;">{{ facture.user.email }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4 border-0 fw-bold">
+                                {{ facture.montantTotal|number_format(2, ',', ' ') }} DT
+                            </td>
+                            <td class="py-4 border-0 small">
+                                <span class="badge bg-light text-dark border rounded-pill px-2">
+                                    {{ facture.typePaiement }}
+                                </span>
+                            </td>
+                            <td class="py-4 border-0">
+                                <span class="badge {{ facture.statutLivraison == 'ENVOYE' ? 'bg-success' : (facture.statutLivraison == 'ANNULE' ? 'bg-danger' : 'bg-warning') }} rounded-pill px-3 py-1 text-uppercase small text-white" style="font-size: 10px;">
+                                    {{ facture.statutLivraison == 'ENVOYE' ? 'Expédiée' : (facture.statutLivraison == 'ANNULE' ? 'Annulée' : 'En attente') }}
+                                </span>
+                            </td>
+                            <td class="pe-4 py-4 border-0 text-end">
+                                <div class="btn-group shadow-sm rounded-pill overflow-hidden border">
+                                    <a href="{{ path('app_order_show', {id: facture.id}) }}" class="btn btn-sm btn-white border-0 py-2 px-3 bg-white" title="Voir">
+                                        <i class="bi bi-eye text-primary"></i>
+                                    </a>
+                                    {% if facture.statutLivraison == 'NON_ENVOYE' %}
+                                        <form action="{{ path('app_admin_order_ship', {id: facture.id}) }}" method="POST" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-white border-0 py-2 px-3 bg-white border-start" title="Expédier" onclick="return confirm('Expédier cette commande ?')">
+                                                <i class="bi bi-truck text-success"></i>
+                                            </button>
+                                        </form>
+                                        <form action="{{ path('app_admin_order_cancel', {id: facture.id}) }}" method="POST" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-white border-0 py-2 px-3 bg-white border-start" title="Annuler" onclick="return confirm('Annuler cette commande ?')">
+                                                <i class="bi bi-x-circle text-danger"></i>
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                Aucune commande à afficher.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.btn-white:hover {
+    background-color: #f8f9fa !important;
+}
+</style>
+{% endblock %}

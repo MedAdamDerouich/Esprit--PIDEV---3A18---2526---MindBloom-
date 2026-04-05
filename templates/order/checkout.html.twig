@@ -1,0 +1,129 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Finaliser ma commande - MindBloom{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="h3 fw-bold mb-4">Finaliser ma commande</h1>
+            
+            <form method="POST">
+                <div class="row">
+                    <div class="col-md-7 mb-4">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body p-4 p-md-5">
+                                <h5 class="fw-bold mb-4">Informations de livraison</h5>
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold small text-uppercase">Adresse complète</label>
+                                    <textarea name="adresse" rows="4" class="form-control rounded-3 bg-light border-0 py-3" placeholder="Numéro, rue, appartement, code postal, ville..." required></textarea>
+                                </div>
+                                <h5 class="fw-bold mb-4 pt-3">Mode de paiement</h5>
+                                <div class="payment-methods">
+                                    <div class="form-check p-0 mb-3 border rounded-3 overflow-hidden position-relative transition-hover">
+                                        <input class="form-check-input d-none h-100 w-100 position-absolute cursor-pointer opacity-0" type="radio" name="paiement" id="paiement1" value="CARTE_BANCAIRE" checked>
+                                        <label class="form-check-label d-flex align-items-center p-3 gap-3 cursor-pointer" for="paiement1">
+                                            <i class="bi bi-credit-card fs-4 text-primary"></i>
+                                            <div>
+                                                <span class="d-block fw-bold mb-0">Carte Bancaire / VISA / Mastercard</span>
+                                                <small class="text-muted">Paiement ultra-sécurisé</small>
+                                            </div>
+                                            <i class="bi bi-check-circle-fill ms-auto text-success fs-5 check-icon d-none"></i>
+                                        </label>
+                                    </div>
+                                    <div class="form-check p-0 border rounded-3 overflow-hidden position-relative transition-hover">
+                                        <input class="form-check-input d-none h-100 w-100 position-absolute cursor-pointer opacity-0" type="radio" name="paiement" id="paiement2" value="ESPECES">
+                                        <label class="form-check-label d-flex align-items-center p-3 gap-3 cursor-pointer" for="paiement2">
+                                            <i class="bi bi-cash fs-4 text-dark"></i>
+                                            <div>
+                                                <span class="d-block fw-bold mb-0">Paiement à la livraison</span>
+                                                <small class="text-muted">Réglez directement au transporteur</small>
+                                            </div>
+                                            <i class="bi bi-check-circle-fill ms-auto text-success fs-5 check-icon d-none"></i>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-5 mb-4">
+                        <div class="card border-0 shadow-sm rounded-4 mb-4">
+                            <div class="card-body p-4">
+                                <h5 class="fw-bold mb-4">Articles</h5>
+                                <div class="mb-4">
+                                    {% for item in items %}
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="bg-light rounded-3 p-1 me-3 position-relative" style="width: 50px; height: 50px;">
+                                                {% if item.produit.image %}
+                                                    <img src="{{ asset('uploads/produits/' ~ item.produit.image) }}" class="img-fluid rounded-3 h-100 w-100" style="object-fit: cover;" alt="{{ item.produit.nom }}">
+                                                {% endif %}
+                                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark shadow-sm">
+                                                    {{ item.quantite }}
+                                                </span>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0 fw-bold small text-truncate" style="max-width: 150px;">{{ item.produit.nom }}</h6>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="fw-bold small">{{ item.total|number_format(2, ',', ' ') }} DT</span>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Sous-total</span>
+                                    <span class="fw-bold text-dark">{{ subtotal|number_format(2, ',', ' ') }} DT</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">TVA (7%)</span>
+                                    <span class="fw-bold text-dark">{{ tva|number_format(2, ',', ' ') }} DT</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-4 pb-4 border-bottom">
+                                    <span class="text-muted small">Livraison</span>
+                                    <span class="text-primary fw-bold small">{{ shipping|number_format(2, ',', ' ') }} DT</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-4">
+                                    <span class="h5 fw-bold">Total</span>
+                                    <span class="h5 fw-bold text-primary">{{ total|number_format(2, ',', ' ') }} DT</span>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm mb-3">
+                                    Confirmer la commande
+                                </button>
+                                
+                                <a href="{{ path('app_cart_index') }}" class="btn btn-outline-light text-muted w-100 rounded-pill py-2 border-0 small">
+                                    <i class="bi bi-arrow-left me-1"></i> Modifier le panier
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.input-group-text, .form-control {
+    box-shadow: none !important;
+}
+.payment-methods .form-check-input:checked + .form-check-label {
+    background-color: rgba(74, 144, 226, 0.05);
+    border: 1px solid rgba(74, 144, 226, 0.5);
+    z-index: 10;
+}
+.payment-methods .form-check-input:checked + .form-check-label .check-icon {
+    display: block !important;
+}
+.cursor-pointer {
+    cursor: pointer;
+}
+.transition-hover {
+    transition: all 0.2s ease-in-out;
+}
+.transition-hover:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+</style>
+{% endblock %}

@@ -1,24 +1,18 @@
-{% extends 'base.html.twig' %}
+{% extends 'admin/base.html.twig' %}
 
-{% block title %}Modifier Produit - MindBloomAdmin{% endblock %}
+{% block title %}Modifier Produit - MindBloom Admin{% endblock %}
+{% block admin_header %}Modifier: {{ produit.nom }}{% endblock %}
 
-{% block body %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="mb-4">
-                <a href="{{ path('app_admin_produit_index') }}" class="text-muted text-decoration-none">
-                    <i class="bi bi-arrow-left me-1"></i> Retour à la liste
-                </a>
-                <h1 class="h3 font-weight-bold mt-2">Modifier: {{ produit.nom }}</h1>
-            </div>
+{% block admin_content %}
+<div class="mb-4">
+    <a href="{{ path('app_admin_produit_index') }}" class="btn btn-link text-muted p-0 text-decoration-none">
+        <i class="bi bi-arrow-left me-1"></i> Retour à la liste
+    </a>
+</div>
 
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="card-body p-4 p-md-5">
-                    {{ include('admin/produit/_form.html.twig', {'button_label': 'Mettre à jour le produit'}) }}
-                </div>
-            </div>
-        </div>
+<div class="card border-0 shadow-sm rounded-4" style="max-width: 800px;">
+    <div class="card-body p-4 p-md-5">
+        {{ include('admin/produit/_form.html.twig', {'button_label': 'Mettre à jour'}) }}
     </div>
 </div>
 {% endblock %}

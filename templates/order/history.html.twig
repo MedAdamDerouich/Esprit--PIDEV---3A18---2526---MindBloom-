@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Historique des commandes - MindBloom{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5 pb-3 border-bottom">
+        <h1 class="h3 fw-bold mb-0">Mes commandes et factures</h1>
+        <a href="{{ path('app_produit_index') }}" class="btn btn-primary rounded-pill px-4">
+            <i class="bi bi-cart3 me-1"></i> Acheter plus
+        </a>
+    </div>
+
+    {% if factures|length > 0 %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for facture in factures %}
+                <div class="col">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden transition-hover">
+                        <div class="card-header bg-white border-0 px-4 pt-4 d-flex justify-content-between align-items-center">
+                            <span class="badge {{ facture.statutLivraison == 'ENVOYE' ? 'bg-success' : (facture.statutLivraison == 'ANNULE' ? 'bg-danger' : 'bg-warning') }} rounded-pill px-3 py-1 text-uppercase small text-white">
+                                {{ facture.statutLivraison == 'ENVOYE' ? 'Expédiée' : (facture.statutLivraison == 'ANNULE' ? 'Annulée' : 'En attente') }}
+                            </span>
+                            <span class="small text-muted fw-bold">#{{ facture.id }}</span>
+                        </div>
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-3">{{ facture.montantTotal|number_format(2, ',', ' ') }} DT</h5>
+                            <div class="text-muted small mb-3">
+                                <p class="mb-1"><i class="bi bi-calendar2-check me-2"></i> Date: <strong>{{ facture.dateFacture|date('d F Y') }}</strong></p>
+                                <p class="mb-0"><i class="bi bi-wallet2 me-2"></i> Paiement: <strong>{{ facture.typePaiement }}</strong></p>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="avatar-group d-flex overflow-hidden">
+                                    {% for cmd in facture.commandes|slice(0, 3) %}
+                                        <div class="bg-light rounded-circle p-1 border border-white" style="width: 35px; height: 35px; margin-right: -10px; z-index: {{ 10 - loop.index }};">
+                                            {% if cmd.produit.image %}
+                                                <img src="{{ asset('uploads/produits/' ~ cmd.produit.image) }}" class="rounded-circle h-100 w-100" style="object-fit: cover;" alt="{{ cmd.produit.nom }}">
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                    {% if facture.commandes|length > 3 %}
+                                        <div class="bg-dark text-white rounded-circle p-1 border border-white d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; margin-right: -10px; z-index: 1;">
+                                            <span style="font-size: 10px;">+{{ facture.commandes|length - 3 }}</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light border-0 p-4 pt-0 text-center">
+                            <a href="{{ path('app_order_show', {id: facture.id}) }}" class="btn btn-outline-dark rounded-pill w-100 py-2 border shadow-sm">
+                                <i class="bi bi-receipt me-1"></i> Voir la facture
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center mt-4">
+            <div class="mb-4">
+                <i class="bi bi-receipt-cutoff display-1 text-muted opacity-25"></i>
+            </div>
+            <h2 class="h4 fw-bold">Aucune commande trouvée</h2>
+            <p class="text-muted mb-4">Vous n'avez pas encore passé de commande sur MindBloom.</p>
+            <a href="{{ path('app_produit_index') }}" class="btn btn-primary rounded-pill px-5">
+                Explorer nos produits
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.transition-hover {
+    transition: all 0.3s ease;
+}
+.transition-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.08)!important;
+}
+</style>
+{% endblock %}

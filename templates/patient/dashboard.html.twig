@@ -23,15 +23,15 @@
         <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Rendez-vous</a>
         <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Tests</a>
         <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Événements</a>
-        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Mes Réservations</a>
+        <a href="{{ path('app_order_history') }}" style="font-size:14px;color:#2C3E50;text-decoration:none;">Mes Commandes</a>
     </nav>
 
     {# Right actions #}
     <div style="display:flex;align-items:center;gap:20px;flex-shrink:0;">
 
         {# Cart #}
-        <button style="background:#E8E8E8;border:none;border-radius:10px;padding:10px 15px;
-                       font-size:20px;cursor:pointer;line-height:1;">🛒</button>
+        <a href="{{ path('app_cart_index') }}" style="background:#E8E8E8;border:none;border-radius:10px;padding:10px 15px;
+                       font-size:20px;cursor:pointer;line-height:1;text-decoration:none;">🛒</a>
 
         {# Wallet badge #}
         <div style="display:flex;align-items:center;gap:8px;background:#EDF9F5;

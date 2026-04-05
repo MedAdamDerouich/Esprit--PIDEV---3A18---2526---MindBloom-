@@ -1,0 +1,74 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Gestion des avis - {{ produit.nom }}{% endblock %}
+
+{% block admin_header %}Gestion des avis pour "{{ produit.nom }}"{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <a href="{{ path('app_admin_produit_index') }}" class="btn btn-link text-muted p-0 text-decoration-none">
+        <i class="bi bi-arrow-left me-1"></i> Retour aux produits
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3 border-0">Client</th>
+                        <th class="py-3 border-0">Note</th>
+                        <th class="py-3 border-0">Commentaire</th>
+                        <th class="py-3 border-0">Date</th>
+                        <th class="py-3 border-0 pe-4 text-end">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for feedback in feedbacks %}
+                        <tr>
+                            <td class="ps-4 py-4 border-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 12px;">
+                                        {{ feedback.user ? (feedback.user.fullName|first|upper) : '?' }}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 small fw-bold">{{ feedback.user ? feedback.user.fullName : 'Utilisateur supprimé' }}</h6>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4 border-0">
+                                <div class="text-warning">
+                                    {% for i in 1..5 %}
+                                        <i class="bi bi-star{{ i <= feedback.note ? '-fill' : '' }}"></i>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="py-4 border-0 small text-muted">
+                                {{ feedback.commentaire|slice(0, 50) }}{{ feedback.commentaire|length > 50 ? '...' : '' }}
+                            </td>
+                            <td class="py-4 border-0 small text-muted">
+                                {{ feedback.dateFeedback|date('d/m/Y H:i') }}
+                            </td>
+                            <td class="pe-4 py-4 border-0 text-end">
+                                <form action="{{ path('app_admin_feedback_delete', {'id': feedback.id}) }}" method="post" onsubmit="return confirm('Supprimer ce feedback ?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_feedback' ~ feedback.id) }}">
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                        <i class="bi bi-trash me-1"></i> Supprimer
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                Aucun avis déposé pour ce produit.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

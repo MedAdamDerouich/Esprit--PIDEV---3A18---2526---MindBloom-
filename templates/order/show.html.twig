@@ -7,9 +7,15 @@
     <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-8">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <a href="{{ path('app_order_history') }}" class="btn btn-link text-muted p-0 text-decoration-none">
-                    <i class="bi bi-arrow-left me-1"></i> Retour à mes commandes
-                </a>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_admin_order_index') }}" class="btn btn-link text-muted p-0 text-decoration-none">
+                        <i class="bi bi-arrow-left me-1"></i> Retour à la gestion admin
+                    </a>
+                {% else %}
+                    <a href="{{ path('app_order_history') }}" class="btn btn-link text-muted p-0 text-decoration-none">
+                        <i class="bi bi-arrow-left me-1"></i> Retour à mes commandes
+                    </a>
+                {% endif %}
                 <button class="btn btn-outline-dark rounded-pill px-4" onclick="window.print()">
                     <i class="bi bi-printer me-2"></i> Imprimer
                 </button>

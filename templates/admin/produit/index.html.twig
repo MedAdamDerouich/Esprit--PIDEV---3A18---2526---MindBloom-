@@ -56,7 +56,10 @@
                         </td>
                         <td class="text-center pe-4 border-0">
                             <div class="btn-group shadow-sm rounded-pill overflow-hidden border">
-                                <a href="{{ path('app_admin_produit_edit', {'id': produit.id}) }}" class="btn btn-sm btn-white bg-white border-0 py-2 px-3" title="Modifier">
+                                <a href="{{ path('app_admin_produit_feedbacks', {'id': produit.id}) }}" class="btn btn-sm btn-white bg-white border-0 py-2 px-3" title="Gérer les avis">
+                                    <i class="bi bi-chat-left-dots text-info"></i>
+                                </a>
+                                <a href="{{ path('app_admin_produit_edit', {'id': produit.id}) }}" class="btn btn-sm btn-white bg-white border-0 border-start py-2 px-3" title="Modifier">
                                     <i class="bi bi-pencil-square text-primary"></i>
                                 </a>
                                 <form action="{{ path('app_admin_produit_delete', {'id': produit.id}) }}" method="post" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');">

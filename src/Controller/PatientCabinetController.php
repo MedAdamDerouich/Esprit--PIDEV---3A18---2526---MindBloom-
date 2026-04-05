@@ -19,4 +19,28 @@ class PatientCabinetController extends AbstractController
             'cabinets' => $cabinets,
         ]);
     }
+
+    #[Route('/patient/cabinets/{id}/reserver', name: 'app_patient_cabinet_reserver')]
+    public function reserver(int $id, CabinetRepository $cabinetRepository, \App\Repository\CreneauRepository $creneauRepository): Response
+    {
+        $cabinet = $cabinetRepository->find($id);
+
+        if (!$cabinet) {
+            throw $this->createNotFoundException('Cabinet introuvable');
+        }
+
+        // On récupère les créneaux du cabinet
+        $creneaux = [];
+        if ($cabinet->getPsychologue()) {
+            $creneaux = $creneauRepository->findBy(
+                ['cabinet' => $cabinet],
+                ['dateCreneau' => 'ASC', 'heureDebut' => 'ASC']
+            );
+        }
+
+        return $this->render('patient/reserver.html.twig', [
+            'cabinet' => $cabinet,
+            'creneaux' => $creneaux,
+        ]);
+    }
 }

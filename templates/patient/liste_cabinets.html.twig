@@ -128,7 +128,7 @@
                         <div style="flex:1;"></div>
 
                         {# Bouton Réserver #}
-                        <a href="#" onclick="alert('Module de prise de Rendez-vous non fusionné'); return false;" style="display:block; text-align:center; background:#5FBF9F; color:white; font-size:15px; font-weight:bold; padding:12px 0; border-radius:15px; text-decoration:none; width:100%; transition: background 0.2s;" onmouseover="this.style.background='#4DAE8E'" onmouseout="this.style.background='#5FBF9F'">Prenez un Rendez-Vous</a>
+                        <a href="{{ path('app_patient_cabinet_reserver', {id: cabinet.idCabinet}) }}" style="display:block; text-align:center; background:#5FBF9F; color:white; font-size:15px; font-weight:bold; padding:12px 0; border-radius:15px; text-decoration:none; width:100%; transition: background 0.2s;" onmouseover="this.style.background='#4DAE8E'" onmouseout="this.style.background='#5FBF9F'">Prenez un Rendez-Vous</a>
 
                     </div>
                 </div>

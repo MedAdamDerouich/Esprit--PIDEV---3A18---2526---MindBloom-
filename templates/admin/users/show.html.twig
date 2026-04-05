@@ -1,0 +1,308 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ user.fullName }} — MindBloom{% endblock %}
+
+{% block stylesheets %}
+<style>
+.show-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #EFEFEF;
+}
+.show-header h4 { font-weight: 800; margin: 0; font-size: 18px; color: #1a1a2e; }
+.show-header span { font-size: 13px; color: #aaa; }
+.btn-back {
+    padding: 8px 16px;
+    background: #F1F5F9;
+    color: #475569;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.btn-back:hover { background: #E2E8F0; color: #475569; }
+
+/* Profile card */
+.profile-card {
+    background: white;
+    border: 1px solid #EFEFEF;
+    border-radius: 14px;
+    padding: 32px 24px;
+    text-align: center;
+}
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #5FBF9F, #4A90E2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 800;
+    font-size: 36px;
+    margin: 0 auto 16px;
+    overflow: hidden;
+}
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-name { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 2px; }
+.profile-username { font-size: 13px; color: #aaa; margin-bottom: 16px; }
+
+.profile-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+.profile-status.active { background: #eafaf1; color: #27ae60; }
+.profile-status.suspended { background: #fdecea; color: #e74c3c; }
+.profile-status .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.toggle-form { margin-top: 8px; }
+.btn-toggle-status {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+.btn-toggle-status:hover { opacity: 0.85; }
+.btn-toggle-status.suspend { background: #fdecea; color: #e74c3c; }
+.btn-toggle-status.activate { background: #eafaf5; color: #27ae60; }
+
+.btn-delete-full {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid #f0d0cc;
+    background: white;
+    color: #e74c3c;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.btn-delete-full:hover { background: #fdecea; border-color: #e74c3c; }
+
+/* Info card */
+.info-card {
+    background: white;
+    border: 1px solid #EFEFEF;
+    border-radius: 14px;
+    padding: 28px;
+}
+.info-card h5 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 0 0 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #F3F3F3;
+}
+
+.info-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid #FAFAFA;
+}
+.info-row:last-child { border-bottom: none; }
+
+.info-label {
+    width: 160px;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.info-label svg { color: #c0c4d0; flex-shrink: 0; }
+
+.info-value {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a1a2e;
+}
+.info-value.muted { color: #ccc; font-style: italic; }
+
+.role-pill {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.role-patient    { background: #eafaf5; color: #5FBF9F; }
+.role-psy        { background: #eaf2fb; color: #4A90E2; }
+.role-admin      { background: #fdecea; color: #e74c3c; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {{ include('admin/_sidebar.html.twig') }}
+
+    <div class="admin-content" style="flex:1;">
+
+        {# Header #}
+        <div class="show-header">
+            <a href="{{ path('app_admin_users') }}" class="btn-back">
+                &larr; Retour
+            </a>
+            <div>
+                <h4>Détails de l'utilisateur</h4>
+                <span>Consultation en lecture seule</span>
+            </div>
+        </div>
+
+        <div class="row g-4">
+
+            {# Left — Profile + Status #}
+            <div class="col-md-4">
+                <div class="profile-card">
+                    <div class="profile-avatar">
+                        {% if user.profileImage %}
+                            <img src="{{ asset('uploads/profiles/' ~ user.profileImage) }}" alt="">
+                        {% else %}
+                            {{ user.fullName|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="profile-name">{{ user.fullName }}</div>
+                    <div class="profile-username">@{{ user.username }}</div>
+
+                    <div class="profile-status {{ user.status == 'ACTIVE' ? 'active' : 'suspended' }}">
+                        <span class="status-dot"></span>
+                        {{ user.status == 'ACTIVE' ? 'Actif' : 'Suspendu' }}
+                    </div>
+
+                    {% if 'ROLE_ADMIN' in user.roles %}
+                        <span class="role-pill role-admin">Administrateur</span>
+                    {% elseif 'ROLE_PSYCHOLOGUE' in user.roles %}
+                        <span class="role-pill role-psy">Psychologue</span>
+                    {% else %}
+                        <span class="role-pill role-patient">Patient</span>
+                    {% endif %}
+
+                    <form method="post" action="{{ path('app_admin_user_toggle', {id: user.id}) }}" class="toggle-form">
+                        <input type="hidden" name="_token" value="{{ csrf_token('toggle-user-' ~ user.id) }}">
+                        <button type="submit"
+                                class="btn-toggle-status {{ user.status == 'ACTIVE' ? 'suspend' : 'activate' }}">
+                            {{ user.status == 'ACTIVE' ? 'Suspendre le compte' : 'Activer le compte' }}
+                        </button>
+                    </form>
+
+                    <form method="post" action="{{ path('app_admin_user_delete', {id: user.id}) }}" class="toggle-form"
+                          onsubmit="return confirm('Supprimer cet utilisateur ? Cette action est irréversible.');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete-user-' ~ user.id) }}">
+                        <button type="submit" class="btn-delete-full">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                <path d="M10 11v6"/><path d="M14 11v6"/>
+                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                            </svg>
+                            Supprimer le compte
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            {# Right — Read-only info #}
+            <div class="col-md-8">
+                <div class="info-card">
+                    <h5>Informations personnelles</h5>
+
+                    <div class="info-row">
+                        <div class="info-label">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            Nom complet
+                        </div>
+                        <div class="info-value">{{ user.fullName }}</div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                            Email
+                        </div>
+                        <div class="info-value">{{ user.email }}</div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.11 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                            </svg>
+                            Téléphone
+                        </div>
+                        <div class="info-value {{ user.phone ? '' : 'muted' }}">{{ user.phone ?? 'Non renseigné' }}</div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            Date de naissance
+                        </div>
+                        <div class="info-value {{ user.dateOfBirth ? '' : 'muted' }}">
+                            {{ user.dateOfBirth ? user.dateOfBirth|date('d/m/Y') : 'Non renseignée' }}
+                        </div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            Adresse
+                        </div>
+                        <div class="info-value {{ user.address ? '' : 'muted' }}">{{ user.address ?? 'Non renseignée' }}</div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-label">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            Inscrit le
+                        </div>
+                        <div class="info-value">
+                            {{ user.createdAt ? user.createdAt|date('d/m/Y à H:i') : '—' }}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

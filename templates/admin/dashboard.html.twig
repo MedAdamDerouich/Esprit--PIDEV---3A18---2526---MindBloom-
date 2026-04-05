@@ -301,15 +301,9 @@
 
                     <div style="border-top:1px solid #F3F3F3;padding-top:16px;">
                         <div style="font-size:11px;color:#bbb;margin-bottom:10px;">accès rapide</div>
-                        <a href="{{ path('app_admin_user_new') }}"
+                        <a href="{{ path('app_admin_users') }}"
                            style="display:block;padding:10px 14px;background:#4A90E2;color:white;
                                   border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;
-                                  text-align:center;margin-bottom:8px;">
-                            + Nouvel utilisateur
-                        </a>
-                        <a href="{{ path('app_admin_users') }}"
-                           style="display:block;padding:10px 14px;background:#F3F3F3;color:#444;
-                                  border-radius:8px;font-size:13px;font-weight:500;text-decoration:none;
                                   text-align:center;">
                             Voir tous les utilisateurs
                         </a>
@@ -332,7 +326,7 @@
                         <th>Rôle</th>
                         <th>Statut</th>
                         <th>Inscrit le</th>
-                        <th></th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -374,8 +368,8 @@
                             {{ user.createdAt ? user.createdAt|date('d/m/Y') : '—' }}
                         </td>
                         <td>
-                            <a href="{{ path('app_admin_user_edit', {id: user.id}) }}" class="edit-link">
-                                Modifier
+                            <a href="{{ path('app_admin_user_show', {id: user.id}) }}" class="edit-link">
+                                Détails
                             </a>
                         </td>
                     </tr>

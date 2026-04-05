@@ -28,17 +28,6 @@
     color: #aaa;
     margin: 0;
 }
-.btn-new {
-    padding: 10px 20px;
-    background: #4A90E2;
-    color: white;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: background 0.2s;
-}
-.btn-new:hover { background: #357abd; color: white; }
 
 /* Filters bar */
 .filters-bar {
@@ -79,122 +68,114 @@
 /* Cards grid */
 .users-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 18px;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 22px;
 }
 
 /* User card */
 .user-card {
     background: white;
     border: 1px solid #EFEFEF;
-    border-radius: 12px;
-    padding: 22px 20px 18px;
+    border-radius: 16px;
+    padding: 28px 26px 22px;
     display: flex;
     flex-direction: column;
-    gap: 0;
     animation: fadeUp 0.35s ease both;
-    transition: box-shadow 0.2s, transform 0.15s;
+    transition: box-shadow 0.25s, transform 0.2s;
     position: relative;
 }
 .user-card:hover {
-    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.09);
     transform: translateY(-3px);
 }
 
 /* Status dot top-right */
 .card-status-dot {
     position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 8px;
-    height: 8px;
+    top: 20px;
+    right: 20px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
+    box-shadow: 0 0 0 3px white;
 }
-.dot-active    { background: #2ecc71; }
-.dot-suspended { background: #e74c3c; }
+.dot-active    { background: #2ecc71; box-shadow: 0 0 0 3px white, 0 0 0 5px rgba(46,204,113,0.2); }
+.dot-suspended { background: #e74c3c; box-shadow: 0 0 0 3px white, 0 0 0 5px rgba(231,76,60,0.2); }
 .dot-inactive  { background: #bbb; }
 
 /* Avatar + name */
 .card-top {
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 14px;
+    gap: 16px;
+    margin-bottom: 18px;
 }
 .card-avatar {
-    width: 48px;
-    height: 48px;
+    width: 62px;
+    height: 62px;
     border-radius: 50%;
-    background: #EDF2F7;
+    background: linear-gradient(135deg, #e8f0fe, #d6e4f7);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 22px;
+    font-weight: 800;
     color: #4A90E2;
     flex-shrink: 0;
     overflow: hidden;
+    border: 3px solid #f0f4fa;
 }
 .card-avatar img { width:100%; height:100%; object-fit:cover; }
-.card-name  { font-size: 14px; font-weight: 700; color: #1a1a2e; }
-.card-username { font-size: 11px; color: #bbb; margin-top: 1px; }
+.card-name  { font-size: 16px; font-weight: 700; color: #1a1a2e; letter-spacing: -0.2px; }
+.card-username { font-size: 12px; color: #aaa; margin-top: 2px; }
 
 /* Info rows */
 .card-info {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 12px 0;
-    border-top: 1px solid #F5F5F5;
-    border-bottom: 1px solid #F5F5F5;
-    margin-bottom: 14px;
+    gap: 10px;
+    padding: 16px 0;
+    border-top: 1px solid #F2F2F2;
+    border-bottom: 1px solid #F2F2F2;
+    margin-bottom: 18px;
 }
 .card-info-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: #888;
+    gap: 10px;
+    font-size: 13px;
+    color: #777;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
 }
-.card-info-row span.icon { font-size: 13px; flex-shrink: 0; }
+.card-info-row .info-icon {
+    flex-shrink: 0;
+    color: #b0b5c3;
+}
 
 /* Role + actions */
 .card-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 10px;
 }
 
 .role-pill {
     display: inline-block;
-    padding: 3px 10px;
+    padding: 4px 14px;
     border-radius: 20px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
 }
 .role-patient    { background: #eafaf5; color: #5FBF9F; }
 .role-psy        { background: #eaf2fb; color: #4A90E2; }
 .role-admin      { background: #fdecea; color: #e74c3c; }
 
-.card-actions { display: flex; gap: 6px; }
-.btn-edit {
-    padding: 5px 12px;
-    border: 1px solid #E0E0E0;
-    border-radius: 6px;
-    font-size: 12px;
-    color: #555;
-    text-decoration: none;
-    background: white;
-    transition: border-color 0.15s, color 0.15s;
-}
-.btn-edit:hover { border-color: #4A90E2; color: #4A90E2; }
 .btn-toggle {
-    padding: 5px 12px;
-    border-radius: 6px;
+    padding: 7px 14px;
+    border-radius: 7px;
     font-size: 12px;
     font-weight: 600;
     border: none;
@@ -204,6 +185,35 @@
 .btn-toggle:hover { opacity: 0.8; }
 .btn-toggle.suspend { background: #fdecea; color: #e74c3c; }
 .btn-toggle.activate { background: #eafaf5; color: #27ae60; }
+
+.card-actions { display: flex; gap: 6px; align-items: center; }
+.btn-view {
+    padding: 7px 14px;
+    border: 1px solid #E0E0E0;
+    border-radius: 7px;
+    font-size: 12px;
+    color: #555;
+    text-decoration: none;
+    background: white;
+    transition: border-color 0.15s, color 0.15s;
+}
+.btn-view:hover { border-color: #4A90E2; color: #4A90E2; }
+
+.btn-delete {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #f0d0cc;
+    border-radius: 7px;
+    background: white;
+    color: #e74c3c;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    padding: 0;
+}
+.btn-delete:hover { background: #fdecea; border-color: #e74c3c; }
 
 /* No results */
 .no-results {
@@ -228,12 +238,11 @@
                 <h1>Utilisateurs</h1>
                 <p>{{ users|length }} compte{{ users|length > 1 ? 's' : '' }} enregistré{{ users|length > 1 ? 's' : '' }}</p>
             </div>
-            <a href="{{ path('app_admin_user_new') }}" class="btn-new">+ Nouvel utilisateur</a>
         </div>
 
         {# Filters #}
         <div class="filters-bar">
-            <input type="text" id="searchInput" placeholder="Rechercher par nom, email, username…"
+            <input type="text" id="searchInput" placeholder="Rechercher par nom, email, username..."
                    oninput="filterCards()">
             <select id="roleFilter" onchange="filterCards()">
                 <option value="">Tous les rôles</option>
@@ -280,20 +289,26 @@
                 {# Info #}
                 <div class="card-info">
                     <div class="card-info-row">
-                        <span class="icon">✉</span>
+                        <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+                        </svg>
                         <span>{{ user.email }}</span>
                     </div>
                     <div class="card-info-row">
-                        <span class="icon">📞</span>
+                        <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                        </svg>
                         <span>{{ user.phone ?? 'Non renseigné' }}</span>
                     </div>
                     <div class="card-info-row">
-                        <span class="icon">📅</span>
+                        <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
                         <span>Inscrit le {{ user.createdAt ? user.createdAt|date('d/m/Y') : '—' }}</span>
                     </div>
                 </div>
 
-                {# Footer #}
+                {# Footer: role + view details + toggle + delete #}
                 <div class="card-footer">
                     {% if 'ROLE_ADMIN' in user.roles %}
                         <span class="role-pill role-admin">Admin</span>
@@ -304,8 +319,8 @@
                     {% endif %}
 
                     <div class="card-actions">
-                        <a href="{{ path('app_admin_user_edit', {id: user.id}) }}" class="btn-edit">
-                            Modifier
+                        <a href="{{ path('app_admin_user_show', {id: user.id}) }}" class="btn-view">
+                            Détails
                         </a>
                         <form method="post" action="{{ path('app_admin_user_toggle', {id: user.id}) }}">
                             <input type="hidden" name="_token"
@@ -313,6 +328,20 @@
                             <button type="submit"
                                     class="btn-toggle {{ user.status == 'ACTIVE' ? 'suspend' : 'activate' }}">
                                 {{ user.status == 'ACTIVE' ? 'Suspendre' : 'Activer' }}
+                            </button>
+                        </form>
+                        <form method="post" action="{{ path('app_admin_user_delete', {id: user.id}) }}"
+                              onsubmit="return confirm('Supprimer cet utilisateur ? Cette action est irréversible.');">
+                            <input type="hidden" name="_token"
+                                   value="{{ csrf_token('delete-user-' ~ user.id) }}">
+                            <button type="submit" class="btn-delete" title="Supprimer">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                    <path d="M10 11v6"/>
+                                    <path d="M14 11v6"/>
+                                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                                </svg>
                             </button>
                         </form>
                     </div>

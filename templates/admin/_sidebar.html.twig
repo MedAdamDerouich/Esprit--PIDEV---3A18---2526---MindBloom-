@@ -20,7 +20,8 @@
         <a href="#">
             <span class="nav-icon">📅</span> Évènements
         </a>
-        <a href="#">
+        <a href="{{ path('app_admin_produit_index') }}"
+           class="{{ app.request.attributes.get('_route') starts with 'app_admin_produit' ? 'active' : '' }}">
             <span class="nav-icon">🛍️</span> Produits
         </a>
         <a href="#">

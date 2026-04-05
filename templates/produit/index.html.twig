@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Boutique MindBloom - Votre bien-être au naturel{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 font-weight-bold text-dark">Boutique MindBloom</h1>
+        <p class="lead text-muted mx-auto" style="max-width: 600px;">Découvrez notre sélection de produits soigneusement choisis pour vous accompagner dans votre parcours de bien-être.</p>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for produit in produits %}
+            <div class="col">
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden product-card transition-hover">
+                    <div class="position-absolute top-0 end-0 m-3 z-3">
+                         <span class="badge bg-white text-dark shadow-sm rounded-pill px-3 py-2">
+                             {{ produit.prix|number_format(2, ',', ' ') }} €
+                         </span>
+                    </div>
+                    
+                    <div class="product-image-container" style="height: 250px; overflow: hidden;">
+                        {% if produit.image %}
+                            <img src="{{ asset('uploads/produits/' ~ produit.image) }}" class="card-img-top h-100 w-100" alt="{{ produit.nom }}" style="object-fit: cover;">
+                        {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center h-100">
+                                <i class="bi bi-box text-muted display-1 opacity-25"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-body p-4">
+                        <h5 class="card-title fw-bold mb-2">{{ produit.nom }}</h5>
+                        <p class="card-text text-muted small mb-3">
+                            {{ produit.description|slice(0, 100) }}...
+                        </p>
+                        
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="text-warning me-2">
+                                {% set avg = produit.averageRating %}
+                                {% for i in 1..5 %}
+                                    <i class="bi bi-star{{ i <= avg ? '-fill' : (i - 0.5 <= avg ? '-half' : '') }}"></i>
+                                {% endfor %}
+                            </div>
+                            <span class="small text-muted">({{ produit.feedbacks|length }} avis)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer bg-transparent border-0 p-4 pt-0">
+                        <div class="d-grid gap-2">
+                            <a href="{{ path('app_produit_show', {'id': produit.id}) }}" class="btn btn-outline-primary rounded-pill shadow-sm py-2">
+                                <i class="bi bi-info-circle me-1"></i> Détails
+                            </a>
+                            <a href="{{ path('app_produit_feedback_new', {'id': produit.id}) }}" class="btn btn-primary rounded-pill shadow-sm py-2">
+                                <i class="bi bi-pencil-square me-1"></i> Ajouter un avis
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">Aucun produit n'est disponible pour le moment. Revenez bientôt !</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.product-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 1rem 3rem rgba(0,0,0,0.1)!important;
+}
+.transition-hover {
+    transition: all 0.3s ease-in-out;
+}
+</style>
+{% endblock %}

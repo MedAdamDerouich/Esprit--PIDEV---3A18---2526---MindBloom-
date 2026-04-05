@@ -13,6 +13,14 @@ class WalletRepository extends ServiceEntityRepository
         parent::__construct($registry, Wallet::class);
     }
 
+    public function getTotalBalance(): float
+    {
+        return (float) $this->createQueryBuilder('w')
+            ->select('SUM(w.balance)')
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0.0;
+    }
+
     public function findByUser(int $userId): ?Wallet
     {
         return $this->createQueryBuilder('w')

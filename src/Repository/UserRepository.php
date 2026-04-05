@@ -54,4 +54,39 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getResult();
     }
+
+    public function countByRole(string $role): int
+    {
+        return (int) $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.role = :role')
+            ->setParameter('role', $role)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countByStatus(string $status): int
+    {
+        return (int) $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.status = :status')
+            ->setParameter('status', $status)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function getMonthlyRegistrations(): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql  = "
+            SELECT DATE_FORMAT(created_at, '%b %Y') AS month,
+                   DATE_FORMAT(created_at, '%Y-%m') AS sort_key,
+                   COUNT(*) AS total
+            FROM users
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+            GROUP BY month, sort_key
+            ORDER BY sort_key ASC
+        ";
+        return $conn->executeQuery($sql)->fetchAllAssociative();
+    }
 }

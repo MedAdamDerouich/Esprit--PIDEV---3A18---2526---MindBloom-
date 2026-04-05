@@ -23,9 +23,51 @@
 
 {% block body %}{% endblock %}
 
+{# ── Logout confirmation modal ── #}
+<div id="logoutModal" style="display:none;position:fixed;inset:0;z-index:99999;
+     background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:16px;padding:36px 32px;width:380px;
+                box-shadow:0 20px 60px rgba(0,0,0,0.2);text-align:center;">
+        <div style="font-size:48px;margin-bottom:16px;">🚪</div>
+        <h3 style="font-size:20px;font-weight:700;color:#2C3E50;margin-bottom:8px;">
+            Déconnexion
+        </h3>
+        <p style="font-size:14px;color:#8E8E8E;margin-bottom:28px;line-height:1.6;">
+            Êtes-vous sûr de vouloir vous déconnecter de votre espace MindBloom ?
+        </p>
+        <div style="display:flex;gap:12px;justify-content:center;">
+            <button onclick="document.getElementById('logoutModal').style.display='none'"
+                    style="flex:1;padding:12px;border:1.5px solid #E0E0E0;border-radius:10px;
+                           background:white;color:#2C3E50;font-size:14px;font-weight:600;cursor:pointer;">
+                Annuler
+            </button>
+            <a id="logoutConfirmBtn" data-logout-confirm href="{{ path('app_logout') }}"
+               style="flex:1;padding:12px;background:#e74c3c;border-radius:10px;
+                      color:white;font-size:14px;font-weight:600;text-decoration:none;
+                      display:flex;align-items:center;justify-content:center;">
+                Se déconnecter
+            </a>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 {% block javascripts %}{% endblock %}
 <script>
+    // Logout modal
+    const logoutUrl = "{{ path('app_logout') }}";
+    const logoutModal = document.getElementById('logoutModal');
+    document.querySelectorAll('a[href="' + logoutUrl + '"]:not([data-logout-confirm])').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            logoutModal.style.display = 'flex';
+        });
+    });
+    logoutModal.addEventListener('click', function(e) {
+        if (e.target === logoutModal) logoutModal.style.display = 'none';
+    });
+
+    // Flash auto-hide
     setTimeout(() => {
         document.querySelectorAll('.flash-success,.flash-error,.flash-info').forEach(el => {
             el.style.transition = 'opacity 0.5s';

@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+{% block title %}Participants - {{ event.titre }} — MindBloom{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {{ include('admin/_sidebar.html.twig') }}
+    
+    <div class="admin-content" style="flex:1;">
+        <div class="event-top-bar">
+            <div>
+                <h4 class="page-title">👥 Participants - {{ event.titre }}</h4>
+                <span class="page-subtitle">{{ participants|length }} participant(s) inscrit(s)</span>
+            </div>
+            <a href="{{ path('app_admin_event_index') }}" class="btn-back">
+                ⬅️ Retour
+            </a>
+        </div>
+
+        <div class="events-table-container">
+            <table class="events-table">
+                <thead>
+                    <tr>
+                        <th>Nom complet</th>
+                        <th>Email</th>
+                        <th>Date d'inscription</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for participation in participants %}
+                    {% set statutLabel = participation.statut is not empty ? participation.statut : 'inscrit' %}
+                    <tr>
+                        <td>
+                            <strong>{{ participation.user.fullName }}</strong>
+                        </td>
+                        <td>{{ participation.user.email }}</td>
+                        <td>{{ participation.dateInscription|date('d/m/Y H:i') }}</td>
+                        <td>
+                            {% if statutLabel|lower in ['confirmé', 'confirme', 'inscrit', 'en_attente'] %}
+                                <span class="badge-status badge-actif">{{ statutLabel|capitalize }}</span>
+                            {% else %}
+                                <span class="badge-status badge-termine">{{ statutLabel|capitalize }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center" style="padding: 40px;">
+                            <div style="font-size: 48px;">👥</div>
+                            <p style="color: #7f8c8d; margin-top: 10px;">Aucun participant inscrit pour le moment</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if participants|length > 0 %}
+        <div class="mt-3">
+            <div class="alert alert-info">
+                <strong>ℹ️ Information:</strong> 
+                Total de {{ participants|length }} participant(s) sur {{ event.capaciteMax ?? '∞' }} places disponibles.
+                {% if event.capaciteMax %}
+                    Il reste {{ event.getPlacesRestantes }} place(s).
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

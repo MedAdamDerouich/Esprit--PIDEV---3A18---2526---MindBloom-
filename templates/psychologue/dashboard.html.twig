@@ -28,12 +28,13 @@
 
     <div style="width:1px;height:30px;background:rgba(255,255,255,0.3);margin:0 5px;"></div>
 
-    <a href="{{ path('app_logout') }}"
-       style="padding:8px 15px;font-size:13px;font-weight:700;color:white;
-              border:1px solid rgba(255,255,255,0.5);border-radius:20px;
-              text-decoration:none;background:transparent;">
-        Déconnexion
-    </a>
+    <form method="post" action="{{ path('app_logout') }}" style="display:inline;">
+        <button type="submit" style="padding:8px 15px;font-size:13px;font-weight:700;color:white;
+                  border:1px solid rgba(255,255,255,0.5);border-radius:20px;
+                  text-decoration:none;background:transparent;cursor:pointer;">
+            Déconnexion
+        </button>
+    </form>
 </header>
 
 {# ── CENTER ── #}
@@ -51,49 +52,55 @@
     <div style="display:grid;grid-template-columns:330px 330px;gap:30px;">
 
         {# Card 1 — Cabinet #}
-        <div style="background:white;border-radius:15px;padding:20px;min-height:150px;
-                    box-shadow:0 4px 10px rgba(0,0,0,0.08);cursor:pointer;
-                    display:flex;flex-direction:column;gap:15px;">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:40px;height:40px;background:rgba(111,191,155,0.15);
-                             border-radius:10px;display:flex;align-items:center;
-                             justify-content:center;font-size:18px;flex-shrink:0;">🏢</div>
-                <span style="font-size:18px;font-weight:700;color:#2C3E50;">Gérer mon Cabinet</span>
+        <a href="{{ path('app_cabinet') }}" style="text-decoration:none; color:inherit; display:block;">
+            <div style="background:white;border-radius:15px;padding:20px;height:100%;min-height:150px;
+                        box-shadow:0 4px 10px rgba(0,0,0,0.08);cursor:pointer;
+                        display:flex;flex-direction:column;gap:15px;box-sizing:border-box;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:40px;height:40px;background:rgba(111,191,155,0.15);
+                                 border-radius:10px;display:flex;align-items:center;
+                                 justify-content:center;font-size:18px;flex-shrink:0;">🏢</div>
+                    <span style="font-size:18px;font-weight:700;color:#2C3E50;">Gérer mon Cabinet</span>
+                </div>
+                <span style="color:#8E8E8E;font-size:14px;line-height:1.5;">
+                    Ajouter ou modifier les informations de votre cabinet
+                </span>
             </div>
-            <span style="color:#8E8E8E;font-size:14px;line-height:1.5;">
-                Ajouter ou modifier les informations de votre cabinet
-            </span>
-        </div>
+        </a>
 
         {# Card 2 — Créneaux #}
-        <div style="background:white;border-radius:15px;padding:20px;min-height:150px;
-                    box-shadow:0 4px 10px rgba(0,0,0,0.08);cursor:pointer;
-                    display:flex;flex-direction:column;gap:15px;">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:40px;height:40px;background:rgba(111,191,155,0.15);
-                             border-radius:10px;display:flex;align-items:center;
-                             justify-content:center;font-size:18px;flex-shrink:0;">📅</div>
-                <span style="font-size:18px;font-weight:700;color:#2C3E50;">Gérer mes Créneaux</span>
+        <a href="{{ path('app_creneau_index') }}" style="text-decoration:none; color:inherit; display:block;">
+            <div style="background:white;border-radius:15px;padding:20px;height:100%;min-height:150px;
+                        box-shadow:0 4px 10px rgba(0,0,0,0.08);cursor:pointer;
+                        display:flex;flex-direction:column;gap:15px;box-sizing:border-box;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:40px;height:40px;background:rgba(111,191,155,0.15);
+                                 border-radius:10px;display:flex;align-items:center;
+                                 justify-content:center;font-size:18px;flex-shrink:0;">📅</div>
+                    <span style="font-size:18px;font-weight:700;color:#2C3E50;">Gérer mes Créneaux</span>
+                </div>
+                <span style="color:#8E8E8E;font-size:14px;line-height:1.5;">
+                    Planifier et organiser vos disponibilités
+                </span>
             </div>
-            <span style="color:#8E8E8E;font-size:14px;line-height:1.5;">
-                Planifier et organiser vos disponibilités
-            </span>
-        </div>
+        </a>
 
         {# Card 3 — Réservations #}
-        <div style="background:white;border-radius:15px;padding:20px;min-height:150px;
-                    box-shadow:0 4px 10px rgba(0,0,0,0.08);cursor:pointer;
-                    display:flex;flex-direction:column;gap:15px;">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:40px;height:40px;background:rgba(111,191,155,0.15);
-                             border-radius:10px;display:flex;align-items:center;
-                             justify-content:center;font-size:18px;flex-shrink:0;">📋</div>
-                <span style="font-size:18px;font-weight:700;color:#2C3E50;">Voir mes Réservations</span>
+        <a href="{{ path('app_reservation_index') }}" style="text-decoration:none; color:inherit; display:block;">
+            <div style="background:white;border-radius:15px;padding:20px;height:100%;min-height:150px;
+                        box-shadow:0 4px 10px rgba(0,0,0,0.08);cursor:pointer;
+                        display:flex;flex-direction:column;gap:15px;box-sizing:border-box;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:40px;height:40px;background:rgba(111,191,155,0.15);
+                                 border-radius:10px;display:flex;align-items:center;
+                                 justify-content:center;font-size:18px;flex-shrink:0;">📋</div>
+                    <span style="font-size:18px;font-weight:700;color:#2C3E50;">Voir mes Réservations</span>
+                </div>
+                <span style="color:#8E8E8E;font-size:14px;line-height:1.5;">
+                    Consulter les rendez-vous à venir
+                </span>
             </div>
-            <span style="color:#8E8E8E;font-size:14px;line-height:1.5;">
-                Consulter les rendez-vous à venir
-            </span>
-        </div>
+        </a>
 
         {# Card 4 — Tests #}
         <div style="background:white;border-radius:15px;padding:20px;min-height:150px;

@@ -1,0 +1,143 @@
+{% extends 'base.html.twig' %}
+{% block title %}Mon Cabinet — Espace Psychologue{% endblock %}
+
+{% block body %}
+{# ── HEADER ── #}
+<header style="background:linear-gradient(to right,#6FBF9B,#4A90E2);height:70px;
+               padding:0 20px;display:flex;align-items:center;gap:15px;">
+
+    <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom"
+         style="height:60px;width:auto;object-fit:contain;flex-shrink:0;">
+
+    <span style="font-size:20px;font-weight:700;color:white;">MindBloom — Espace Psychologue</span>
+
+    <div style="flex:1;"></div>
+
+    {# Name + settings button #}
+    <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:14px;font-weight:700;color:white;">
+            Bonjour, {{ app.user.fullName }}
+        </span>
+        <a href="{{ path('app_profile') }}"
+           style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.2);
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:18px;text-decoration:none;color:white;flex-shrink:0;"
+           title="Modifier mon profil">⚙</a>
+    </div>
+
+    <div style="width:1px;height:30px;background:rgba(255,255,255,0.3);margin:0 5px;"></div>
+
+    <form method="post" action="{{ path('app_logout') }}" style="display:inline;">
+        <button type="submit" style="padding:8px 15px;font-size:13px;font-weight:700;color:white;
+                  border:1px solid rgba(255,255,255,0.5);border-radius:20px;
+                  text-decoration:none;background:transparent;cursor:pointer;">
+            Déconnexion
+        </button>
+    </form>
+</header>
+
+{# ── MAIN CONTENT SCROLLABLE ── #}
+<div style="background:#F5F3EF;min-height:calc(100vh - 70px); padding:30px 80px 40px; display:flex; flex-direction:column; gap:25px; align-items:center;">
+    
+    <!-- Ligne des messages Flash -->
+    <div style="width: 100%; max-width: 1000px;">
+        {% for message in app.flashes('success') %}
+            <div style="background: #e6f9e6; color: #2e7d32; padding: 10px 15px; border-radius: 8px; margin-bottom: 10px; font-weight: bold;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- CARTE HEADER CABINET -->
+    <div style="width: 100%; max-width: 1000px; height:110px; background:linear-gradient(to right, #6FBF9B, #4A90E2); border-radius:15px; padding:0 30px; display:flex; align-items:center;">
+        <div style="display:flex; flex-direction:column; justify-content:center;">
+            {% if cabinet %}
+                <span style="color:white; font-size:26px; font-weight:bold;">{{ cabinet.nomCabinet }}</span>
+                <span style="color:white; font-size:16px; opacity:0.9;">{{ cabinet.specialite }}</span>
+            {% else %}
+                <span style="color:white; font-size:26px; font-weight:bold;">Aucun cabinet trouvé</span>
+                <span style="color:white; font-size:16px; opacity:0.9;">-</span>
+            {% endif %}
+        </div>
+        
+        <div style="flex:1;"></div>
+        
+        {% if cabinet %}
+            <!-- Editer Bouton -->
+            <a href="{{ path('app_cabinet_editer') }}" style="background:white; color:#4A90E2; border-radius:25px; padding:10px 25px; font-size:14px; font-weight:bold; text-decoration:none;">
+                ✎ Modifier
+            </a>
+
+            <!-- Supprimer Bouton -->
+            <form method="post" action="{{ path('app_cabinet_supprimer') }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer votre cabinet ?');" style="margin-left: 10px; display: inline;">
+                <button type="submit" style="background:#FF5252; color:white; border-radius:25px; padding:10px 25px; border:none; font-size:14px; font-weight:bold; cursor:pointer;">
+                    🗑 Supprimer
+                </button>
+            </form>
+        {% else %}
+            <!-- Ajouter Bouton -->
+             <a href="{{ path('app_cabinet_editer') }}" style="background:white; color:#4A90E2; border-radius:25px; padding:10px 25px; font-size:14px; font-weight:bold; text-decoration:none;">
+                + Ajouter
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- GRID DES INFOS -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:25px; width: 100%; max-width: 1000px;">
+        
+        <!-- Nom Cabinet -->
+        <div style="background:white; border-radius:15px; padding:20px; box-shadow:0 4px 10px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <svg fill="#6FBF9B" width="20" height="20" viewBox="0 0 24 24"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm4 8H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm4 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V9h2v2zm6 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V9h2v2z"/></svg>
+                <span style="color:#8E8E8E; font-size:11px; font-weight:bold; text-transform:uppercase;">Nom du cabinet</span>
+            </div>
+            <span style="color:#333333; font-size:16px; font-weight:bold;">{{ cabinet ? cabinet.nomCabinet : '-' }}</span>
+        </div>
+
+        <!-- Adresse Cabinet -->
+        <div style="background:white; border-radius:15px; padding:20px; box-shadow:0 4px 10px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <svg fill="#6FBF9B" width="20" height="20" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                <span style="color:#8E8E8E; font-size:11px; font-weight:bold; text-transform:uppercase;">Adresse</span>
+            </div>
+            <span style="color:#333333; font-size:16px; font-weight:bold;">{{ cabinet ? cabinet.adresse : '-' }}</span>
+        </div>
+
+        <!-- Spécialité -->
+        <div style="background:white; border-radius:15px; padding:20px; box-shadow:0 4px 10px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <svg fill="#6FBF9B" width="20" height="20" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 11h-4v4h-4v-4H6v-4h4V6h4v4h4v4z"/></svg>
+                <span style="color:#8E8E8E; font-size:11px; font-weight:bold; text-transform:uppercase;">Spécialité</span>
+            </div>
+            <span style="color:#333333; font-size:16px; font-weight:bold;">{{ cabinet ? cabinet.specialite : '-' }}</span>
+        </div>
+
+        <!-- Téléphone -->
+        <div style="background:white; border-radius:15px; padding:20px; box-shadow:0 4px 10px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <svg fill="#6FBF9B" width="20" height="20" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+                <span style="color:#8E8E8E; font-size:11px; font-weight:bold; text-transform:uppercase;">Téléphone</span>
+            </div>
+            <span style="color:#333333; font-size:16px; font-weight:bold;">{{ cabinet ? cabinet.telephone : '-' }}</span>
+        </div>
+    </div>
+
+    <!-- Description BOX -->
+    <div style="background:white; border-radius:15px; padding:25px; box-shadow:0 4px 10px rgba(0,0,0,0.05); display:flex; flex-direction:column; gap:12px; width:100%; max-width:1000px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <svg fill="#6FBF9B" width="20" height="20" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+            <span style="color:#8E8E8E; font-size:11px; font-weight:bold; text-transform:uppercase;">Description</span>
+        </div>
+        <span style="color:#333333; font-size:15px; line-height:1.4;">
+            {{ cabinet ? cabinet.description : 'Vous n\'avez pas encore créé de cabinet.' }}
+        </span>
+    </div>
+
+    <!-- Bouton Retour -->
+    <div style="width:100%; max-width:1000px; display:flex; justify-content:flex-start;">
+        <button type="button" onclick="window.history.back();" style="background:transparent; border:none; color:#8E8E8E; font-size:15px; font-weight:bold; cursor:pointer;" title="Retour au Dashboard">
+            ← Retour
+        </button>
+    </div>
+</div>
+{% endblock %}

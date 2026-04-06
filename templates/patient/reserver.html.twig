@@ -1,0 +1,179 @@
+{% extends 'base.html.twig' %}
+{% block title %}Réserver un Créneau — MindBloom{% endblock %}
+
+{% block body %}
+<div style="background:#EBF1F5; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px;">
+    
+    {# MODAL CONTAINER #}
+    <div style="background:#FAFAF8; border-radius:15px; width:450px; display:flex; flex-direction:column; box-shadow:0 15px 35px rgba(0,0,0,0.1); overflow:hidden; position:relative;">
+        <style>
+            /* Styling scrollbar for webkit */
+            ::-webkit-scrollbar { width: 6px; }
+            ::-webkit-scrollbar-track { background: transparent; }
+            ::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 10px; }
+            ::-webkit-scrollbar-thumb:hover { background: #A0AEC0; }
+            
+            .creneau-card {
+                position: relative;
+            }
+            .creneau-card.clickable:hover {
+                transform: scale(1.02);
+                box-shadow: 0 10px 15px rgba(0,0,0,0.08);
+                z-index: 10;
+            }
+            .creneau-card.selected {
+                border-color: #4A90E2 !important;
+                background: #E0F0FF !important; /* Bleu très clair visible */
+                box-shadow: 0 6px 15px rgba(74, 144, 226, 0.25) !important;
+                transform: scale(1.03);
+                z-index: 15;
+            }
+        </style>
+        
+        <div style="padding:20px 25px;">
+            {# HEADER (Image + Infos + Close) #}
+            <div style="display:flex; gap:15px; align-items:center;">
+                {# Image #}
+                <div style="width:65px; height:65px; border-radius:50%; background:#E2E8F0; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+                    {% if cabinet.psychologue and cabinet.psychologue.profileImage %}
+                        <img src="{{ asset('uploads/profiles/' ~ cabinet.psychologue.profileImage) }}" style="width:100%; height:100%; object-fit:cover;" />
+                    {% else %}
+                        <span style="font-size:30px; color:rgba(74,144,226,0.3);">👤</span>
+                    {% endif %}
+                </div>
+
+                {# Text Infos #}
+                <div style="display:flex; flex-direction:column; gap:2px; flex:1;">
+                    <span style="font-size:19px; font-weight:bold; color:#2D3748;">{{ cabinet.nomCabinet }}</span>
+                    <span style="font-size:14px; font-weight:bold; color:#4A90E2;">{% if cabinet.psychologue %}Dr. {{ cabinet.psychologue.fullName }}{% else %}Sans Nom{% endif %}</span>
+                    <span style="color:#718096; font-size:12px;">{{ cabinet.specialite }}</span>
+                </div>
+
+                {# Close Button #}
+                <a href="{{ path('app_patient_cabinets_index') }}" style="align-self:flex-start; text-decoration:none; color:#718096; font-size:18px; font-weight:bold; padding:5px; line-height:1;" title="Fermer">✕</a>
+            </div>
+
+            {# DESCRIPTION #}
+            <div style="display:flex; flex-direction:column; gap:8px; margin-top:25px;">
+                <span style="font-weight:bold; color:#2D3748; font-size:13px;">À propos du cabinet</span>
+                <span id="cabinetDescription" style="color:#718096; font-size:13px; line-height:1.5;">
+                    {{ cabinet.description|default('Aucune description fournie.') }}
+                </span>
+            </div>
+
+            <div style="font-weight:bold; color:#2D3748; font-size:15px; margin-top:25px; margin-bottom:15px;">
+                📅 Créneaux disponibles
+            </div>
+        </div>
+
+        {# LISTE CRENEAUX #}
+        <div style="flex:1; max-height:280px; overflow-y:auto; padding:0 25px; display:flex; flex-direction:column; gap:10px;">
+            {% if creneaux is empty %}
+                <div style="text-align:center; padding:30px; color:#A0AEC0; font-size:14px;">
+                    Aucun créneau configuré par ce professionnel.
+                </div>
+            {% else %}
+                {% set now = date() %}
+                {% for creneau in creneaux %}
+                    
+                    {# Logique disponibilité temporelle #}
+                    {% set dateCreneau = creneau.dateCreneau|date('Y-m-d') %}
+                    {% set today = now|date('Y-m-d') %}
+                    {% set timeCreneau = creneau.heureDebut|date('H:i') %}
+                    {% set currTime = now|date('H:i') %}
+
+                    {% set isDatePast = (dateCreneau < today) %}
+                    {% set isHourPast = (dateCreneau == today and timeCreneau < currTime) %}
+                    {% set isPast = isDatePast or isHourPast %}
+                    {% set isClickable = (creneau.isDisponible and not isPast) %}
+
+                    {% set bgColor = isClickable ? 'white' : '#F7FAFC' %}
+                    {% set opacity = isClickable ? '1' : '0.6' %}
+
+                    <div class="creneau-card {% if isClickable %}clickable{% endif %}" data-id="{{ creneau.id }}"
+                         style="background:{{ bgColor }}; border:2px solid #E2E8F0; border-radius:10px; padding:12px 15px; display:flex; align-items:center; gap:15px; opacity:{{ opacity }}; transition:all 0.2s; {% if isClickable %}cursor:pointer;{% endif %}">
+                        
+                        {# Jour & Date #}
+                        <div style="display:flex; flex-direction:column; width:80px;">
+                            <span style="color:#A0AEC0; font-size:11px; text-transform:uppercase;">
+                                {% set joursFr = {'Mon':'Lundi','Tue':'Mardi','Wed':'Mercredi','Thu':'Jeudi','Fri':'Vendredi','Sat':'Samedi','Sun':'Dimanche'} %}
+                                {{ joursFr[creneau.dateCreneau|date('D')]|default(creneau.dateCreneau|date('D')) }}
+                            </span>
+                            <span style="font-weight:bold; color:#2D3748; font-size:13px;">{{ creneau.dateCreneau|date('d/m/Y') }}</span>
+                        </div>
+
+                        {# Heure & Duree #}
+                        <span style="color:{% if isClickable %}#4A5568{% else %}#A0AEC0{% endif %}; font-size:13px; font-weight:500;">
+                            🕒 {{ creneau.heureDebut|date('H:i') }} • {{ creneau.dureeMinutes }} min
+                        </span>
+
+                        <div style="flex:1; display:flex; justify-content:flex-end;">
+                            {% if isDatePast %}
+                                <span style="color:#718096; font-weight:bold; font-size:12px;">📅 Date passée</span>
+                            {% elseif isHourPast %}
+                                <span style="color:#718096; font-weight:bold; font-size:12px;">⏰ Heure passée</span>
+                            {% elseif not creneau.isDisponible %}
+                                <span style="color:#E53E3E; font-weight:bold; font-size:12px;">✘ Indisponible</span>
+                            {% else %}
+                                <span style="color:#5FBF9F; font-weight:bold; font-size:12px;">✔ Disponible</span>
+                            {% endif %}
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        {# FOOTER / VALIDATION BUTTON #}
+        <div style="padding:20px 25px;">
+            <form id="reservationForm" method="post" action="">
+                <!-- URL action dynamique remplie par Javascript -->
+                <button type="submit" id="btnConfirmer" disabled style="width:100%; height:45px; background:#A4C6ED; color:white; border-radius:10px; font-weight:bold; font-size:14px; border:none; cursor:not-allowed; transition:background 0.3s;">
+                    Confirmer la réservation
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Styles inline et script -->
+    <!-- Script en bas -->
+
+<script>
+function initReserverScript() {
+    const clickableCards = document.querySelectorAll('.creneau-card.clickable');
+    const btnConfirmer = document.getElementById('btnConfirmer');
+    const reservationForm = document.getElementById('reservationForm');
+
+    // ----- SÉLECTION CRÉNEAU -----
+    clickableCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove selection from all
+            clickableCards.forEach(c => c.classList.remove('selected'));
+            
+            // Add selection to clicked
+            this.classList.add('selected');
+            
+            // Enable button
+            btnConfirmer.disabled = false;
+            btnConfirmer.style.background = '#4A90E2';
+            btnConfirmer.style.cursor = 'pointer';
+            
+            // Set form action target
+            const id = this.getAttribute('data-id');
+            reservationForm.action = '/patient/reserver/creneau/' + id;
+        });
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initReserverScript);
+} else {
+    initReserverScript();
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends 'base.html.twig' %}
+{% block title %}Gestion des Cabinets — MindBloom{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {{ include('admin/_sidebar.html.twig') }}
+
+    <div class="admin-content" style="flex:1;">
+
+        {# Header #}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="mb-page-header" style="margin:0;">
+                <h1>🏥 Liste des Cabinets</h1>
+                <p>Suivez l'activité et le nombre de créneaux classés par cabinet de manière anonyme</p>
+            </div>
+        </div>
+
+        {# Search & Filters #}
+        <div class="mb-card mb-3" style="padding:16px 20px;">
+            <div class="d-flex gap-3 align-items-center flex-wrap">
+                <div class="mb-search" style="flex:1;min-width:200px;">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Rechercher par médecin, spécialité..."
+                           oninput="filterTable(this.value)">
+                </div>
+            </div>
+        </div>
+
+        {# Table #}
+        <div class="mb-card" style="padding:0;overflow:hidden;">
+            <table class="mb-table" id="cabinetsTable">
+                <thead>
+                    <tr>
+                        <th>Cabinet & Médecin</th>
+                        <th>Spécialité</th>
+                        <th>Adresse</th>
+                        <th>Description</th>
+                        <th style="text-align:center;">Créneaux Configurés</th>
+                        <th style="text-align:center;">Réservations (Anonyme)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cabinetsData %}
+                    {% set cabinet = item.cabinet %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="mb-avatar" style="width:42px;height:42px;font-size:16px;background:#E2E8F0;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:50%;">
+                                    {% if cabinet.psychologue and cabinet.psychologue.profileImage %}
+                                        <img src="{{ asset('uploads/profiles/' ~ cabinet.psychologue.profileImage) }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+                                    {% else %}
+                                        🏥
+                                    {% endif %}
+                                </div>
+                                <div style="display:flex; flex-direction:column;">
+                                    <div style="font-weight:700;color:var(--text-dark);font-size:15px;">{{ cabinet.nomCabinet|default('Sans nom') }}</div>
+                                    <div style="font-size:13px;color:var(--text-mid);">
+                                        Dr. {{ cabinet.psychologue ? cabinet.psychologue.fullName : 'Inconnu' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span style="font-weight:600;color:#2C3E50;font-size:14px;">{{ cabinet.specialite|default('Non spécifiée') }}</span>
+                        </td>
+                        <td style="color:var(--text-mid); font-size:13px; max-width:200px; line-height:1.5;">
+                            {% set addrFull = cabinet.adresse|default('Non renseignée') %}
+                            {% set needsToggleAddr = (addrFull|length > 40) %}
+                            
+                            <div class="details-short">
+                                ⌂ {{ addrFull|length > 40 ? addrFull|slice(0, 40) ~ '...' : addrFull }}
+                                {% if needsToggleAddr %}
+                                    <br><a href="#" onclick="toggleViewMore(this, event)" style="color:#4A90E2; font-size:12px; font-weight:bold; text-decoration:none; margin-top:5px; display:inline-block;">Voir plus ↓</a>
+                                {% endif %}
+                            </div>
+                            <div class="details-long" style="display:none;">
+                                ⌂ {{ addrFull }}
+                                <br><a href="#" onclick="toggleViewMore(this, event)" style="color:#4A90E2; font-size:12px; font-weight:bold; text-decoration:none; margin-top:5px; display:inline-block;">Voir moins ↑</a>
+                            </div>
+                        </td>
+                        <td style="color:var(--text-mid); font-size:13px; max-width:250px; line-height:1.5;">
+                            {% set descFull = cabinet.description|default('Aucune description') %}
+                            {% set needsToggleDesc = (descFull|length > 40) %}
+                            
+                            <div class="details-short">
+                                📝 {{ descFull|length > 40 ? descFull|slice(0, 40) ~ '...' : descFull }}
+                                {% if needsToggleDesc %}
+                                    <br><a href="#" onclick="toggleViewMore(this, event)" style="color:#4A90E2; font-size:12px; font-weight:bold; text-decoration:none; margin-top:5px; display:inline-block;">Voir plus ↓</a>
+                                {% endif %}
+                            </div>
+                            <div class="details-long" style="display:none;">
+                                <div style="white-space: pre-wrap;">📝 {{ descFull }}</div>
+                                <a href="#" onclick="toggleViewMore(this, event)" style="color:#4A90E2; font-size:12px; font-weight:bold; text-decoration:none; margin-top:5px; display:inline-block;">Voir moins ↑</a>
+                            </div>
+                        </td>
+                        <td style="text-align:center;">
+                            <span class="mb-badge mb-badge-teal" style="font-size:14px; padding:6px 15px;">
+                                {{ item.slotCount }}
+                            </span>
+                        </td>
+                        <td style="text-align:center;">
+                            <span class="mb-badge mb-badge-primary" style="font-size:14px; padding:6px 15px; font-weight:700; background:rgba(74,144,226,0.1); color:#4A90E2;">
+                                📅 {{ item.resCount }} 
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align:center;color:var(--text-mid);padding:40px;">
+                            Aucun cabinet enregistré pour le moment.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+function filterTable(value) {
+    const search = value.toLowerCase();
+
+    document.querySelectorAll('#cabinetsTable tbody tr').forEach(row => {
+        if (row.cells.length > 1) {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(search) ? '' : 'none';
+        }
+    });
+}
+
+function toggleViewMore(btn, currentEvent) {
+    currentEvent.preventDefault();
+    const cell = btn.closest('td');
+    const shortView = cell.querySelector('.details-short');
+    const longView = cell.querySelector('.details-long');
+
+    if (longView.style.display === 'none') {
+        shortView.style.display = 'none';
+        longView.style.display = 'block';
+    } else {
+        longView.style.display = 'none';
+        shortView.style.display = 'block';
+    }
+}
+</script>
+{% endblock %}

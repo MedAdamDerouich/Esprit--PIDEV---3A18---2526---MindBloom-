@@ -1,4 +1,4 @@
-{# ── Patient Navbar — shared across dashboard, profile, wallet ── #}
+{# ── Patient Shared Navbar — shared across all patient templates ── #}
 <header style="background:white;height:80px;padding:0 50px;display:flex;align-items:center;
                gap:30px;box-shadow:0 5px 10px rgba(0,0,0,0.05);position:sticky;top:0;z-index:1000;">
 
@@ -13,24 +13,34 @@
     <nav style="flex:1;display:flex;justify-content:center;gap:25px;align-items:center;">
         <a href="{{ path('app_patient_dashboard') }}"
            style="font-size:14px;text-decoration:none;font-weight:500;padding-bottom:2px;
-                  {% if active_nav is defined and active_nav == 'home' %}
-                      color:#4A90E2;border-bottom:2px solid #4A90E2;
-                  {% else %}
-                      color:#2C3E50;border-bottom:2px solid transparent;
-                  {% endif %}">Accueil</a>
-        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Produits</a>
-        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Rendez-vous</a>
+                  {% if active_nav == 'home' %}color:#4A90E2;border-bottom:2px solid #4A90E2;{% else %}color:#2C3E50;{% endif %}">Accueil</a>
+        
+        <a href="{{ path('app_produit_index') }}"
+           style="font-size:14px;text-decoration:none;font-weight:500;padding-bottom:2px;
+                  {% if active_nav == 'produits' %}color:#4A90E2;border-bottom:2px solid #4A90E2;{% else %}color:#2C3E50;{% endif %}">Produits</a>
+        
+        <a href="{{ path('app_patient_cabinets_index') }}"
+           style="font-size:14px;text-decoration:none;font-weight:500;padding-bottom:2px;
+                  {% if active_nav == 'rendezvous' %}color:#4A90E2;border-bottom:2px solid #4A90E2;{% else %}color:#2C3E50;{% endif %}">Rendez-vous</a>
+        
         <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Tests</a>
         <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Événements</a>
-        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Mes Réservations</a>
+        
+        <a href="{{ path('app_patient_reservations') }}"
+           style="font-size:14px;text-decoration:none;font-weight:500;padding-bottom:2px;
+                  {% if active_nav == 'reservations' %}color:#4A90E2;border-bottom:2px solid #4A90E2;{% else %}color:#2C3E50;{% endif %}">Mes Réservations</a>
     </nav>
 
     {# Right actions #}
     <div style="display:flex;align-items:center;gap:20px;flex-shrink:0;">
 
+        {# Factures #}
+        <a href="#" style="background:#E8E8E8;border:none;border-radius:10px;padding:10px 15px;
+                       font-size:20px;cursor:pointer;line-height:1;text-decoration:none;" title="Mes Factures">🧾</a>
+
         {# Cart #}
-        <button style="background:#E8E8E8;border:none;border-radius:10px;padding:10px 15px;
-                       font-size:20px;cursor:pointer;line-height:1;">🛒</button>
+        <a href="#" style="background:#E8E8E8;border:none;border-radius:10px;padding:10px 15px;
+                       font-size:20px;cursor:pointer;line-height:1;text-decoration:none;" title="Mon Panier">🛒</a>
 
         {# Wallet badge #}
         <div style="display:flex;align-items:center;gap:8px;background:#EDF9F5;
@@ -57,19 +67,19 @@
             </div>
             <div style="display:flex;flex-direction:column;">
                 <span style="font-size:9px;color:#999;">Bonjour,</span>
-                <span style="font-size:12px;font-weight:700;color:#2C3E50;">{{ app.user.fullName|split(' ')|first }}</span>
+                <span style="font-size:12px;font-weight:700;color:#2C3E50;">{% if app.user %}{{ app.user.fullName|split(' ')|first }}{% else %}Invité{% endif %}</span>
             </div>
         </div>
 
-        {# Modifier button — highlighted when on profile page #}
+        {# Modifier button #}
         <a href="{{ path('app_profile') }}"
-           style="background:{% if active_nav is defined and active_nav == 'profile' %}#2563EB{% else %}#4A90E2{% endif %};
-                  color:white;border-radius:20px;padding:8px 18px;
+           style="background:#4A90E2;color:white;border-radius:20px;padding:8px 18px;
                   font-size:11px;font-weight:600;text-decoration:none;">Modifier</a>
 
         {# Déconnexion #}
-        <a href="{{ path('app_logout') }}"
-           style="background:#e74c3c;color:white;border-radius:20px;padding:8px 18px;
-                  font-size:11px;font-weight:600;text-decoration:none;">Déconnexion</a>
+        <form method="post" action="{{ path('app_logout') }}" style="display:inline;">
+            <button type="submit" style="background:#e74c3c;color:white;border:none;border-radius:20px;padding:8px 18px;
+                      font-size:11px;font-weight:600;cursor:pointer;">Déconnexion</button>
+        </form>
     </div>
 </header>

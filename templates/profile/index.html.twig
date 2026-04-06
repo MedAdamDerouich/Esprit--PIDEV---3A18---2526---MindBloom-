@@ -3,7 +3,7 @@
 
 {% block body %}
 
-{{ include('patient/_navbar.html.twig', {active_nav: 'profile'}) }}
+
 
 <div style="padding:30px 40px;background:var(--bg-warm);min-height:calc(100vh - 70px);">
 
@@ -145,7 +145,11 @@
 
                 <hr class="mb-divider">
 
-                <div class="d-flex justify-content-end">
+                <div class="d-flex justify-content-end gap-3">
+                    <a href="{{ is_granted('ROLE_PSYCHOLOGUE') ? path('app_psychologue_dashboard') : path('app_patient_dashboard') }}" 
+                       class="btn btn-outline-secondary rounded-pill px-4" style="font-size:14px; font-weight:600; display:flex; align-items:center;">
+                        ⬅️ Retour
+                    </a>
                     <button type="submit" class="btn-mb-primary">
                         💾 Enregistrer les modifications
                     </button>

@@ -26,6 +26,11 @@ class ProfileController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
             $this->addFlash('success', 'Profil mis à jour avec succès !');
+
+            if ($this->isGranted('ROLE_PSYCHOLOGUE')) {
+                return $this->redirectToRoute('app_psychologue_dashboard');
+            }
+
             return $this->redirectToRoute('app_profile');
         }
 

@@ -3,11 +3,16 @@
 {% block title %}Mes Commandes - MindBloom{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-    <div class="mb-5">
-        <h2 class="fw-bold h3">Mon Historique de Commandes</h2>
-        <p class="text-muted">Suivez l'état de vos livraisons et téléchargez vos factures.</p>
+<div style="background:#F5F3EF; min-height:calc(100vh - 70px); padding:40px; display:flex; flex-direction:column; align-items:center;">
+    
+    <!-- Hero Header (Matched with Cabinet style) -->
+    <div style="width:100%; max-width:1200px; display:flex; flex-direction:column; align-items:center; gap:5px; margin-bottom:40px;">
+        <span style="font-size:32px; font-weight:bold; color:#2D3748;">Votre historique de</span>
+        <span style="font-size:32px; font-weight:bold; color:#4A90E2;">commandes</span>
+        <span style="color:#718096; font-size:16px; margin-top:10px; text-align:center;">Suivez l'état de vos livraisons et gérez vos factures MindBloom.</span>
     </div>
+
+    <div style="width:100%; max-width:1200px;">
 
     <div class="row g-4">
         {% for facture in factures %}
@@ -56,6 +61,7 @@
                 </div>
             </div>
         {% endfor %}
+    </div>
     </div>
 </div>
 

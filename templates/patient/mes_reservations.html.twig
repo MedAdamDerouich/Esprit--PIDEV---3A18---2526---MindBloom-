@@ -3,77 +3,7 @@
 {% block title %}Mes Réservations — MindBloom{% endblock %}
 
 {% block body %}
-{# ── NAVBAR ── #}
-<header style="background:white;height:80px;padding:0 50px;display:flex;align-items:center;
-               gap:30px;box-shadow:0 5px 10px rgba(0,0,0,0.05);position:sticky;top:0;z-index:1000;">
 
-    {# Logo + brand name #}
-    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
-        <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom"
-             style="height:50px;width:50px;object-fit:contain;">
-        <span style="font-size:22px;font-weight:700;color:#2C3E50;">MindBloom</span>
-    </div>
-
-    {# Navigation links — centered, takes all available space #}
-    <nav style="flex:1;display:flex;justify-content:center;gap:25px;align-items:center;">
-        <a href="{{ path('app_patient_dashboard') }}"
-           style="font-size:14px;color:#2C3E50;text-decoration:none;">Accueil</a>
-        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Produits</a>
-        <a href="{{ path('app_patient_cabinets_index') }}" style="font-size:14px;color:#2C3E50;text-decoration:none;">Rendez-vous</a>
-        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Tests</a>
-        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Événements</a>
-        <a href="{{ path('app_patient_reservations') }}" style="font-size:14px;color:#4A90E2;text-decoration:none;font-weight:500;
-                  border-bottom:2px solid #4A90E2;padding-bottom:2px;">Mes Réservations</a>
-    </nav>
-
-    {# Right actions #}
-    <div style="display:flex;align-items:center;gap:20px;flex-shrink:0;">
-
-        {# Cart #}
-        <button style="background:#E8E8E8;border:none;border-radius:10px;padding:10px 15px;
-                       font-size:20px;cursor:pointer;line-height:1;">🛒</button>
-
-        {# Wallet badge #}
-        <div style="display:flex;align-items:center;gap:8px;background:#EDF9F5;
-                    border-radius:20px;padding:8px 15px;">
-            <span style="font-size:16px;">💳</span>
-            <span style="font-size:14px;font-weight:700;color:#5FBF9F;">0.00 TND</span>
-            <a href="{{ path('app_wallet') }}"
-               style="background:#5FBF9F;color:white;border-radius:15px;padding:5px 12px;
-                      text-decoration:none;font-size:12px;font-weight:700;line-height:1;">+</a>
-        </div>
-
-        {# Profile pill #}
-        <div style="display:flex;align-items:center;gap:10px;background:#F8F9FA;
-                    border-radius:25px;padding:6px 15px 6px 8px;">
-            <div style="width:40px;height:40px;border-radius:50%;border:2px solid #4A90E2;
-                        background:white;display:flex;align-items:center;justify-content:center;
-                        overflow:hidden;flex-shrink:0;">
-                {% if app.user.profileImage %}
-                    <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}"
-                         style="width:100%;height:100%;object-fit:cover;" alt="">
-                {% else %}
-                    <span style="font-size:20px;color:#4A90E2;">👤</span>
-                {% endif %}
-            </div>
-            <div style="display:flex;flex-direction:column;">
-                <span style="font-size:9px;color:#999;">Bonjour,</span>
-                <span style="font-size:12px;font-weight:700;color:#2C3E50;">{% if app.user %}{{ app.user.fullName|split(' ')|first }}{% else %}Invité{% endif %}</span>
-            </div>
-        </div>
-
-        {# Modifier button #}
-        <a href="{{ path('app_profile') }}"
-           style="background:#4A90E2;color:white;border-radius:20px;padding:8px 18px;
-                  font-size:11px;font-weight:600;text-decoration:none;">Modifier</a>
-
-        {# Déconnexion button #}
-        <form method="post" action="{{ path('app_logout') }}" style="display:inline;">
-            <button type="submit" style="background:#e74c3c;color:white;border:none;border-radius:20px;padding:8px 18px;
-                      font-size:11px;font-weight:600;cursor:pointer;">Déconnexion</button>
-        </form>
-    </div>
-</header>
 
 <div style="background:#FAFAF8; min-height:calc(100vh - 80px); padding:40px 0; display:flex; flex-direction:column; align-items:center;">
     

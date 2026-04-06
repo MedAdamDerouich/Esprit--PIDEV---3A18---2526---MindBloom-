@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouveau Produit - MindBloomAdmin{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="mb-4">
+                <a href="{{ path('app_admin_produit_index') }}" class="text-muted text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i> Retour à la liste
+                </a>
+                <h1 class="h3 font-weight-bold mt-2">Créer un nouveau produit</h1>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-4 p-md-5">
+                    {{ include('admin/produit/_form.html.twig') }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

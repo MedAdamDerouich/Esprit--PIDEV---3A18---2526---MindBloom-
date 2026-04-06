@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="d-flex">
+    {{ include('admin/_sidebar.html.twig') }}
+    
+    <div class="admin-content p-4 p-md-5" style="flex:1; background:#FAFAF8; min-height: 100vh;">
+        {# Top header bar #}
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h4 class="fw-bold mb-0">{% block admin_header %}{% endblock %}</h4>
+                <small class="text-muted">MindBloom Admin Panel</small>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="mb-avatar d-flex align-items-center justify-content-center bg-primary text-white rounded-circle shadow-sm" style="width:42px;height:42px;font-weight:bold; overflow:hidden;">
+                    {% if app.user.profileImage %}
+                        <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}" alt="" style="width:100%; height:100%; object-fit:cover;">
+                    {% else %}
+                        {{ app.user.fullName|first|upper }}
+                    {% endif %}
+                </div>
+                <div class="d-none d-sm-block">
+                    <div class="fw-bold small">{{ app.user.fullName }}</div>
+                    <div class="text-muted" style="font-size:11px;">Administrateur</div>
+                </div>
+            </div>
+        </div>
+
+        {% block admin_content %}{% endblock %}
+    </div>
+</div>
+
+<style>
+.admin-content {
+    transition: all 0.3s;
+}
+</style>
+{% endblock %}

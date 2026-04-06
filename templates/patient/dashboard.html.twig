@@ -2,10 +2,6 @@
 {% block title %}Mon Espace — MindBloom{% endblock %}
 
 {% block body %}
-
-{{ include('patient/_navbar.html.twig', {active_nav: 'home'}) }}
-
-{# ── MAIN CONTENT ── #}
 <div style="background:#FAFAF8;">
 
     {# Hero Section #}
@@ -119,7 +115,7 @@
                 <span style="color:#95A5A6;font-size:14px;line-height:1.5;">
                     Découvrez nos ressources pour votre bien-être quotidien
                 </span>
-                <a href="#" style="color:#5FBF9F;text-decoration:none;font-size:14px;
+                <a href="{{ path('app_produit_index') }}" style="color:#5FBF9F;text-decoration:none;font-size:14px;
                                    background:transparent;margin-top:auto;">Découvrir →</a>
             </div>
 

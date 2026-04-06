@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Commandes - MindBloom{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="mb-5">
+        <h2 class="fw-bold h3">Mon Historique de Commandes</h2>
+        <p class="text-muted">Suivez l'état de vos livraisons et téléchargez vos factures.</p>
+    </div>
+
+    <div class="row g-4">
+        {% for facture in factures %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden order-card transition-hover">
+                    <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
+                        <span class="badge {{ facture.statutLivraison == 'ENVOYE' ? 'bg-success-subtle text-success' : (facture.statutLivraison == 'ANNULE' ? 'bg-danger-subtle text-danger' : 'bg-warning-subtle text-warning') }} rounded-pill px-3 py-2 fw-bold" style="font-size: 11px;">
+                            {{ facture.statutLivraison == 'ENVOYE' ? 'EXPÉDIÉE' : (facture.statutLivraison == 'ANNULE' ? 'ANNULÉE' : 'EN PRÉPARATION') }}
+                        </span>
+                        <span class="small text-muted fw-bold">#{{ facture.id }}</span>
+                    </div>
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">{{ facture.montantTotal|number_format(2, ',', ' ') }} DT</h5>
+                        <div class="text-muted small mb-3">
+                            <p class="mb-1"><i class="bi bi-calendar2-check me-2"></i> Date: <strong>{{ facture.dateFacture|date('d F Y') }}</strong></p>
+                            <p class="mb-0"><i class="bi bi-wallet2 me-2"></i> Paiement: <strong>{{ facture.typePaiement }}</strong></p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            {% for cmd in facture.commandes|slice(0, 3) %}
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="bg-light rounded p-1 me-2" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                                        <span style="font-size: 10px; font-weight: bold;">{{ cmd.quantite }}</span>
+                                    </div>
+                                    <span class="small text-truncate" style="max-width: 180px;">{{ cmd.produit.nom }}</span>
+                                </div>
+                            {% endfor %}
+                            {% if facture.commandes|length > 3 %}
+                                <div class="small text-primary fw-bold">+ {{ facture.commandes|length - 3 }} autres articles</div>
+                            {% endif %}
+                        </div>
+
+                        <a href="{{ path('app_order_show', {id: facture.id}) }}" class="btn btn-outline-primary w-100 rounded-pill py-2 fw-bold small">
+                            <i class="bi bi-file-earmark-text me-1"></i> Détails & Facture
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="text-center py-5 bg-white shadow-sm rounded-4">
+                    <i class="bi bi-bag-x text-muted display-1 mb-3"></i>
+                    <h4 class="fw-bold">Vous n'avez pas encore de commande</h4>
+                    <p class="text-muted mb-4 pb-2">Dès que vous passez votre première commande, elle apparaîtra ici.</p>
+                    <a href="{{ path('app_produit_index') }}" class="btn btn-primary rounded-pill px-5">Aller au catalogue</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.order-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.order-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
+}
+.bg-success-subtle { background-color: #d1e7dd; }
+.bg-warning-subtle { background-color: #fff3cd; }
+.bg-danger-subtle { background-color: #f8d7da; }
+</style>
+{% endblock %}

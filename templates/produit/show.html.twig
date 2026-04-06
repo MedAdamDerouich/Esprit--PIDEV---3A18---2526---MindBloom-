@@ -1,0 +1,145 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ produit.nom }} - MindBloom{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="mb-4">
+        <a href="{{ path('app_produit_index') }}" class="btn btn-link text-muted p-0 text-decoration-none">
+            <i class="bi bi-arrow-left me-1"></i> Retour à la boutique
+        </a>
+    </div>
+
+    <div class="row g-5">
+        <div class="col-md-6">
+            <div class="bg-white rounded-4 shadow-sm p-2 overflow-hidden sticky-top" style="top: 2rem;">
+                {% if produit.image %}
+                    <img src="{{ asset('uploads/produits/' ~ produit.image) }}" class="img-fluid rounded-3 w-100" alt="{{ produit.nom }}">
+                {% else %}
+                    <div class="bg-light d-flex align-items-center justify-content-center rounded-3" style="min-height: 400px;">
+                        <i class="bi bi-box text-muted display-1 opacity-25"></i>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="product-info mb-5">
+                <h1 class="display-6 fw-bold mb-3">{{ produit.nom }}</h1>
+                <div class="d-flex align-items-center mb-4">
+                    <div class="text-warning me-3 fs-5">
+                        {% set avg = produit.averageRating %}
+                        {% for i in 1..5 %}
+                            <i class="bi bi-star{{ i <= avg ? '-fill' : (i - 0.5 <= avg ? '-half' : '') }}"></i>
+                        {% endfor %}
+                    </div>
+                    <span class="text-muted">{{ produit.feedbacks|length }} avis d'utilisateurs</span>
+                </div>
+                
+                <h3 class="fw-bold mb-4 text-primary">{{ produit.prix|number_format(2, ',', ' ') }} DT</h3>
+                
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-2">Description</h5>
+                    <p class="text-muted lh-lg">{{ produit.description|nl2br }}</p>
+                </div>
+                
+                <div class="mb-4">
+                    <p class="small">
+                        {% if produit.quantite > 0 %}
+                            <span class="text-success"><i class="bi bi-check-circle me-1"></i> En stock ({{ produit.quantite }} disponibles)</span>
+                        {% else %}
+                            <span class="text-danger"><i class="bi bi-x-circle me-1"></i> Rupture de stock</span>
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <form action="{{ path('app_cart_add', {id: produit.id}) }}" method="POST" class="d-flex gap-2">
+                        <input type="number" name="quantite" value="1" min="1" max="{{ produit.quantite }}" class="form-control rounded-pill px-4 shadow-none" style="width: 100px;" {{ produit.quantite == 0 ? 'disabled' : '' }}>
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm flex-grow-1" {{ produit.quantite == 0 ? 'disabled' : '' }}>
+                            <i class="bi bi-cart-plus me-2"></i> Ajouter au panier
+                        </button>
+                    </form>
+                    <a href="{{ path('app_produit_feedback_new', {'id': produit.id}) }}" class="btn btn-outline-dark btn-lg rounded-pill px-5 shadow-sm mt-2">
+                        <i class="bi bi-pencil-square me-2"></i> Laisser un avis
+                    </a>
+                </div>
+            </div>
+
+            <hr class="my-5">
+
+            <div class="feedbacks-section" id="avis">
+                <h4 class="fw-bold mb-4">Avis des clients</h4>
+                
+                <div class="feedback-list">
+                    {% for feedback in produit.feedbacks|sort((a, b) => b.dateFeedback <=> a.dateFeedback) %}
+                        {% set isOwner = app.user and feedback.user and feedback.user.id == app.user.id %}
+                        <div class="card border-0 shadow-sm rounded-4 mb-4 feedback-item">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                            {{ (feedback.user ? (feedback.user.fullName|first|upper) : 'U') }}
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold d-flex align-items-center">
+                                                {{ feedback.user ? feedback.user.fullName : 'Utilisateur supprimé' }}
+                                                {% if isOwner %}
+                                                    <span class="badge bg-primary-subtle text-primary ms-2" style="font-size: 10px;">VOUS</span>
+                                                {% endif %}
+                                            </h6>
+                                            <small class="text-muted">{{ feedback.dateFeedback|date('d/m/Y') }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="text-warning">
+                                        {% for i in 1..5 %}
+                                            <i class="bi bi-star{{ i <= feedback.note ? '-fill' : '' }}"></i>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <p class="mb-0 text-muted">{{ feedback.commentaire|nl2br }}</p>
+                                
+                                {% if isOwner %}
+                                    <div class="mt-3 text-end d-flex justify-content-end gap-3 border-top pt-2">
+                                        <a href="{{ path('app_produit_feedback_edit', {id: feedback.id}) }}" class="btn btn-sm btn-link text-primary p-0 text-decoration-none small">
+                                            <i class="bi bi-pencil-square me-1"></i> Modifier mon avis
+                                        </a>
+                                        <form action="{{ path('app_produit_feedback_delete', {id: feedback.id}) }}" method="post" onsubmit="return confirm('Supprimer votre avis ?');">
+                                            <button class="btn btn-sm btn-link text-danger p-0 text-decoration-none small">
+                                                <i class="bi bi-trash me-1"></i> Supprimer mon avis
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% elseif is_granted('ROLE_ADMIN') %}
+                                <div class="mt-3 text-end border-top pt-2">
+                                    <form action="{{ path('app_admin_feedback_delete', {'id': feedback.id}) }}" method="post" onsubmit="return confirm('Supprimer ce feedback ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_feedback' ~ feedback.id) }}">
+                                        <button class="btn btn-sm btn-link text-danger p-0 text-decoration-none small">
+                                            <i class="bi bi-trash me-1"></i> Supprimer (Admin)
+                                        </button>
+                                    </form>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 bg-light rounded-4">
+                            <p class="text-muted mb-0">Aucun avis pour ce produit pour le moment.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.feedback-item {
+    transition: transform 0.2s ease;
+}
+.feedback-item:hover {
+    transform: scale(1.01);
+}
+.bg-primary-subtle { background-color: #e7f1ff; }
+</style>
+{% endblock %}

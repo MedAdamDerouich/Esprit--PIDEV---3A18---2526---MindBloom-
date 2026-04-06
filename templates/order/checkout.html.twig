@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Finaliser ma commande - MindBloom{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="mb-4">
+                <a href="{{ path('app_cart_index') }}" class="btn btn-link text-muted p-0 text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i> Retour au panier
+                </a>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-7">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4">
+                        <h4 class="fw-bold mb-4">Informations de livraison</h4>
+                        <form action="{{ path('app_order_checkout') }}" method="POST">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small text-uppercase">Adresse de livraison</label>
+                                <textarea name="adresse" class="form-control rounded-3 border-0 bg-light py-3 shadow-none" rows="3" required placeholder="Votre adresse complète..."></textarea>
+                            </div>
+                            
+                            <div class="mb-5">
+                                <label class="form-label fw-bold small text-uppercase mb-3">Mode de paiement</label>
+                                <div class="row g-3">
+                                    <div class="col-sm-6">
+                                        <input type="radio" class="btn-check" name="paiement" id="card" value="CARTE" checked>
+                                        <label class="btn btn-outline-secondary w-100 rounded-3 py-3" for="card">
+                                            <i class="bi bi-credit-card fs-4 d-block mb-1"></i>
+                                            Carte Bancaire
+                                        </label>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <input type="radio" class="btn-check" name="paiement" id="cash" value="ESPECES">
+                                        <label class="btn btn-outline-secondary w-100 rounded-3 py-3" for="cash">
+                                            <i class="bi bi-cash-stack fs-4 d-block mb-1"></i>
+                                            Paiement à la livraison
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card bg-primary bg-opacity-10 border-0 rounded-4 p-4 mb-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        <i class="bi bi-info-circle"></i>
+                                    </div>
+                                    <p class="mb-0 small text-primary fw-medium">En cliquant sur confirmer, vous acceptez nos conditions générales de vente et confirmez votre engagement d'achat.</p>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+
+                <div class="col-md-5">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 2rem;">
+                        <h5 class="fw-bold mb-4">Résumé de la commande</h5>
+                        <div class="mb-4 max-height-300 overflow-auto pe-2">
+                            {% for item in items %}
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-secondary rounded-pill me-2">{{ item.quantite }}</span>
+                                        <h6 class="mb-0 fw-bold small text-truncate" style="max-width: 150px;">{{ item.produit.nom }}</h6>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="fw-bold small">{{ item.total|number_format(2, ',', ' ') }} DT</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="pt-4 border-top">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">Sous-total</span>
+                                <span class="fw-bold text-dark">{{ subtotal|number_format(2, ',', ' ') }} DT</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">TVA (7%)</span>
+                                <span class="fw-bold text-dark">{{ tva|number_format(2, ',', ' ') }} DT</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-4 pb-4 border-bottom">
+                                <span class="text-muted small">Livraison</span>
+                                <span class="text-primary fw-bold small">{{ shipping|number_format(2, ',', ' ') }} DT</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-4">
+                                <span class="h5 fw-bold">Total</span>
+                                <span class="h5 fw-bold text-primary">{{ total|number_format(2, ',', ' ') }} DT</span>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm mb-3">
+                                Confirmer la commande
+                            </button>
+                        </form>
+                            <div class="text-center">
+                                <small class="text-muted">Transaction 100% sécurisée</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

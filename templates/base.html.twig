@@ -21,6 +21,10 @@
     {% endfor %}
 {% endfor %}
 
+{% if app.user %}
+    {{ include('inc/_navbar.html.twig') }}
+{% endif %}
+
 {% block body %}{% endblock %}
 
 {# ── Logout confirmation modal ── #}

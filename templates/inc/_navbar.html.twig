@@ -1,0 +1,73 @@
+{% if is_granted('ROLE_USER') and not is_granted('ROLE_ADMIN') and not is_granted('ROLE_PSYC') %}
+<header style="background:white;height:80px;padding:0 50px;display:flex;align-items:center;
+               gap:30px;box-shadow:0 5px 10px rgba(0,0,0,0.05);position:sticky;top:0;z-index:1000;">
+
+    {# Logo + brand name #}
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom"
+             style="height:50px;width:50px;object-fit:contain;">
+        <span style="font-size:22px;font-weight:700;color:#2C3E50;">MindBloom</span>
+    </div>
+
+    {# Navigation links — centered #}
+    <nav style="flex:1;display:flex;justify-content:center;gap:25px;align-items:center;">
+        <a href="{{ path('app_patient_dashboard') }}"
+           style="font-size:14px;color:#2C3E50;text-decoration:none;{{ app.request.attributes.get('_route') == 'app_patient_dashboard' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Accueil</a>
+        <a href="{{ path('app_produit_index') }}" 
+           style="font-size:14px;color:#2C3E50;text-decoration:none;{{ app.request.attributes.get('_route') starts with 'app_produit' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Produits</a>
+        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Rendez-vous</a>
+        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Tests</a>
+        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Événements</a>
+        <a href="{{ path('app_order_history') }}" 
+           style="font-size:14px;color:#2C3E50;text-decoration:none;{{ app.request.attributes.get('_route') starts with 'app_order' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Mes Factures</a>
+    </nav>
+
+    {# Right actions #}
+    <div style="display:flex;align-items:center;gap:20px;flex-shrink:0;">
+
+        {# Invoices Icon #}
+        <a href="{{ path('app_order_history') }}" 
+           style="background:#E8F1FC;color:#4A90E2;border:none;border-radius:10px;padding:10px 15px;
+                  font-size:20px;cursor:pointer;line-height:1;text-decoration:none;" title="Mes Factures">📄</a>
+
+        {# Cart Icon - THE ONE USER WANTS #}
+        <a href="{{ path('app_cart_index') }}" 
+           style="background:#E8E8E8;border:none;border-radius:10px;padding:10px 15px;
+                  font-size:20px;cursor:pointer;line-height:1;text-decoration:none;" title="Mon Panier">🛒</a>
+
+        {# Wallet badge #}
+        <div style="display:flex;align-items:center;gap:8px;background:#EDF9F5;
+                    border-radius:20px;padding:8px 15px;">
+            <span style="font-size:16px;">💳</span>
+            <span style="font-size:14px;font-weight:700;color:#5FBF9F;">{{ app.user.solde|default('0.00') }} TND</span>
+            <a href="{{ path('app_wallet') }}"
+               style="background:#5FBF9F;color:white;border-radius:15px;padding:5px 12px;
+                      text-decoration:none;font-size:12px;font-weight:700;line-height:1;">+</a>
+        </div>
+
+        {# Profile pill #}
+        <div style="display:flex;align-items:center;gap:10px;background:#F8F9FA;
+                    border-radius:25px;padding:6px 15px 6px 8px;">
+            <div style="width:40px;height:40px;border-radius:50%;border:2px solid #4A90E2;
+                        background:white;display:flex;align-items:center;justify-content:center;
+                        overflow:hidden;flex-shrink:0;">
+                {% if app.user.profileImage %}
+                    <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}"
+                         style="width:100%;height:100%;object-fit:cover;" alt="">
+                {% else %}
+                    <span style="font-size:20px;color:#4A90E2;">👤</span>
+                {% endif %}
+            </div>
+            <div style="display:flex;flex-direction:column;">
+                <span style="font-size:9px;color:#999;">Bonjour,</span>
+                <span style="font-size:12px;font-weight:700;color:#2C3E50;">{{ app.user.fullName|split(' ')|first }}</span>
+            </div>
+        </div>
+
+        {# Déconnexion #}
+        <a href="{{ path('app_logout') }}"
+           style="background:#e74c3c;color:white;border-radius:20px;padding:8px 18px;
+                  font-size:11px;font-weight:600;text-decoration:none;">🚪</a>
+    </div>
+</header>
+{% endif %}

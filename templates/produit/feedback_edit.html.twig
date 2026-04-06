@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier mon avis - {{ produit.nom }}{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="mb-4">
+                <a href="{{ path('app_produit_show', {id: produit.id}) }}" class="btn btn-link text-muted p-0 text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i> Retour au produit
+                </a>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="bg-primary p-4 text-white">
+                    <h3 class="h5 fw-bold mb-0">Modifier votre avis</h3>
+                    <p class="small opacity-75 mb-0">{{ produit.nom }}</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    {{ form_start(form) }}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-uppercase">Votre Note</label>
+                            {{ form_widget(form.note, {attr: {class: 'form-select rounded-3 border-0 bg-light py-2 shadow-none'}}) }}
+                            {{ form_errors(form.note) }}
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-uppercase">Votre Commentaire</label>
+                            {{ form_widget(form.commentaire, {attr: {class: 'form-control rounded-3 border-0 bg-light py-3 shadow-none', rows: 5, placeholder: 'Partagez votre expérience avec ce produit...'}}) }}
+                            {{ form_errors(form.commentaire) }}
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary rounded-pill py-3 fw-bold shadow-sm">
+                                <i class="bi bi-check-circle me-2"></i> Mettre à jour l'avis
+                            </button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

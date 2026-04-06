@@ -1,0 +1,116 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Facture #{{ facture.id }} - MindBloom{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <div class="mb-4">
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_admin_order_index') }}" class="btn btn-link text-muted p-0 text-decoration-none">
+                        <i class="bi bi-arrow-left me-1"></i> Retour à la gestion admin
+                    </a>
+                {% else %}
+                    <a href="{{ path('app_order_history') }}" class="btn btn-link text-muted p-0 text-decoration-none">
+                        <i class="bi bi-arrow-left me-1"></i> Retour à mes commandes
+                    </a>
+                {% endif %}
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+                <div class="card-body p-4 p-md-5">
+                    <div class="row mb-5">
+                        <div class="col-sm-6">
+                            <h2 class="h4 fw-bold mb-3">MindBloom Boutique</h2>
+                            <p class="text-muted small mb-0">
+                                Avenue de l'indépendance<br>
+                                Tunis, Tunisie<br>
+                                contact@mindbloom.tn
+                            </p>
+                        </div>
+                        <div class="col-sm-6 text-sm-end mt-4 mt-sm-0">
+                            <h1 class="h3 fw-bold mb-1">FACTURE</h1>
+                            <p class="text-muted small mb-0">Réf: #{{ facture.id }}</p>
+                            <p class="text-muted small mb-0">Date: {{ facture.dateFacture|date('d/m/Y') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-5 py-4 border-top border-bottom">
+                        <div class="col-sm-6">
+                            <h6 class="fw-bold mb-3 small text-uppercase text-muted">Destinataire</h6>
+                            {% if facture.user %}
+                                <p class="fw-bold mb-1">{{ facture.user.fullName }}</p>
+                                <p class="text-muted small mb-0">{{ facture.user.email }}</p>
+                            {% else %}
+                                <p class="fw-bold mb-1 text-muted">Utilisateur supprimé</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-sm-6 text-sm-end mt-4 mt-sm-0">
+                            <h6 class="fw-bold mb-3 small text-uppercase text-muted">Adresse de livraison</h6>
+                            <p class="text-muted mb-0 small lh-lg">{{ facture.adresseLivraison|nl2br }}</p>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mb-5">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-3 py-3 border-0">Produit</th>
+                                    <th class="py-3 border-0 text-center" style="width: 100px;">Qté</th>
+                                    <th class="py-3 border-0 text-end">Prix Unitaire</th>
+                                    <th class="py-3 border-0 text-end pe-3" style="width: 130px;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cmd in commandes %}
+                                    <tr>
+                                        <td class="ps-3 py-3 border-0">
+                                            <div class="d-flex align-items-center">
+                                                {% if cmd.produit.image %}
+                                                    <img src="{{ asset('uploads/produits/' ~ cmd.produit.image) }}" class="rounded me-3" style="width: 40px; height: 40px; object-fit: cover;" alt="{{ cmd.produit.nom }}">
+                                                {% endif %}
+                                                <span class="fw-bold">{{ cmd.produit.nom }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="py-3 border-0 text-center">{{ cmd.quantite }}</td>
+                                        <td class="py-3 border-0 text-end text-muted">{{ cmd.produit.prix|number_format(2, ',', ' ') }} DT</td>
+                                        <td class="py-3 border-0 text-end pe-3 fw-bold">{{ (cmd.produit.prix * cmd.quantite)|number_format(2, ',', ' ') }} DT</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row justify-content-end">
+                        <div class="col-sm-6 col-md-5">
+                            <div class="bg-light p-4 rounded-4">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Sous-total</span>
+                                    <span class="fw-bold">{{ subtotal|number_format(2, ',', ' ') }} DT</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">TVA (7%)</span>
+                                    <span class="fw-bold">{{ tva|number_format(2, ',', ' ') }} DT</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-4 pb-4 border-bottom">
+                                    <span class="text-muted small">Livraison</span>
+                                    <span class="text-primary fw-bold small">{{ shipping|number_format(2, ',', ' ') }} DT</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="h5 fw-bold mb-0">Total</span>
+                                    <span class="h5 fw-bold mb-0 text-primary">{{ facture.montantTotal|number_format(2, ',', ' ') }} DT</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light border-0 p-4 text-center">
+                    <p class="small text-muted mb-0">Merci de votre confiance en MindBloom pour votre parcours de bien-être.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

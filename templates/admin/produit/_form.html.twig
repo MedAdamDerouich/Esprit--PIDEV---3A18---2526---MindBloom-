@@ -1,0 +1,24 @@
+{{ form_start(form) }}
+    <div class="row g-4">
+        <div class="col-md-12">
+            {{ form_row(form.nom) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.prix) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.quantite) }}
+        </div>
+        <div class="col-md-12">
+            {{ form_row(form.description) }}
+        </div>
+        <div class="col-md-12">
+            {{ form_row(form.imageFile) }}
+        </div>
+        <div class="col-md-12 mt-4 text-end">
+            <button class="btn btn-primary px-5 py-2 shadow-sm rounded-pill fw-bold">
+                {{ button_label|default('Enregistrer le produit') }}
+            </button>
+        </div>
+    </div>
+{{ form_end(form) }}

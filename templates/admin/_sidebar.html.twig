@@ -33,7 +33,8 @@
            class="{{ app.request.attributes.get('_route') starts with 'app_admin_order' ? 'active' : '' }}">
             <span class="nav-icon">📦</span> Commandes
         </a>
-        <a href="#">
+        <a href="{{ path('app_admin_test_index') }}"
+           class="{{ app.request.attributes.get('_route') starts with 'app_admin_test' ? 'active' : '' }}">
             <span class="nav-icon">📋</span> Tests
         </a>
 

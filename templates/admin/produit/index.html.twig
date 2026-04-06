@@ -1,38 +1,37 @@
-{% extends 'base.html.twig' %}
+{% extends 'admin/base.html.twig' %}
 
 {% block title %}Gestion des Produits - MindBloomAdmin{% endblock %}
 
-{% block body %}
-<div class="container-fluid py-4">
+{% block admin_header %}Catalogue des Produits{% endblock %}
+
+{% block admin_content %}
     <div class="row mb-4">
         <div class="col-md-6">
-            <h1 class="h2 text-dark font-weight-bold">Catalogue des Produits</h1>
             <p class="text-muted">Gérez votre inventaire et visualisez les stocks en temps réel.</p>
         </div>
         <div class="col-md-6 text-end">
-            <a href="{{ path('app_admin_produit_new') }}" class="btn btn-primary px-4 shadow-sm">
+            <a href="{{ path('app_admin_produit_new') }}" class="btn btn-primary px-4 shadow-sm rounded-pill">
                 <i class="bi bi-plus-circle me-1"></i> Nouveau Produit
             </a>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="bg-light text-uppercase small font-weight-bold text-muted">
                         <tr>
-                            <th class="ps-4 py-3">Produit</th>
-                            <th class="py-3">Stock</th>
-                            <th class="py-3">Prix</th>
-                            <th class="py-3">Date Ajout</th>
-                            <th class="py-3 text-center">Actions</th>
+                            <th class="ps-4 py-3 border-0">Produit</th>
+                            <th class="py-3 border-0">Stock</th>
+                            <th class="py-3 border-0">Prix</th>
+                            <th class="py-3 border-0 text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                     {% for produit in produits %}
                         <tr>
-                            <td class="ps-4">
+                            <td class="ps-4 py-4 border-0">
                                 <div class="d-flex align-items-center">
                                     {% if produit.image %}
                                         <img src="{{ asset('uploads/produits/' ~ produit.image) }}" alt="{{ produit.nom }}" class="rounded-3 me-3" style="width: 50px; height: 50px; object-fit: cover;">
@@ -47,26 +46,26 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>
+                            <td class="border-0">
                                 <span class="badge {{ produit.quantite > 10 ? 'bg-success-subtle text-success' : (produit.quantite > 0 ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger') }} px-2 py-1 rounded-pill">
                                     {{ produit.quantite }} en stock
                                 </span>
                             </td>
-                            <td class="fw-bold text-dark">
-                                {{ produit.prix|number_format(2, ',', ' ') }} €
+                            <td class="fw-bold text-dark border-0">
+                                {{ produit.prix|number_format(2, ',', ' ') }} DT
                             </td>
-                            <td class="text-muted small">
-                                {{ produit.dateAjout ? produit.dateAjout|date('d/m/Y') : '' }}
-                            </td>
-                            <td class="text-center pe-4">
-                                <div class="d-inline-flex gap-2">
-                                    <a href="{{ path('app_admin_produit_edit', {'id': produit.id}) }}" class="btn btn-sm btn-outline-primary border-0 rounded-circle" title="Modifier">
-                                        <i class="bi bi-pencil-square"></i>
+                            <td class="text-center pe-4 border-0">
+                                <div class="btn-group shadow-sm rounded-pill overflow-hidden border">
+                                    <a href="{{ path('app_admin_produit_feedbacks', {'id': produit.id}) }}" class="btn btn-sm btn-white bg-white border-0 py-2 px-3" title="Gérer les avis">
+                                        <i class="bi bi-chat-left-dots text-info"></i>
+                                    </a>
+                                    <a href="{{ path('app_admin_produit_edit', {'id': produit.id}) }}" class="btn btn-sm btn-white bg-white border-0 border-start py-2 px-3" title="Modifier">
+                                        <i class="bi bi-pencil-square text-primary"></i>
                                     </a>
                                     <form action="{{ path('app_admin_produit_delete', {'id': produit.id}) }}" method="post" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ produit.id) }}">
-                                        <button class="btn btn-sm btn-outline-danger border-0 rounded-circle" title="Supprimer">
-                                            <i class="bi bi-trash"></i>
+                                        <button class="btn btn-sm btn-white bg-white border-0 border-start py-2 px-3" title="Supprimer">
+                                            <i class="bi bi-trash text-danger"></i>
                                         </button>
                                     </form>
                                 </div>
@@ -74,7 +73,7 @@
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="5" class="py-5 text-center text-muted"> Aucun produit trouvé dans le catalogue. </td>
+                            <td colspan="4" class="py-5 text-center text-muted border-0"> Aucun produit trouvé dans le catalogue. </td>
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -82,5 +81,11 @@
             </div>
         </div>
     </div>
-</div>
+
+<style>
+.bg-success-subtle { background-color: #d1e7dd; }
+.bg-warning-subtle { background-color: #fff3cd; }
+.bg-danger-subtle { background-color: #f8d7da; }
+.btn-white:hover { background-color: #f8f9fa !important; }
+</style>
 {% endblock %}

@@ -114,7 +114,16 @@ class ProduitController extends AbstractController
         return $this->redirectToRoute('app_admin_produit_index', [], Response::HTTP_SEE_OTHER);
     }
 
-    #[Route('/feedback/{id}', name: 'app_admin_feedback_delete', methods: ['POST'])]
+    #[Route('/{id}/feedbacks', name: 'app_admin_produit_feedbacks', methods: ['GET'])]
+    public function feedbacks(Produit $produit): Response
+    {
+        return $this->render('admin/produit/feedbacks.html.twig', [
+            'produit' => $produit,
+            'feedbacks' => $produit->getFeedbacks(),
+        ]);
+    }
+
+    #[Route('/feedback/{id}/delete', name: 'app_admin_feedback_delete', methods: ['POST'])]
     public function deleteFeedback(Request $request, \App\Entity\Feedback $feedback, EntityManagerInterface $entityManager): Response
     {
         $produitId = $feedback->getProduit()->getId();
@@ -122,6 +131,12 @@ class ProduitController extends AbstractController
             $entityManager->remove($feedback);
             $entityManager->flush();
             $this->addFlash('success', 'Feedback supprimé avec succès.');
+        }
+
+        // Redirect back to either the admin feedbacks list or the product show if referer is public
+        $referer = $request->headers->get('referer');
+        if (str_contains($referer, '/admin/produit')) {
+            return $this->redirectToRoute('app_admin_produit_feedbacks', ['id' => $produitId]);
         }
 
         return $this->redirectToRoute('app_produit_show', ['id' => $produitId]);

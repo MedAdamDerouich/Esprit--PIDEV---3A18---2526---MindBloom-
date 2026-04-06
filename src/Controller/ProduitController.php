@@ -58,4 +58,45 @@ class ProduitController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+
+    #[Route('/avis/{id}/modifier', name: 'app_produit_feedback_edit', methods: ['GET', 'POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function editFeedback(Feedback $feedback, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        if ($feedback->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Vous ne pouvez pas modifier cet avis.');
+        }
+
+        $form = $this->createForm(FeedbackType::class, $feedback);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'Votre avis a été modifié !');
+            return $this->redirectToRoute('app_produit_show', ['id' => $feedback->getProduit()->getId()]);
+        }
+
+        return $this->render('produit/feedback_edit.html.twig', [
+            'feedback' => $feedback,
+            'produit' => $feedback->getProduit(),
+            'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/avis/{id}/supprimer', name: 'app_produit_feedback_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_USER')]
+    public function deleteFeedback(Feedback $feedback, EntityManagerInterface $entityManager): Response
+    {
+        if ($feedback->getUser() !== $this->getUser()) {
+             throw $this->createAccessDeniedException('Vous ne pouvez pas supprimer cet avis.');
+        }
+
+        $produitId = $feedback->getProduit()->getId();
+        $entityManager->remove($feedback);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Votre avis a été supprimé.');
+
+        return $this->redirectToRoute('app_produit_show', ['id' => $produitId]);
+    }
 }

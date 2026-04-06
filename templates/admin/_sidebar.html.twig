@@ -24,7 +24,8 @@
            class="{{ app.request.attributes.get('_route') starts with 'app_admin_produit' ? 'active' : '' }}">
             <span class="nav-icon">🛍️</span> Produits
         </a>
-        <a href="#">
+        <a href="{{ path('app_admin_order_index') }}"
+           class="{{ app.request.attributes.get('_route') starts with 'app_admin_order' ? 'active' : '' }}">
             <span class="nav-icon">📦</span> Commandes
         </a>
         <a href="#">

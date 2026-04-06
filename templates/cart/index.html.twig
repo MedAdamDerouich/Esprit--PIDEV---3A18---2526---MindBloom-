@@ -1,0 +1,112 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon Panier - MindBloom{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="mb-4">
+                <a href="{{ path('app_produit_index') }}" class="btn btn-link text-muted p-0 text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i> Continuer mes achats
+                </a>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4 py-3 border-0">Produit</th>
+                                    <th class="py-3 border-0">Prix</th>
+                                    <th class="py-3 border-0 text-center">Quantité</th>
+                                    <th class="py-3 border-0">Total</th>
+                                    <th class="py-3 border-0 pe-4 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                    <tr>
+                                        <td class="ps-4 py-4 border-0">
+                                            <div class="d-flex align-items-center">
+                                                {% if item.produit.image %}
+                                                    <img src="{{ asset('uploads/produits/' ~ item.produit.image) }}" class="rounded-3 me-3" style="width: 60px; height: 60px; object-fit: cover;" alt="{{ item.produit.nom }}">
+                                                {% endif %}
+                                                <div>
+                                                    <h6 class="mb-0 fw-bold">{{ item.produit.nom }}</h6>
+                                                    <small class="text-muted">Réf: #{{ item.produit.id }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 border-0">
+                                            {{ item.produit.prix|number_format(2, ',', ' ') }} DT
+                                        </td>
+                                        <td class="py-4 border-0">
+                                            <form action="{{ path('app_cart_update_quantity', {id: item.id}) }}" method="POST" class="d-flex justify-content-center">
+                                                <input type="number" name="quantite" value="{{ item.quantite }}" min="1" class="form-control form-control-sm text-center shadow-none" style="width: 70px;" onchange="this.form.submit()">
+                                            </form>
+                                        </td>
+                                        <td class="py-4 border-0 fw-bold">
+                                            {{ item.total|number_format(2, ',', ' ') }} DT
+                                        </td>
+                                        <td class="pe-4 py-4 border-0 text-end">
+                                            <form action="{{ path('app_cart_remove', {id: item.id}) }}" method="POST" class="d-inline" onsubmit="return confirm('Retirer ce produit ?');">
+                                                <button class="btn btn-sm btn-outline-danger border-0">
+                                                    <i class="bi bi-trash fs-5"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5">
+                                            <div class="py-4">
+                                                <i class="bi bi-cart-x text-muted display-1 mb-3"></i>
+                                                <p class="text-muted">Votre panier est vide.</p>
+                                                <a href="{{ path('app_produit_index') }}" class="btn btn-primary rounded-pill px-4 mt-3">Découvrir nos produits</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 2rem;">
+                <h5 class="fw-bold mb-4">Récapitulatif</h5>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Sous-total</span>
+                    <span class="fw-bold text-dark">{{ subtotal|number_format(2, ',', ' ') }} DT</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">TVA (7%)</span>
+                    <span class="fw-bold text-dark">{{ tva|number_format(2, ',', ' ') }} DT</span>
+                </div>
+                <div class="d-flex justify-content-between mb-4 pb-4 border-bottom">
+                    <span class="text-muted">Livraison</span>
+                    <span class="text-primary fw-bold">{{ shipping|number_format(2, ',', ' ') }} DT</span>
+                </div>
+                <div class="d-flex justify-content-between mb-4">
+                    <span class="h5 fw-bold">Total</span>
+                    <span class="h5 fw-bold text-primary">{{ total|number_format(2, ',', ' ') }} DT</span>
+                </div>
+                
+                {% if items|length > 0 %}
+                    <a href="{{ path('app_order_checkout') }}" class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm mb-3">
+                        Commander <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                {% endif %}
+                
+                <div class="text-center">
+                    <small class="text-muted"><i class="bi bi-shield-check me-1"></i> Paiement sécurisé & confidentialité garantie</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

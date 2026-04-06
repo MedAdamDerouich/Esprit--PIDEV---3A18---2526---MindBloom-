@@ -18,10 +18,29 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class TestController extends AbstractController
 {
     #[Route('/', name: 'app_test_index', methods: ['GET'])]
-    public function index(TestRepository $repository): Response
+    public function index(TestRepository $repository, EntityManagerInterface $em): Response
     {
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return $this->redirectToRoute('app_admin_test_index');
+        }
+
+        $tests = $repository->findAll();
+        $patientCounts = [];
+        
+        foreach ($tests as $test) {
+            $count = $em->getRepository(ResultatTest::class)->createQueryBuilder('r')
+                ->select('COUNT(DISTINCT r.patient)')
+                ->where('r.test = :test')
+                ->setParameter('test', $test)
+                ->getQuery()
+                ->getSingleScalarResult();
+            
+            $patientCounts[$test->getId()] = $count;
+        }
+
         return $this->render('test/index.html.twig', [
-            'tests' => $repository->findAll(),
+            'tests' => $tests,
+            'patientCounts' => $patientCounts,
         ]);
     }
 
@@ -51,21 +70,40 @@ class TestController extends AbstractController
 
     #[Route('/manage', name: 'app_test_manage', methods: ['GET'])]
     #[IsGranted('ROLE_PSYCHOLOGUE')]
-    public function manage(TestRepository $repository): Response
+    public function manage(TestRepository $repository, EntityManagerInterface $em): Response
     {
         $user = $this->getUser();
         if (!$user) {
             throw $this->createAccessDeniedException('Vous devez être connecté.');
         }
 
+        $tests = $repository->findBy(['user' => $user]);
+        $patientCounts = [];
+
+        foreach ($tests as $test) {
+            $count = $em->getRepository(ResultatTest::class)->createQueryBuilder('r')
+                ->select('COUNT(DISTINCT r.patient)')
+                ->where('r.test = :test')
+                ->setParameter('test', $test)
+                ->getQuery()
+                ->getSingleScalarResult();
+            
+            $patientCounts[$test->getId()] = $count;
+        }
+
         return $this->render('test/manage.html.twig', [
-            'tests' => $repository->findBy(['user' => $user]),
+            'tests' => $tests,
+            'patientCounts' => $patientCounts,
         ]);
     }
 
     #[Route('/{id}', name: 'app_test_show', methods: ['GET'])]
     public function show(Test $entity): Response
     {
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return $this->redirectToRoute('app_admin_test_show', ['id' => $entity->getId()]);
+        }
+
         return $this->render('test/show.html.twig', [
             'test' => $entity,
             'questions' => $entity->getQuestions(),
@@ -117,6 +155,10 @@ class TestController extends AbstractController
     #[Route('/{id}/submit', name: 'app_test_submit', methods: ['POST'])]
     public function submitTest(Request $request, Test $test, EntityManagerInterface $entityManager): Response
     {
+        if ($this->isGranted('ROLE_ADMIN') || $this->isGranted('ROLE_PSYCHOLOGUE')) {
+            throw $this->createAccessDeniedException('Seuls les patients peuvent passer des tests.');
+        }
+
         $scoreTotal = 0;
         
         $questions = $test->getQuestions();

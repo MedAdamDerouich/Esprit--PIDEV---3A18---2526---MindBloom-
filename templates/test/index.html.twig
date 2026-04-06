@@ -104,7 +104,7 @@
                             {% endif %}
                             
                             <a href="{{ path('app_test_show', {'id': test.id}) }}" style="background: #4A90E2; color: white; border-radius: 12px; padding: 10px 20px; font-size: 14px; font-weight: 700; text-decoration: none; transition: background 0.2s;" onmouseover="this.style.background='#357ABD'" onmouseout="this.style.background='#4A90E2'">
-                                Passer le test
+                                {{ is_granted('ROLE_PSYCHOLOGUE') ? '👁️ Voir le test' : 'Passer le test' }}
                             </a>
                         </div>
                     </div>

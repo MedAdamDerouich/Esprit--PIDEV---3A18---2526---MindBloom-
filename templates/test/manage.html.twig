@@ -62,25 +62,26 @@
                     
                     <h3 style="font-size: 22px; font-weight: 800; color: #2C3E50; margin-bottom: 15px; line-height: 1.3;">{{ test.nomTest }}</h3>
                     
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-                        <span style="background: #EDF9F5; color: #5FBF9F; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">
-                            {{ test.questions|length }} questions
-                        </span>
-                        <span style="background: #E8F1FC; color: #4A90E2; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">
-                            {{ test.resultats|length }} réponses patients
-                        </span>
-                    </div>
-                    
-                    <hr style="border:none; border-top: 1px solid #F0F0F0; margin-bottom: 20px;">
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 12px; color: #BDC3C7;">Créé le {{ test.dateTest ? test.dateTest|date('d/m/Y') : '' }}</span>
-                        
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <a href="{{ path('app_test_edit', {'id': test.id}) }}" style="color:#F39C12;text-decoration:none;font-size:18px;" title="Modifier le test">✏️</a>
-                            {{ include('test/_delete_form.html.twig', {'test': test}) }}
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                            <span style="background: #EDF9F5; color: #5FBF9F; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;">
+                                📝 {{ test.questions|length }} questions
+                            </span>
+                            <span style="background: #E8F1FC; color: #4A90E2; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;">
+                                👥 {{ patientCounts[test.id] ?? 0 }} patients ont passé ce test
+                            </span>
                         </div>
-                    </div>
+                        
+                        <hr style="border:none; border-top: 1px solid #F0F0F0; margin-bottom: 20px;">
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; color: #BDC3C7;">Créé le {{ test.dateTest ? test.dateTest|date('d/m/Y') : '' }}</span>
+                            
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <a href="{{ path('app_test_show', {'id': test.id}) }}" style="color:#4A90E2;text-decoration:none;font-size:18px;" title="Coup d'œil (Aperçu)">👁️</a>
+                                <a href="{{ path('app_test_edit', {'id': test.id}) }}" style="color:#F39C12;text-decoration:none;font-size:18px;" title="Modifier le test">✏️</a>
+                                {{ include('test/_delete_form.html.twig', {'test': test}) }}
+                            </div>
+                        </div>
                 </div>
             {% else %}
                 <div style="width: 100%; text-align: center; padding: 60px; background: white; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.03);">

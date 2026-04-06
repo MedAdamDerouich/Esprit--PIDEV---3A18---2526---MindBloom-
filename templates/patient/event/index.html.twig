@@ -7,22 +7,7 @@
 {% endblock %}
 
 {% block body %}
-<nav class="mb-navbar">
-    <div class="brand d-flex align-items-center gap-2">
-        <span style="font-size:24px;">🌸</span>
-        <span>MindBloom</span>
-    </div>
-    <div class="nav-links">
-        <a href="{{ path('app_patient_dashboard') }}">🏠 Accueil</a>
-        <a href="{{ path('app_wallet') }}">💳 Wallet</a>
-        <a href="{{ path('app_profile') }}">👤 Profil</a>
-        <a href="{{ path('app_patient_event_index') }}" class="active">🎉 Événements</a>
-    </div>
-    <div class="nav-actions">
-        <a href="{{ path('app_logout') }}" class="btn-mb-danger"
-           style="font-size:13px;padding:8px 14px;border-radius:8px;">Déconnexion</a>
-    </div>
-</nav>
+
 
 <div style="background: #f5f7fa; min-height: calc(100vh - 70px); padding: 30px;">
     <div class="container">

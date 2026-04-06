@@ -19,7 +19,8 @@
            style="font-size:14px;color:#2C3E50;text-decoration:none;{{ app.request.attributes.get('_route') == 'app_patient_cabinets_index' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Rendez-vous</a>
         
         <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Tests</a>
-        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Événements</a>
+        <a href="{{ path('app_patient_event_index') }}" 
+           style="font-size:14px;color:#2C3E50;text-decoration:none;{{ app.request.attributes.get('_route') starts with 'app_patient_event' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Événements</a>
         
         <a href="{{ path('app_patient_reservations') }}" 
            style="font-size:14px;color:#2C3E50;text-decoration:none;{{ app.request.attributes.get('_route') == 'app_patient_reservations' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Mes Réservations</a>

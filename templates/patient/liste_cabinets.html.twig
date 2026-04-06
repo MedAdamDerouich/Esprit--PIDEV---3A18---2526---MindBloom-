@@ -137,6 +137,23 @@
 
     </div>
 
+    <!-- Pagination Controls -->
+    {% if totalPages > 1 %}
+    <div style="display:flex; justify-content:center; gap:10px; margin-top:40px; margin-bottom:20px;">
+        {% if currentPage > 1 %}
+            <a href="{{ path('app_patient_cabinets_index', {page: currentPage - 1}) }}" style="background:white; color:#4A90E2; padding:8px 15px; border-radius:10px; text-decoration:none; font-weight:600; box-shadow:0 2px 5px rgba(0,0,0,0.05); transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Précédent</a>
+        {% endif %}
+
+        {% for i in 1..totalPages %}
+            <a href="{{ path('app_patient_cabinets_index', {page: i}) }}" style="background:{% if i == currentPage %}#4A90E2{% else %}white{% endif %}; color:{% if i == currentPage %}white{% else %}#2C3E50{% endif %}; padding:8px 15px; border-radius:10px; text-decoration:none; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05); min-width:40px; text-align:center; transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">{{ i }}</a>
+        {% endfor %}
+
+        {% if currentPage < totalPages %}
+            <a href="{{ path('app_patient_cabinets_index', {page: currentPage + 1}) }}" style="background:white; color:#4A90E2; padding:8px 15px; border-radius:10px; text-decoration:none; font-weight:600; box-shadow:0 2px 5px rgba(0,0,0,0.05); transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Suivant</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
 </div>
 
 <!-- OVERLAY MODAL -->

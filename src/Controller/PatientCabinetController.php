@@ -10,13 +10,28 @@ use Symfony\Component\Routing\Annotation\Route;
 class PatientCabinetController extends AbstractController
 {
     #[Route('/patient/cabinets', name: 'app_patient_cabinets_index')]
-    public function index(CabinetRepository $cabinetRepository): Response
+    public function index(CabinetRepository $cabinetRepository, \Symfony\Component\HttpFoundation\Request $request): Response
     {
-        // On récupère tous les cabinets disponibles avec leur psychologue rattaché
         $cabinets = $cabinetRepository->findAllWithPsychologue();
 
+        // Pagination setup
+        $page = $request->query->getInt('page', 1);
+        $limit = 3;
+        $totalCabinets = count($cabinets);
+        $totalPages = (int) ceil($totalCabinets / $limit);
+        
+        if ($page < 1) $page = 1;
+        if ($totalPages > 0 && $page > $totalPages) $page = $totalPages;
+
+        $offset = ($page - 1) * $limit;
+        
+        // Handle empty case
+        $paginatedCabinets = $totalCabinets > 0 ? array_slice($cabinets, $offset, $limit) : [];
+
         return $this->render('patient/liste_cabinets.html.twig', [
-            'cabinets' => $cabinets,
+            'cabinets' => $paginatedCabinets,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
         ]);
     }
 

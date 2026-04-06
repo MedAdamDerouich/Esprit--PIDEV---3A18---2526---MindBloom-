@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Symfony Dev Server",
+      "runtimeExecutable": "symfony",
+      "runtimeArgs": ["server:start"],
+      "port": 8000
+    },
+    {
+      "name": "PHP Built-in Server",
+      "runtimeExecutable": "php",
+      "runtimeArgs": ["-S", "localhost:8000", "-t", "public"],
+      "port": 8000
+    }
+  ]
+}

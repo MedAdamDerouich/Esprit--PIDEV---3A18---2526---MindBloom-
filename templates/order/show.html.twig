@@ -6,7 +6,7 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-8">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="mb-4">
                 {% if is_granted('ROLE_ADMIN') %}
                     <a href="{{ path('app_admin_order_index') }}" class="btn btn-link text-muted p-0 text-decoration-none">
                         <i class="bi bi-arrow-left me-1"></i> Retour à la gestion admin
@@ -16,9 +16,6 @@
                         <i class="bi bi-arrow-left me-1"></i> Retour à mes commandes
                     </a>
                 {% endif %}
-                <button class="btn btn-outline-dark rounded-pill px-4" onclick="window.print()">
-                    <i class="bi bi-printer me-2"></i> Imprimer
-                </button>
             </div>
 
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
@@ -116,12 +113,4 @@
     </div>
 </div>
 
-<style>
-@media print {
-    .btn, nav, footer { display: none !important; }
-    .card { border: none !important; box-shadow: none !important; margin: 0 !important; }
-    .container { max-width: 100% !important; width: 100% !important; padding: 0 !important; }
-    body { background: white !important; }
-}
-</style>
 {% endblock %}

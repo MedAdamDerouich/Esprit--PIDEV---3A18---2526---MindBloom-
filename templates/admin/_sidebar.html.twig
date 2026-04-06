@@ -14,7 +14,8 @@
            class="{{ app.request.attributes.get('_route') starts with 'app_admin_user' ? 'active' : '' }}">
             <span class="nav-icon">👥</span> Utilisateurs
         </a>
-        <a href="#">
+        <a href="{{ path('app_admin_wallets') }}"
+           class="{{ app.request.attributes.get('_route') starts with 'app_admin_wallet' ? 'active' : '' }}">
             <span class="nav-icon">💰</span> Wallets
         </a>
         <a href="#">

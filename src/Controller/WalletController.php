@@ -17,14 +17,17 @@ class WalletController extends AbstractController
 {
     #[Route('/wallet', name: 'app_wallet')]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
-    public function index(WalletService $walletService): Response
+    public function index(WalletService $walletService, EntityManagerInterface $em): Response
     {
         /** @var User $user */
         $user   = $this->getUser();
         $wallet = $walletService->getWallet($user);
 
         if (!$wallet) {
-            $this->addFlash('error', 'Aucun wallet trouvé pour ce compte.');
+            $wallet = new Wallet();
+            $wallet->setUser($user);
+            $em->persist($wallet);
+            $em->flush();
         }
 
         return $this->render('wallet/index.html.twig', [

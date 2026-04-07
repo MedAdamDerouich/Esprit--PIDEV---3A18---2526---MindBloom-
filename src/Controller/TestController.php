@@ -118,29 +118,32 @@ class TestController extends AbstractController
             $questionTexte = $request->request->get('texte_question');
             
             if (!empty($questionTexte)) {
+                // Create and persist the question first
                 $question = new \App\Entity\Question();
                 $question->setTexteQuestion($questionTexte);
                 $question->setTest($test);
                 $entityManager->persist($question);
+                $entityManager->flush(); // Flush to get the question ID
 
-                // Readd responses dynamically
-                $reponsesTextes = $request->request->all('reponse');
-                $reponsesValeurs = $request->request->all('valeur');
+                // Get arrays directly from request
+                $allData = $request->request->all();
+                $reponsesTextes = $allData['reponse'] ?? [];
+                $reponsesValeurs = $allData['valeur'] ?? [];
                 
-                if (is_array($reponsesTextes)) {
-                    foreach ($reponsesTextes as $key => $texte) {
-                        if (!empty($texte)) {
-                            $valeur = isset($reponsesValeurs[$key]) ? (int) $reponsesValeurs[$key] : 0;
-                            $reponse = new \App\Entity\Reponse();
-                            $reponse->setTexteReponse($texte);
-                            $reponse->setValeur($valeur);
-                            $reponse->setQuestion($question);
-                            $entityManager->persist($reponse);
-                        }
+                // Loop through all responses using foreach (handles both numeric and string keys)
+                foreach ($reponsesTextes as $key => $texte) {
+                    $texte = trim((string)$texte);
+                    if (!empty($texte)) {
+                        $valeur = isset($reponsesValeurs[$key]) ? (int)$reponsesValeurs[$key] : 0;
+                        $reponse = new \App\Entity\Reponse();
+                        $reponse->setTexteReponse($texte);
+                        $reponse->setValeur($valeur);
+                        $reponse->setQuestion($question);
+                        $entityManager->persist($reponse);
                     }
                 }
-
                 $entityManager->flush();
+
                 $this->addFlash('success', 'Question ajoutée avec succès !');
                 return $this->redirectToRoute('app_test_builder', ['id' => $test->getId()]);
             }

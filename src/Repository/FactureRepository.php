@@ -20,4 +20,18 @@ class FactureRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Facture::class);
     }
+
+    public function searchByUser(string $query, $user)
+    {
+        return $this->createQueryBuilder('f')
+            ->leftJoin('f.commandes', 'c')
+            ->leftJoin('c.produit', 'p')
+            ->where('f.user = :user')
+            ->andWhere('(p.nom LIKE :query OR CAST(f.id AS string) LIKE :query)')
+            ->setParameter('user', $user)
+            ->setParameter('query', '%' . $query . '%')
+            ->orderBy('f.dateFacture', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -10,6 +10,21 @@
         <span style="font-size:32px; font-weight:bold; color:#2D3748;">Votre historique de</span>
         <span style="font-size:32px; font-weight:bold; color:#4A90E2;">commandes</span>
         <span style="color:#718096; font-size:16px; margin-top:10px; text-align:center;">Suivez l'état de vos livraisons et gérez vos factures MindBloom.</span>
+
+        <!-- Search Bar -->
+        <div class="mt-4 w-100" style="max-width: 500px;">
+            <form action="{{ path('app_order_history') }}" method="GET" class="position-relative">
+                <input type="text" name="q" class="form-control rounded-pill ps-4 pe-5 py-2 shadow-sm border-0" placeholder="Rechercher par produit ou N° commande..." value="{{ searchTerm ?? '' }}">
+                <button type="submit" class="btn btn-primary rounded-circle position-absolute end-0 top-0 mt-1 me-1 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                    <i class="bi bi-search" style="font-size: 14px;"></i>
+                </button>
+            </form>
+            {% if searchTerm %}
+                <div class="text-center mt-2">
+                    <small class="text-muted">Résultats pour "{{ searchTerm }}" - <a href="{{ path('app_order_history') }}" class="text-decoration-none">Effacer</a></small>
+                </div>
+            {% endif %}
+        </div>
     </div>
 
     <div style="width:100%; max-width:1200px;">

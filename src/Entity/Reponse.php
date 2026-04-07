@@ -17,7 +17,7 @@ class Reponse
     #[ORM\Column(name: 'texte_reponse', type: Types::TEXT)]
     private ?string $texteReponse = null;
 
-    #[ORM\Column]
+    #[ORM\Column(name: 'valeur')]
     private ?int $valeur = null;
 
     #[ORM\ManyToOne(inversedBy: 'reponses')]

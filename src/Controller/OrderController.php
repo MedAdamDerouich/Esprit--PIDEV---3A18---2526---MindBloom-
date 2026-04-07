@@ -84,9 +84,14 @@ class OrderController extends AbstractController
     }
 
     #[Route('/historique', name: 'app_order_history', methods: ['GET'])]
-    public function history(FactureRepository $factureRepository): Response
+    public function history(FactureRepository $factureRepository, Request $request): Response
     {
-        $factures = $factureRepository->findBy(['user' => $this->getUser()], ['dateFacture' => 'DESC']);
+        $query = $request->query->get('q');
+        if ($query) {
+            $factures = $factureRepository->searchByUser($query, $this->getUser());
+        } else {
+            $factures = $factureRepository->findBy(['user' => $this->getUser()], ['dateFacture' => 'DESC']);
+        }
         
         // Ensure commands with missing products don't crash the list rendering
         foreach ($factures as $facture) {
@@ -104,7 +109,8 @@ class OrderController extends AbstractController
         }
 
         return $this->render('order/history.html.twig', [
-            'factures' => $factures
+            'factures' => $factures,
+            'searchTerm' => $query,
         ]);
     }
 

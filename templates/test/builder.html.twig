@@ -66,30 +66,30 @@
                         <div style="display:flex; flex-direction:column; gap:10px;" id="responses-container">
                             
                             <div style="display:flex; gap:10px;">
-                                <input type="text" name="reponse[]" placeholder="Jamais" value="Jamais" required
+                                <input type="text" name="reponse[0]" placeholder="Jamais" value="Jamais" required
                                        style="flex: 2; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
-                                <input type="number" name="valeur[]" placeholder="0 pts" value="0" required
+                                <input type="number" name="valeur[0]" placeholder="0 pts" value="0" required
                                        style="flex: 1; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
                             </div>
 
                             <div style="display:flex; gap:10px;">
-                                <input type="text" name="reponse[]" placeholder="Parfois" value="Parfois" required
+                                <input type="text" name="reponse[1]" placeholder="Parfois" value="Parfois" required
                                        style="flex: 2; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
-                                <input type="number" name="valeur[]" placeholder="10 pts" value="10" required
+                                <input type="number" name="valeur[1]" placeholder="10 pts" value="10" required
                                        style="flex: 1; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
                             </div>
                             
                             <div style="display:flex; gap:10px;">
-                                <input type="text" name="reponse[]" placeholder="Souvent" value="Souvent" required
+                                <input type="text" name="reponse[2]" placeholder="Souvent" value="Souvent" required
                                        style="flex: 2; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
-                                <input type="number" name="valeur[]" placeholder="20 pts" value="20" required
+                                <input type="number" name="valeur[2]" placeholder="20 pts" value="20" required
                                        style="flex: 1; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
                             </div>
 
                             <div style="display:flex; gap:10px;">
-                                <input type="text" name="reponse[]" placeholder="Toujours" value="Toujours" required
+                                <input type="text" name="reponse[3]" placeholder="Toujours" value="Toujours" required
                                        style="flex: 2; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
-                                <input type="number" name="valeur[]" placeholder="30 pts" value="30" required
+                                <input type="number" name="valeur[3]" placeholder="30 pts" value="30" required
                                        style="flex: 1; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
                             </div>
 
@@ -132,8 +132,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (!hasError) {
-            const reponsesInputs = document.querySelectorAll('input[name="reponse[]"]');
-            const valeursInputs = document.querySelectorAll('input[name="valeur[]"]');
+            // Select inputs with name starting with "reponse[" and "valeur["
+            const reponsesInputs = document.querySelectorAll('input[name^="reponse["]');
+            const valeursInputs = document.querySelectorAll('input[name^="valeur["]');
             
             let allEmpty = true;
             for (let i = 0; i < reponsesInputs.length; i++) {

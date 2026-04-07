@@ -14,6 +14,18 @@
            class="{{ app.request.attributes.get('_route') starts with 'app_admin_user' ? 'active' : '' }}">
             <span class="nav-icon">👥</span> Utilisateurs
         </a>
+        {% set _pendingCount = pending_psychologues_count() %}
+        <a href="{{ path('app_admin_pending_psychologues') }}"
+           class="{{ app.request.attributes.get('_route') starts with 'app_admin_pending_psycho' or app.request.attributes.get('_route') starts with 'app_admin_approve' or app.request.attributes.get('_route') starts with 'app_admin_reject' ? 'active' : '' }}"
+           style="display:flex; align-items:center; justify-content:space-between;">
+            <span><span class="nav-icon">🩺</span> Validations</span>
+            {% if _pendingCount > 0 %}
+                <span style="background:#ffc107; color:#333; font-size:11px; font-weight:800;
+                             border-radius:10px; padding:2px 8px; min-width:20px; text-align:center;">
+                    {{ _pendingCount }}
+                </span>
+            {% endif %}
+        </a>
         <a href="{{ path('app_admin_wallets') }}"
            class="{{ app.request.attributes.get('_route') starts with 'app_admin_wallet' ? 'active' : '' }}">
             <span class="nav-icon">💰</span> Wallets

@@ -9,11 +9,13 @@ use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 
 class RegistrationFormType extends AbstractType
 {
@@ -22,40 +24,124 @@ class RegistrationFormType extends AbstractType
         $builder
             ->add('fullName', TextType::class, [
                 'label' => 'Nom complet',
-                'constraints' => [new NotBlank(), new Length(['min' => 2])],
+                'attr' => [
+                    'placeholder' => 'Prénom Nom',
+                    'maxlength' => 100,
+                ],
+                'constraints' => [
+                    new NotBlank(['message' => 'Le nom complet est obligatoire.']),
+                    new Length([
+                        'min' => 2,
+                        'max' => 100,
+                        'minMessage' => 'Le nom doit contenir au moins {{ limit }} caractères.',
+                        'maxMessage' => 'Le nom ne peut pas dépasser {{ limit }} caractères.',
+                    ]),
+                    new Regex([
+                        'pattern' => '/^[a-zA-ZÀ-ÿ\s\-\']+$/u',
+                        'message' => 'Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes.',
+                    ]),
+                ],
             ])
             ->add('username', TextType::class, [
                 'label' => 'Nom d\'utilisateur',
-                'constraints' => [new NotBlank(), new Length(['min' => 3])],
+                'attr' => [
+                    'placeholder' => 'username',
+                    'maxlength' => 30,
+                ],
+                'constraints' => [
+                    new NotBlank(['message' => 'Le nom d\'utilisateur est obligatoire.']),
+                    new Length([
+                        'min' => 3,
+                        'max' => 30,
+                        'minMessage' => 'Le nom d\'utilisateur doit contenir au moins {{ limit }} caractères.',
+                        'maxMessage' => 'Le nom d\'utilisateur ne peut pas dépasser {{ limit }} caractères.',
+                    ]),
+                    new Regex([
+                        'pattern' => '/^[a-zA-Z0-9_]+$/',
+                        'message' => 'Le nom d\'utilisateur ne peut contenir que des lettres, chiffres et underscores.',
+                    ]),
+                ],
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Email',
+                'attr' => [
+                    'placeholder' => 'email@exemple.com',
+                    'maxlength' => 100,
+                ],
+                'constraints' => [
+                    new NotBlank(['message' => 'L\'email est obligatoire.']),
+                ],
             ])
-            ->add('phone', TextType::class, [
-                'label'    => 'Téléphone',
+            ->add('phone', TelType::class, [
+                'label' => 'Téléphone',
                 'required' => false,
+                'attr' => [
+                    'placeholder' => '12345678',
+                    'maxlength' => 8,
+                    'pattern' => '[0-9]{8}',
+                ],
+                'constraints' => [
+                    new Regex([
+                        'pattern' => '/^\d{8}$/',
+                        'message' => 'Le numéro de téléphone doit contenir exactement 8 chiffres.',
+                    ]),
+                ],
             ])
             ->add('address', TextType::class, [
-                'label'    => 'Adresse',
+                'label' => 'Adresse',
                 'required' => false,
+                'attr' => [
+                    'placeholder' => 'Votre adresse',
+                    'maxlength' => 255,
+                ],
+                'constraints' => [
+                    new Length([
+                        'max' => 255,
+                        'maxMessage' => 'L\'adresse ne peut pas dépasser {{ limit }} caractères.',
+                    ]),
+                ],
             ])
             ->add('dateOfBirth', BirthdayType::class, [
-                'label'    => 'Date de naissance',
-                'widget'   => 'single_text',
-                'required' => false,
+                'label' => 'Date de naissance',
+                'widget' => 'single_text',
+                'required' => true,
+                'constraints' => [
+                    new NotBlank(['message' => 'La date de naissance est obligatoire.']),
+                ],
             ])
             ->add('roles', HiddenType::class, [
                 'mapped' => false,
+                'data'   => 'PATIENT',
             ])
             ->add('plainPassword', RepeatedType::class, [
-                'type'            => PasswordType::class,
-                'mapped'          => false,
-                'first_options'   => ['label' => 'Mot de passe'],
-                'second_options'  => ['label' => 'Confirmer'],
+                'type' => PasswordType::class,
+                'mapped' => false,
+                'first_options' => [
+                    'label' => 'Mot de passe',
+                    'attr' => [
+                        'id' => 'password-field',
+                        'autocomplete' => 'new-password',
+                    ],
+                ],
+                'second_options' => [
+                    'label' => 'Confirmer',
+                    'attr' => [
+                        'autocomplete' => 'new-password',
+                    ],
+                ],
                 'invalid_message' => 'Les mots de passe ne correspondent pas.',
                 'constraints' => [
-                    new NotBlank(),
-                    new Length(['min' => 8, 'minMessage' => 'Le mot de passe doit contenir au moins 8 caractères.']),
+                    new NotBlank(['message' => 'Le mot de passe est obligatoire.']),
+                    new Length([
+                        'min' => 8,
+                        'max' => 128,
+                        'minMessage' => 'Le mot de passe doit contenir au moins {{ limit }} caractères.',
+                        'maxMessage' => 'Le mot de passe ne peut pas dépasser {{ limit }} caractères.',
+                    ]),
+                    new Regex([
+                        'pattern' => '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
+                        'message' => 'Le mot de passe doit contenir au moins une majuscule, une minuscule et un chiffre.',
+                    ]),
                 ],
             ]);
     }

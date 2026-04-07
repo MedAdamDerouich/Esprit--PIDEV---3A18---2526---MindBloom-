@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Facture;
 use App\Repository\CommandeRepository;
 use App\Repository\FactureRepository;
+use App\Service\WalletService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,7 +18,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class OrderController extends AbstractController
 {
     #[Route('/passer', name: 'app_order_checkout', methods: ['GET', 'POST'])]
-    public function checkout(Request $request, CommandeRepository $commandeRepository, EntityManagerInterface $entityManager): Response
+    public function checkout(Request $request, CommandeRepository $commandeRepository, EntityManagerInterface $entityManager, WalletService $walletService): Response
     {
         $user = $this->getUser();
         $cartItems = $commandeRepository->findCartByUser($user);
@@ -27,25 +28,40 @@ class OrderController extends AbstractController
             return $this->redirectToRoute('app_produit_index');
         }
 
-        if ($request->isMethod('POST')) {
-            $subtotal = 0;
-            foreach ($cartItems as $item) {
-                $subtotal += $item->getTotal();
-            }
+        $subtotal = array_reduce($cartItems, fn($c, $i) => $c + $i->getTotal(), 0);
+        $tva      = $subtotal * 0.07;
+        $shipping = 2;
+        $total    = $subtotal + $tva + $shipping;
 
-            $tva = $subtotal * 0.07;
-            $shipping = 2;
-            $total = $subtotal + $tva + $shipping;
+        if ($request->isMethod('POST')) {
+            $paiement = $request->request->get('paiement');
+
+            // ── Wallet payment ──────────────────────────────────────────
+            if ($paiement === 'WALLET') {
+                $success = $walletService->deduct(
+                    $user,
+                    $total,
+                    'Commande produits MindBloom'
+                );
+
+                if (!$success) {
+                    $this->addFlash('error', sprintf(
+                        'Solde insuffisant. Votre wallet contient %.2f DT et le total est %.2f DT.',
+                        $walletService->getBalance($user),
+                        $total
+                    ));
+                    return $this->redirectToRoute('app_order_checkout');
+                }
+            }
 
             $facture = new Facture();
             $facture->setUser($user);
             $facture->setMontantTotal($total);
             $facture->setAdresseLivraison($request->request->get('adresse'));
-            $facture->setTypePaiement($request->request->get('paiement'));
-            
+            $facture->setTypePaiement($paiement);
+
             foreach ($cartItems as $item) {
                 $facture->addCommande($item);
-                // Reduire le stock
                 $produit = $item->getProduit();
                 $produit->setQuantite($produit->getQuantite() - $item->getQuantite());
             }
@@ -57,17 +73,13 @@ class OrderController extends AbstractController
             return $this->redirectToRoute('app_order_history');
         }
 
-        $subtotal = array_reduce($cartItems, fn($c, $i) => $c + $i->getTotal(), 0);
-        $tva = $subtotal * 0.07;
-        $shipping = 2;
-        $total = $subtotal + $tva + $shipping;
-
         return $this->render('order/checkout.html.twig', [
-            'items' => $cartItems,
-            'subtotal' => $subtotal,
-            'tva' => $tva,
-            'shipping' => $shipping,
-            'total' => $total
+            'items'          => $cartItems,
+            'subtotal'       => $subtotal,
+            'tva'            => $tva,
+            'shipping'       => $shipping,
+            'total'          => $total,
+            'walletBalance'  => $walletService->getBalance($user),
         ]);
     }
 

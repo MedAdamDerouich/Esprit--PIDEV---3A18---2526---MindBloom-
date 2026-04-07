@@ -71,25 +71,52 @@
 .num-block .n.teal   { color: #5FBF9F; }
 .num-block .n.orange { color: #E67E22; }
 
-/* ── Middle columns ── */
-.mid-left {
+/* ── Module stat cards ── */
+.module-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+}
+.mod-card {
     background: white;
     border: 1px solid #EFEFEF;
-    border-radius: 10px;
-    padding: 24px;
+    border-radius: 12px;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: box-shadow 0.2s, transform 0.2s;
+    text-decoration: none;
 }
-.mid-left .section-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: #333;
+.mod-card:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+    transform: translateY(-2px);
+}
+.mod-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+.mod-body .mod-count {
+    font-size: 26px;
+    font-weight: 800;
+    color: #1a1a2e;
+    line-height: 1;
     margin-bottom: 4px;
 }
-.mid-left .section-hint {
-    font-size: 11px;
-    color: #bbb;
-    margin-bottom: 20px;
+.mod-body .mod-label {
+    font-size: 12px;
+    color: #999;
+    font-weight: 500;
 }
 
+/* ── Middle columns ── */
 .mid-right {
     background: white;
     border: 1px solid #EFEFEF;
@@ -249,70 +276,120 @@
             </div>
         </div>
 
-        {# Middle row #}
-        <div class="row g-3 mb-0">
+        {# Module stat cards grid #}
+        <div class="module-grid">
 
-            {# Line chart #}
-            <div class="col-md-8">
-                <div class="mid-left">
-                    <div class="section-label">Inscriptions</div>
-                    <div class="section-hint">Nouveaux comptes créés par mois</div>
-                    <canvas id="activityChart" height="120"></canvas>
+            <a href="{{ path('app_admin_produit_index') }}" class="mod-card">
+                <div class="mod-icon" style="background:#FFF3E0;">🛍️</div>
+                <div class="mod-body">
+                    <div class="mod-count" style="color:#E67E22;">{{ stats.produits }}</div>
+                    <div class="mod-label">Produits</div>
+                </div>
+            </a>
+
+            <a href="#" class="mod-card">
+                <div class="mod-icon" style="background:#E8F5E9;">📅</div>
+                <div class="mod-body">
+                    <div class="mod-count" style="color:#27ae60;">{{ stats.evenements }}</div>
+                    <div class="mod-label">Événements</div>
+                </div>
+            </a>
+
+            <a href="{{ path('app_admin_cabinets') }}" class="mod-card">
+                <div class="mod-icon" style="background:#E3F2FD;">🏥</div>
+                <div class="mod-body">
+                    <div class="mod-count" style="color:#4A90E2;">{{ stats.cabinets }}</div>
+                    <div class="mod-label">Cabinets</div>
+                </div>
+            </a>
+
+            <a href="{{ path('app_admin_order_index') }}" class="mod-card">
+                <div class="mod-icon" style="background:#F3E5F5;">📦</div>
+                <div class="mod-body">
+                    <div class="mod-count" style="color:#8E44AD;">{{ stats.commandes }}</div>
+                    <div class="mod-label">Commandes</div>
+                </div>
+            </a>
+
+            <a href="#" class="mod-card">
+                <div class="mod-icon" style="background:#E0F7FA;">📋</div>
+                <div class="mod-body">
+                    <div class="mod-count" style="color:#00ACC1;">{{ stats.tests }}</div>
+                    <div class="mod-label">Tests</div>
+                </div>
+            </a>
+
+            <a href="{{ path('app_admin_wallets') }}" class="mod-card">
+                <div class="mod-icon" style="background:#E8F5E9;">💰</div>
+                <div class="mod-body">
+                    <div class="mod-count" style="color:#5FBF9F;">{{ stats.revenue }}</div>
+                    <div class="mod-label">DT en wallets</div>
+                </div>
+            </a>
+
+            <a href="{{ path('app_admin_cabinets') }}" class="mod-card">
+                <div class="mod-icon" style="background:#FFF8E1;">📆</div>
+                <div class="mod-body">
+                    <div class="mod-count" style="color:#F39C12;">{{ stats.reservations }}</div>
+                    <div class="mod-label">Réservations</div>
+                </div>
+            </a>
+
+            <a href="{{ path('app_admin_users') }}" class="mod-card">
+                <div class="mod-icon" style="background:#FDECEA;">👥</div>
+                <div class="mod-body">
+                    <div class="mod-count" style="color:#E74C3C;">{{ stats.suspended }}</div>
+                    <div class="mod-label">Comptes suspendus</div>
+                </div>
+            </a>
+
+        </div>
+
+        {# Role breakdown — full width #}
+        <div class="mid-right mb-3" style="flex-direction:row;align-items:center;gap:32px;padding:20px 28px;">
+            <div style="font-size:13px;font-weight:600;color:#333;white-space:nowrap;min-width:90px;">
+                Répartition<br><span style="font-size:11px;color:#bbb;font-weight:400;">par rôle</span>
+            </div>
+
+            {% set total = stats.users > 0 ? stats.users : 1 %}
+
+            <div style="flex:1;">
+                <div class="rb-top mb-1">
+                    <span class="rb-name">Patients</span>
+                    <span class="rb-count">{{ stats.patients }}</span>
+                </div>
+                <div class="role-bar-track">
+                    <div class="role-bar-fill" style="width:{{ ((stats.patients/total)*100)|round }}%;background:#5FBF9F;"></div>
                 </div>
             </div>
 
-            {# Role breakdown #}
-            <div class="col-md-4">
-                <div class="mid-right">
-                    <div>
-                        <div class="section-label" style="font-size:13px;font-weight:600;color:#333;margin-bottom:4px;">
-                            Répartition
-                        </div>
-                        <div style="font-size:11px;color:#bbb;margin-bottom:20px;">par type de compte</div>
-
-                        {% set total = stats.users > 0 ? stats.users : 1 %}
-
-                        <div class="role-bar-row">
-                            <div class="rb-top">
-                                <span class="rb-name">Patients</span>
-                                <span class="rb-count">{{ stats.patients }}</span>
-                            </div>
-                            <div class="role-bar-track">
-                                <div class="role-bar-fill" style="width:{{ ((stats.patients/total)*100)|round }}%;background:#5FBF9F;"></div>
-                            </div>
-                        </div>
-
-                        <div class="role-bar-row" style="margin-top:16px;">
-                            <div class="rb-top">
-                                <span class="rb-name">Psychologues</span>
-                                <span class="rb-count">{{ stats.psychologues }}</span>
-                            </div>
-                            <div class="role-bar-track">
-                                <div class="role-bar-fill" style="width:{{ ((stats.psychologues/total)*100)|round }}%;background:#4A90E2;"></div>
-                            </div>
-                        </div>
-
-                        <div class="role-bar-row" style="margin-top:16px;">
-                            <div class="rb-top">
-                                <span class="rb-name">Admins</span>
-                                <span class="rb-count">{{ stats.admins }}</span>
-                            </div>
-                            <div class="role-bar-track">
-                                <div class="role-bar-fill" style="width:{{ ((stats.admins/total)*100)|round }}%;background:#E67E22;"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="border-top:1px solid #F3F3F3;padding-top:16px;">
-                        <div style="font-size:11px;color:#bbb;margin-bottom:10px;">accès rapide</div>
-                        <a href="{{ path('app_admin_users') }}"
-                           style="display:block;padding:10px 14px;background:#4A90E2;color:white;
-                                  border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;
-                                  text-align:center;">
-                            Voir tous les utilisateurs
-                        </a>
-                    </div>
+            <div style="flex:1;">
+                <div class="rb-top mb-1">
+                    <span class="rb-name">Psychologues</span>
+                    <span class="rb-count">{{ stats.psychologues }}</span>
                 </div>
+                <div class="role-bar-track">
+                    <div class="role-bar-fill" style="width:{{ ((stats.psychologues/total)*100)|round }}%;background:#4A90E2;"></div>
+                </div>
+            </div>
+
+            <div style="flex:1;">
+                <div class="rb-top mb-1">
+                    <span class="rb-name">Admins</span>
+                    <span class="rb-count">{{ stats.admins }}</span>
+                </div>
+                <div class="role-bar-track">
+                    <div class="role-bar-fill" style="width:{{ ((stats.admins/total)*100)|round }}%;background:#E67E22;"></div>
+                </div>
+            </div>
+
+            <div style="border-left:1px solid #F3F3F3;padding-left:28px;flex-shrink:0;">
+                <a href="{{ path('app_admin_users') }}"
+                   style="display:block;padding:10px 20px;background:#4A90E2;color:white;
+                          border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;
+                          text-align:center;white-space:nowrap;">
+                    Voir tous les utilisateurs
+                </a>
             </div>
         </div>
 
@@ -392,43 +469,4 @@
 </div>
 {% endblock %}
 
-{% block javascripts %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-new Chart(document.getElementById('activityChart'), {
-    type: 'line',
-    data: {
-        labels: {{ chartLabels|json_encode|raw }},
-        datasets: [{
-            label: 'Inscriptions',
-            data: {{ chartData|json_encode|raw }},
-            borderColor: '#4A90E2',
-            backgroundColor: 'rgba(74,144,226,0.06)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4,
-            pointBackgroundColor: '#fff',
-            pointBorderColor: '#4A90E2',
-            pointBorderWidth: 2,
-            pointRadius: 4,
-            pointHoverRadius: 6
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-            y: {
-                beginAtZero: true,
-                grid: { color: '#F5F5F5' },
-                ticks: { color: '#ccc', font: { size: 11 }, stepSize: 1 }
-            },
-            x: {
-                grid: { display: false },
-                ticks: { color: '#ccc', font: { size: 11 } }
-            }
-        }
-    }
-});
-</script>
-{% endblock %}
+{% block javascripts %}{% endblock %}

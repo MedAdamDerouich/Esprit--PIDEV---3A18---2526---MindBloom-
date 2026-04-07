@@ -31,9 +31,6 @@ class Wallet
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
     private string $status = self::STATUS_ACTIVE;
 
-    #[ORM\Column(type: 'string', length: 3)]
-    private string $currency = 'EUR';
-
     #[ORM\Column(name: 'created_at', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $createdAt = null;
 
@@ -66,9 +63,6 @@ class Wallet
 
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $status): static { $this->status = $status; return $this; }
-
-    public function getCurrency(): string { return $this->currency; }
-    public function setCurrency(string $currency): static { $this->currency = $currency; return $this; }
 
     public function isActive(): bool { return $this->status === self::STATUS_ACTIVE; }
 

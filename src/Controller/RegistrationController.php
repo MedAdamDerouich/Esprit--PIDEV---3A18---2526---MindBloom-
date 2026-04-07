@@ -36,7 +36,13 @@ class RegistrationController extends AbstractController
             // Set role from hidden input (values: PATIENT or PSYCHOLOGUE)
             $roleInput = $form->get('roles')->getData();
             $allowed   = [User::ROLE_PATIENT, User::ROLE_PSYCHOLOGUE];
-            $user->setRole(in_array($roleInput, $allowed) ? $roleInput : User::ROLE_PATIENT);
+            $role      = in_array($roleInput, $allowed) ? $roleInput : User::ROLE_PATIENT;
+            $user->setRole($role);
+
+            // Psychologues require admin approval before they can log in
+            if ($role === User::ROLE_PSYCHOLOGUE) {
+                $user->setStatus(User::STATUS_PENDING);
+            }
 
             $em->persist($user);
             $em->flush();
@@ -47,7 +53,11 @@ class RegistrationController extends AbstractController
             $em->persist($wallet);
             $em->flush();
 
-            $this->addFlash('success', 'Compte créé avec succès ! Connectez-vous.');
+            if ($role === User::ROLE_PSYCHOLOGUE) {
+                $this->addFlash('success', 'Votre compte psychologue a été créé. Il sera activé après validation par l\'administrateur.');
+            } else {
+                $this->addFlash('success', 'Compte créé avec succès ! Connectez-vous.');
+            }
             return $this->redirectToRoute('app_login');
         }
 

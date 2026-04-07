@@ -26,6 +26,12 @@ class UserChecker implements UserCheckerInterface
                 'Votre compte a été suspendu. Veuillez contacter l\'administrateur.'
             );
         }
+
+        if ($user->getStatus() === User::STATUS_PENDING) {
+            throw new CustomUserMessageAccountStatusException(
+                'Votre compte est en attente de validation par l\'administrateur. Vous serez notifié dès son approbation.'
+            );
+        }
     }
 
     public function checkPostAuth(UserInterface $user): void {}

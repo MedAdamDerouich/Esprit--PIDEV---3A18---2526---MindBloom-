@@ -11,7 +11,7 @@ class Reponse
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: 'id')]
+    #[ORM\Column(name: 'id_reponse')]
     private ?int $id = null;
 
     #[ORM\Column(name: 'texte_reponse', type: Types::TEXT)]
@@ -21,7 +21,7 @@ class Reponse
     private ?int $valeur = null;
 
     #[ORM\ManyToOne(inversedBy: 'reponses')]
-    #[ORM\JoinColumn(name: 'question_id', referencedColumnName: 'id_question', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_question', referencedColumnName: 'id_question', nullable: false)]
     private ?Question $question = null;
 
     public function getId(): ?int

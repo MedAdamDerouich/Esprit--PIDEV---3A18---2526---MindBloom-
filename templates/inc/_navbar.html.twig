@@ -1,80 +1,120 @@
 {# Main Patient Navbar - Used by base.html.twig #}
 {% if is_granted('ROLE_PATIENT') %}
-<header style="background:white;height:70px;padding:0 50px;display:flex;align-items:center;
-               gap:30px;box-shadow:0 5px 10px rgba(0,0,0,0.05);position:sticky;top:0;z-index:1000;">
+<header style="background:white;height:85px;padding:0 50px;display:flex;align-items:center;
+               gap:30px;box-shadow:0 4px 18px rgba(0,0,0,0.07);position:sticky;top:0;z-index:1000;">
 
-    {# Logo + brand name - Clickable to return home #}
-    <a href="{{ path('app_patient_dashboard') }}" style="display:flex;align-items:center;gap:10px;flex-shrink:0;text-decoration:none;">
+    {# Logo + brand name #}
+    <a href="{{ path('app_patient_dashboard') }}" style="display:flex;align-items:center;gap:12px;flex-shrink:0;text-decoration:none;">
         <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom"
-             style="height:45px;width:45px;object-fit:contain;">
-        <span style="font-size:22px;font-weight:800;color:#2C3E50;">MindBloom</span>
+             style="height:70px;width:70px;object-fit:contain;">
+        <span style="font-size:24px;font-weight:800;color:#2C3E50;">MindBloom</span>
     </a>
 
-    {# Navigation links — centered (Accueil removed) #}
-    <nav style="flex:1;display:flex;justify-content:center;gap:25px;align-items:center;">
-        <a href="{{ path('app_produit_index') }}" 
-           style="font-size:14px;color:#2C3E50;text-decoration:none;{{ app.request.attributes.get('_route') starts with 'app_produit' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Produits</a>
-        
-        <a href="{{ path('app_patient_cabinets_index') }}" 
-           style="font-size:14px;color:#2C3E50;text-decoration:none;{{ app.request.attributes.get('_route') == 'app_patient_cabinets_index' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Rendez-vous</a>
-        
-        <a href="{{ path('app_test_index') }}" 
-           style="font-size:14px;color:#2C3E50;text-decoration:none;{{ app.request.attributes.get('_route') starts with 'app_test' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Tests</a>
-        <a href="{{ path('app_patient_event_index') }}" 
-           style="font-size:14px;color:#2C3E50;text-decoration:none;{{ app.request.attributes.get('_route') starts with 'app_patient_event' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Événements</a>
-        
-        <a href="{{ path('app_patient_reservations') }}" 
-           style="font-size:14px;color:#2C3E50;text-decoration:none;{{ app.request.attributes.get('_route') == 'app_patient_reservations' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Mes Réservations</a>
+    {# Navigation links — centered #}
+    <nav style="flex:1;display:flex;justify-content:center;gap:30px;align-items:center;">
+        <a href="{{ path('app_produit_index') }}"
+           style="font-size:14px;color:#2C3E50;text-decoration:none;padding-bottom:3px;
+                  {{ app.request.attributes.get('_route') starts with 'app_produit' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Produits</a>
+
+        <a href="{{ path('app_patient_cabinets_index') }}"
+           style="font-size:14px;color:#2C3E50;text-decoration:none;padding-bottom:3px;
+                  {{ app.request.attributes.get('_route') == 'app_patient_cabinets_index' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Rendez-vous</a>
+
+        <a href="{{ path('app_test_index') }}"
+           style="font-size:14px;color:#2C3E50;text-decoration:none;padding-bottom:3px;
+                  {{ app.request.attributes.get('_route') starts with 'app_test' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Tests</a>
+
+        <a href="{{ path('app_patient_event_index') }}"
+           style="font-size:14px;color:#2C3E50;text-decoration:none;padding-bottom:3px;
+                  {{ app.request.attributes.get('_route') starts with 'app_patient_event' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Événements</a>
+
+        <a href="{{ path('app_patient_reservations') }}"
+           style="font-size:14px;color:#2C3E50;text-decoration:none;padding-bottom:3px;
+                  {{ app.request.attributes.get('_route') == 'app_patient_reservations' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Mes Réservations</a>
     </nav>
 
     {# Right actions #}
-    <div style="display:flex;align-items:center;gap:15px;flex-shrink:0;">
+    <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
 
         {# Factures #}
-        <a href="{{ path('app_order_history') }}" 
-           style="background:#f4f4f4;border:none;border-radius:10px;padding:8px 12px;
-                  font-size:18px;cursor:pointer;line-height:1;text-decoration:none;" title="Mes Factures">🧾</a>
+        <a href="{{ path('app_order_history') }}"
+           style="background:#F4F4F4;border-radius:12px;padding:9px 13px;
+                  font-size:19px;line-height:1;text-decoration:none;transition:background 0.15s;"
+           title="Mes Factures"
+           onmouseover="this.style.background='#E8E8E8'" onmouseout="this.style.background='#F4F4F4'">🧾</a>
 
         {# Cart #}
-        <a href="{{ path('app_cart_index') }}" 
-           style="background:#f4f4f4;border:none;border-radius:10px;padding:8px 12px;
-                  font-size:18px;cursor:pointer;line-height:1;text-decoration:none;" title="Mon Panier">🛒</a>
+        <a href="{{ path('app_cart_index') }}"
+           style="background:#F4F4F4;border-radius:12px;padding:9px 13px;
+                  font-size:19px;line-height:1;text-decoration:none;transition:background 0.15s;"
+           title="Mon Panier"
+           onmouseover="this.style.background='#E8E8E8'" onmouseout="this.style.background='#F4F4F4'">🛒</a>
 
         {# Wallet badge #}
-        <div style="display:flex;align-items:center;gap:6px;background:#EDF9F5;
-                    border-radius:20px;padding:6px 12px;">
-            <span style="font-size:15px;">💳</span>
-            <span style="font-size:13px;font-weight:700;color:#5FBF9F;">{{ app.user.solde|default('0.00') }} TND</span>
-            <a href="{{ path('app_wallet') }}"
-               style="background:#5FBF9F;color:white;border-radius:15px;padding:4px 10px;
-                      text-decoration:none;font-size:11px;font-weight:700;line-height:1;">+</a>
-        </div>
-
-        {# Profile pill #}
-        <div style="display:flex;align-items:center;gap:8px;background:#F8F9FA;
-                    border-radius:25px;padding:4px 12px 4px 6px;">
-            <div style="width:34px;height:34px;border-radius:50%;border:2px solid #4A90E2;
-                        background:white;display:flex;align-items:center;justify-content:center;
-                        overflow:hidden;flex-shrink:0;">
-                {% if app.user.profileImage %}
-                    <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}"
-                         style="width:100%;height:100%;object-fit:cover;" alt="">
-                {% else %}
-                    <span style="font-size:16px;color:#4A90E2;">👤</span>
-                {% endif %}
+        <a href="{{ path('app_wallet') }}" style="text-decoration:none;">
+            <div style="display:flex;align-items:center;gap:6px;
+                        background:{{ app.request.attributes.get('_route') == 'app_wallet' ? '#D4F1E8' : '#EDF9F5' }};
+                        border-radius:22px;padding:7px 14px;
+                        border:1.5px solid {{ app.request.attributes.get('_route') == 'app_wallet' ? '#5FBF9F' : 'transparent' }};
+                        transition:all 0.15s;">
+                <span style="font-size:16px;">💳</span>
+                <span style="font-size:13px;font-weight:700;color:#5FBF9F;">{{ wallet_balance(app.user) }} DT</span>
             </div>
-            <span style="font-size:12px;font-weight:700;color:#2C3E50;">{{ app.user.fullName|split(' ')|first }}</span>
-        </div>
+        </a>
 
-        {# Modifier button #}
-        <a href="{{ path('app_profile') }}"
-           style="background:#4A90E2;color:white;border-radius:20px;padding:7px 15px;
-                  font-size:11px;font-weight:600;text-decoration:none;">Modifier</a>
+        {# Divider #}
+        <div style="width:1px;height:36px;background:#EBEBEB;"></div>
+
+        {# Profile pill — clickable, links to profile #}
+        <a href="{{ path('app_profile') }}" style="text-decoration:none;" title="Modifier mon profil">
+            <div style="display:flex;align-items:center;gap:10px;
+                        background:{{ app.request.attributes.get('_route') starts with 'app_profile' ? '#EAF2FB' : '#F8F9FA' }};
+                        border:1.5px solid {{ app.request.attributes.get('_route') starts with 'app_profile' ? '#4A90E2' : 'transparent' }};
+                        border-radius:30px;padding:5px 14px 5px 5px;
+                        transition:all 0.15s;cursor:pointer;"
+                 onmouseover="this.style.background='#EAF2FB';this.style.border='1.5px solid #4A90E2';"
+                 onmouseout="this.style.background='{{ app.request.attributes.get('_route') starts with 'app_profile' ? '#EAF2FB' : '#F8F9FA' }}';this.style.border='1.5px solid {{ app.request.attributes.get('_route') starts with 'app_profile' ? '#4A90E2' : 'transparent' }}';">
+
+                {# Avatar #}
+                <div style="position:relative;width:40px;height:40px;flex-shrink:0;">
+                    <div style="width:40px;height:40px;border-radius:50%;border:2px solid #4A90E2;
+                                background:white;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                        {% if app.user.profileImage %}
+                            <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}"
+                                 style="width:100%;height:100%;object-fit:cover;" alt="">
+                        {% else %}
+                            <span style="font-size:18px;color:#4A90E2;">👤</span>
+                        {% endif %}
+                    </div>
+                    {# Edit pencil badge #}
+                    <div style="position:absolute;bottom:-1px;right:-2px;width:16px;height:16px;
+                                background:#4A90E2;border-radius:50%;border:2px solid white;
+                                display:flex;align-items:center;justify-content:center;">
+                        <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
+                            <path d="M7 1.5L8.5 3 3.5 8H2V6.5L7 1.5Z" fill="white" stroke="white" stroke-width="0.3"/>
+                        </svg>
+                    </div>
+                </div>
+
+                {# Name #}
+                <div>
+                    <div style="font-size:11px;color:#aaa;line-height:1.1;">Bonjour,</div>
+                    <div style="font-size:13px;font-weight:700;color:#2C3E50;line-height:1.2;">
+                        {{ app.user.fullName|split(' ')|first }}
+                    </div>
+                </div>
+            </div>
+        </a>
 
         {# Déconnexion #}
         <a href="{{ path('app_logout') }}"
-           style="background:#e74c3c;color:white;border-radius:20px;padding:7px 15px;
-                  font-size:11px;font-weight:600;text-decoration:none;">Déconnexion</a>
+           style="background:#FEF0EF;color:#e74c3c;border:1.5px solid #FBCFCC;border-radius:22px;
+                  padding:8px 16px;font-size:12px;font-weight:600;text-decoration:none;
+                  transition:all 0.15s;white-space:nowrap;"
+           onmouseover="this.style.background='#e74c3c';this.style.color='white';"
+           onmouseout="this.style.background='#FEF0EF';this.style.color='#e74c3c';">
+            Déconnexion
+        </a>
     </div>
 </header>
 {% elseif is_granted('ROLE_PSYCHOLOGUE') %}

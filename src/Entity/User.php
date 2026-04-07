@@ -23,6 +23,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     const STATUS_ACTIVE    = 'ACTIVE';
     const STATUS_SUSPENDED = 'SUSPENDED';
     const STATUS_INACTIVE  = 'INACTIVE';
+    const STATUS_PENDING   = 'PENDING';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -30,18 +31,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(name: 'full_name', type: 'string', length: 255)]
-    #[Assert\NotBlank]
-    #[Assert\Length(min: 2)]
+    #[Assert\NotBlank(message: 'Le nom complet est obligatoire.')]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: 'Le nom doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères.'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-ZÀ-ÿ\s\-\']+$/u',
+        message: 'Le nom ne peut contenir que des lettres, espaces, tirets et apostrophes.'
+    )]
     private ?string $fullName = null;
 
     #[ORM\Column(type: 'string', length: 100, unique: true)]
-    #[Assert\NotBlank]
-    #[Assert\Email]
+    #[Assert\NotBlank(message: 'L\'email est obligatoire.')]
+    #[Assert\Email(message: 'Veuillez entrer une adresse email valide.')]
+    #[Assert\Length(max: 100, maxMessage: 'L\'email ne peut pas dépasser {{ limit }} caractères.')]
     private ?string $email = null;
 
     #[ORM\Column(type: 'string', length: 50, unique: true)]
-    #[Assert\NotBlank]
-    #[Assert\Length(min: 3)]
+    #[Assert\NotBlank(message: 'Le nom d\'utilisateur est obligatoire.')]
+    #[Assert\Length(
+        min: 3,
+        max: 30,
+        minMessage: 'Le nom d\'utilisateur doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le nom d\'utilisateur ne peut pas dépasser {{ limit }} caractères.'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-Z0-9_]+$/',
+        message: 'Le nom d\'utilisateur ne peut contenir que des lettres, chiffres et underscores.'
+    )]
     private ?string $username = null;
 
     // Stored as single string enum in DB: PATIENT | PSYCHOLOGUE | ADMIN
@@ -52,18 +72,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private string $password = '';
 
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    #[Assert\Regex(
+        pattern: '/^\d{8}$/',
+        message: 'Le numéro de téléphone doit contenir exactement 8 chiffres.'
+    )]
     private ?string $phone = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Assert\Length(max: 255, maxMessage: 'L\'adresse ne peut pas dépasser {{ limit }} caractères.')]
     private ?string $address = null;
 
     #[ORM\Column(name: 'date_of_birth', type: 'date', nullable: true)]
+    #[Assert\NotBlank(message: 'La date de naissance est obligatoire.')]
+    #[Assert\LessThan(
+        value: 'today',
+        message: 'La date de naissance doit être dans le passé.'
+    )]
     private ?\DateTimeInterface $dateOfBirth = null;
 
     #[ORM\Column(name: 'profile_image', type: 'string', length: 255, nullable: true)]
     private ?string $profileImage = null;
 
-    #[ORM\Column(type: 'string', length: 20, columnDefinition: "ENUM('ACTIVE','INACTIVE','SUSPENDED') DEFAULT 'ACTIVE'")]
+    #[ORM\Column(type: 'string', length: 20, columnDefinition: "ENUM('ACTIVE','INACTIVE','SUSPENDED','PENDING') DEFAULT 'ACTIVE'")]
     private string $status = self::STATUS_ACTIVE;
 
     #[ORM\Column(name: 'is_email_valid', type: 'boolean', nullable: true)]

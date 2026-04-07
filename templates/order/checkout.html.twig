@@ -25,21 +25,44 @@
                             <div class="mb-5">
                                 <label class="form-label fw-bold small text-uppercase mb-3">Mode de paiement</label>
                                 <div class="row g-3">
+
+                                    {# ── Wallet ── #}
                                     <div class="col-sm-6">
-                                        <input type="radio" class="btn-check" name="paiement" id="card" value="CARTE" checked>
-                                        <label class="btn btn-outline-secondary w-100 rounded-3 py-3" for="card">
-                                            <i class="bi bi-credit-card fs-4 d-block mb-1"></i>
-                                            Carte Bancaire
+                                        <input type="radio" class="btn-check" name="paiement" id="wallet" value="WALLET"
+                                               {{ walletBalance >= total ? 'checked' : 'disabled' }}>
+                                        <label class="btn btn-outline-secondary w-100 rounded-3 py-3 {{ walletBalance < total ? 'opacity-50' : '' }}" for="wallet">
+                                            <span style="font-size:1.5rem;display:block;margin-bottom:4px;">💳</span>
+                                            <span class="d-block fw-bold" style="font-size:13px;">Wallet MindBloom</span>
+                                            <span class="d-block mt-1" style="font-size:12px;
+                                                color:{{ walletBalance >= total ? '#10b981' : '#dc3545' }};">
+                                                Solde : {{ walletBalance|number_format(2, '.', ' ') }} DT
+                                                {% if walletBalance < total %}
+                                                    <br><small>(insuffisant)</small>
+                                                {% endif %}
+                                            </span>
                                         </label>
                                     </div>
+
+                                    {# ── Paiement à la livraison ── #}
                                     <div class="col-sm-6">
-                                        <input type="radio" class="btn-check" name="paiement" id="cash" value="ESPECES">
+                                        <input type="radio" class="btn-check" name="paiement" id="cash" value="ESPECES"
+                                               {{ walletBalance < total ? 'checked' : '' }}>
                                         <label class="btn btn-outline-secondary w-100 rounded-3 py-3" for="cash">
                                             <i class="bi bi-cash-stack fs-4 d-block mb-1"></i>
-                                            Paiement à la livraison
+                                            <span class="d-block fw-bold" style="font-size:13px;">Paiement à la livraison</span>
+                                            <span class="d-block mt-1 text-muted" style="font-size:12px;">Payer en espèces</span>
                                         </label>
                                     </div>
+
                                 </div>
+
+                                {% if walletBalance < total %}
+                                <div class="alert alert-warning mt-3 py-2 px-3 rounded-3 d-flex align-items-center gap-2" style="font-size:13px;">
+                                    <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                                    Solde insuffisant pour payer par wallet.
+                                    <a href="{{ path('app_wallet') }}" class="ms-1 fw-bold text-decoration-none">Recharger →</a>
+                                </div>
+                                {% endif %}
                             </div>
 
                             <div class="card bg-primary bg-opacity-10 border-0 rounded-4 p-4 mb-4">

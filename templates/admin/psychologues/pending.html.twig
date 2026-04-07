@@ -1,0 +1,253 @@
+{% extends 'base.html.twig' %}
+{% block title %}Validations Psychologues — MindBloom{% endblock %}
+
+{% block stylesheets %}
+<style>
+.page-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #EFEFEF;
+    margin-bottom: 28px;
+}
+.page-header-bar h1 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 0 0 3px; }
+.page-header-bar p  { font-size: 12px; color: #aaa; margin: 0; }
+
+.pending-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffc107;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    gap: 5px;
+}
+
+/* Cards grid */
+.psycho-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 22px;
+}
+
+.psycho-card {
+    background: white;
+    border: 1px solid #EFEFEF;
+    border-radius: 16px;
+    padding: 26px 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    animation: fadeUp 0.35s ease both;
+    transition: box-shadow 0.25s, transform 0.2s;
+    border-top: 4px solid #ffc107;
+}
+.psycho-card:hover {
+    box-shadow: 0 8px 28px rgba(0,0,0,0.09);
+    transform: translateY(-3px);
+}
+@keyframes fadeUp {
+    from { opacity:0; transform:translateY(14px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+/* Avatar */
+.card-top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+.card-avatar {
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #eaf2fb, #d6e4f7);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 800; color: #4A90E2;
+    flex-shrink: 0; overflow: hidden;
+    border: 3px solid #f0f4fa;
+}
+.card-avatar img { width:100%; height:100%; object-fit:cover; }
+.card-name  { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+.card-username { font-size: 12px; color: #aaa; margin-top: 2px; }
+
+/* Info rows */
+.card-info {
+    display: flex; flex-direction: column; gap: 9px;
+    padding: 14px 0;
+    border-top: 1px solid #F2F2F2;
+    border-bottom: 1px solid #F2F2F2;
+    margin-bottom: 18px;
+}
+.card-info-row {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: #666;
+}
+.info-icon { flex-shrink:0; color: #b0b5c3; }
+
+/* Action buttons */
+.card-actions {
+    display: flex; gap: 10px;
+}
+.btn-approve {
+    flex: 1;
+    padding: 9px 0;
+    border-radius: 8px;
+    font-size: 13px; font-weight: 700;
+    border: none; cursor: pointer;
+    background: #d4edda; color: #155724;
+    transition: background 0.15s;
+}
+.btn-approve:hover { background: #c3e6cb; }
+.btn-reject {
+    flex: 1;
+    padding: 9px 0;
+    border-radius: 8px;
+    font-size: 13px; font-weight: 700;
+    border: none; cursor: pointer;
+    background: #fdecea; color: #c0392b;
+    transition: background 0.15s;
+}
+.btn-reject:hover { background: #f5c6cb; }
+
+/* Empty state */
+.empty-state {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 80px 0 60px;
+}
+.empty-state .empty-icon {
+    font-size: 56px; margin-bottom: 16px; opacity: 0.6;
+}
+.empty-state h3 { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+.empty-state p  { font-size: 13px; color: #aaa; }
+
+/* Flash messages */
+.flash-success {
+    background: #d4edda; color: #155724;
+    border: 1px solid #c3e6cb; border-radius: 8px;
+    padding: 12px 16px; margin-bottom: 20px;
+    font-size: 14px; font-weight: 600;
+}
+.flash-error {
+    background: #fdecea; color: #c0392b;
+    border: 1px solid #f5c6cb; border-radius: 8px;
+    padding: 12px 16px; margin-bottom: 20px;
+    font-size: 14px; font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {{ include('admin/_sidebar.html.twig') }}
+
+    <div class="admin-content" style="flex:1; background:#FAFAF8; min-height:100vh; padding: 40px 48px;">
+
+        {# Flash messages #}
+        {% for msg in app.flashes('success') %}
+            <div class="flash-success">✅ {{ msg }}</div>
+        {% endfor %}
+        {% for msg in app.flashes('error') %}
+            <div class="flash-error">❌ {{ msg }}</div>
+        {% endfor %}
+
+        {# Header #}
+        <div class="page-header-bar">
+            <div>
+                <h1>
+                    Validation des Psychologues
+                    {% if pendingUsers|length > 0 %}
+                        <span class="pending-badge ms-2">⏳ {{ pendingUsers|length }} en attente</span>
+                    {% endif %}
+                </h1>
+                <p>Approuvez ou rejetez les demandes d'inscription des psychologues</p>
+            </div>
+        </div>
+
+        {# Cards grid #}
+        <div class="psycho-grid">
+            {% if pendingUsers is empty %}
+                <div class="empty-state">
+                    <div class="empty-icon">🎉</div>
+                    <h3>Aucune demande en attente</h3>
+                    <p>Tous les comptes psychologues ont été traités.</p>
+                </div>
+            {% else %}
+                {% for user in pendingUsers %}
+                <div class="psycho-card" style="animation-delay: {{ loop.index0 * 0.05 }}s;">
+
+                    <div class="card-top">
+                        <div class="card-avatar">
+                            {% if user.profileImage %}
+                                <img src="{{ asset('uploads/profiles/' ~ user.profileImage) }}" alt="">
+                            {% else %}
+                                {{ user.fullName|first|upper }}
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div class="card-name">{{ user.fullName }}</div>
+                            <div class="card-username">@{{ user.username }}</div>
+                        </div>
+                    </div>
+
+                    <div class="card-info">
+                        <div class="card-info-row">
+                            <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                            <span>{{ user.email }}</span>
+                        </div>
+                        <div class="card-info-row">
+                            <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                            </svg>
+                            <span>{{ user.phone ?? 'Non renseigné' }}</span>
+                        </div>
+                        <div class="card-info-row">
+                            <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            <span>Inscrit le {{ user.createdAt ? user.createdAt|date('d/m/Y à H:i') : '—' }}</span>
+                        </div>
+                        {% if user.address %}
+                        <div class="card-info-row">
+                            <svg class="info-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            <span>{{ user.address }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {# Approve / Reject buttons #}
+                    <div class="card-actions">
+                        <form method="post" action="{{ path('app_admin_approve_psychologue', {id: user.id}) }}" style="flex:1;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('approve-psycho-' ~ user.id) }}">
+                            <button type="submit" class="btn-approve w-100">✅ Approuver</button>
+                        </form>
+                        <form method="post" action="{{ path('app_admin_reject_psychologue', {id: user.id}) }}" style="flex:1;"
+                              onsubmit="return confirm('Rejeter le compte de {{ user.fullName }} ?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('reject-psycho-' ~ user.id) }}">
+                            <button type="submit" class="btn-reject w-100">❌ Rejeter</button>
+                        </form>
+                    </div>
+
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

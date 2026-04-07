@@ -18,7 +18,8 @@
            class="{{ app.request.attributes.get('_route') starts with 'app_admin_wallet' ? 'active' : '' }}">
             <span class="nav-icon">💰</span> Wallets
         </a>
-        <a href="#">
+        <a href="{{ path('app_admin_event_index') }}"
+           class="{{ app.request.attributes.get('_route') starts with 'app_admin_event' ? 'active' : '' }}">
             <span class="nav-icon">📅</span> Évènements
         </a>
         <a href="{{ path('app_admin_produit_index') }}"
@@ -33,7 +34,8 @@
            class="{{ app.request.attributes.get('_route') starts with 'app_admin_order' ? 'active' : '' }}">
             <span class="nav-icon">📦</span> Commandes
         </a>
-        <a href="#">
+        <a href="{{ path('app_admin_test_index') }}"
+           class="{{ app.request.attributes.get('_route') starts with 'app_admin_test' ? 'active' : '' }}">
             <span class="nav-icon">📋</span> Tests
         </a>
 

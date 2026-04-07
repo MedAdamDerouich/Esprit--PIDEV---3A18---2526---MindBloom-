@@ -1,0 +1,30 @@
+ Updating database schema...
+
+
+In ExceptionConverter.php line 129:
+                                               
+  An exception occurred while executing a que  
+  ry: SQLSTATE[HY000]: General error: 1833 Ca  
+  nnot change column 'id_question': used in a  
+   foreign key constraint 'reponse_ibfk_1' of  
+   table 'test.reponse'                        
+                                               
+
+In Exception.php line 24:
+                                               
+  SQLSTATE[HY000]: General error: 1833 Cannot  
+   change column 'id_question': used in a for  
+  eign key constraint 'reponse_ibfk_1' of tab  
+  le 'test.reponse'                            
+                                               
+
+In Connection.php line 33:
+                                               
+  SQLSTATE[HY000]: General error: 1833 Cannot  
+   change column 'id_question': used in a for  
+  eign key constraint 'reponse_ibfk_1' of tab  
+  le 'test.reponse'                            
+                                               
+
+doctrine:schema:update [--em EM] [--complete] [--dump-sql] [-f|--force]
+

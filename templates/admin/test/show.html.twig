@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails du Test — MindBloom Admin{% endblock %}
+
+{% block body %}
+<div class="d-flex">
+    {{ include('admin/_sidebar.html.twig') }}
+
+    <div class="admin-content" style="flex:1;">
+        {# Header #}
+        <div class="mb-4">
+            <a href="{{ path('app_admin_test_index') }}" style="color:var(--text-mid);text-decoration:none;font-size:13px;display:flex;align-items:center;gap:5px;margin-bottom:10px;">
+                ← Retour au catalogue
+            </a>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="mb-page-header" style="margin:0;">
+                    <h1>📋 {{ test.nomTest }}</h1>
+                    <p>Catégorie : <strong>{{ test.categorie }}</strong> • Durée estimée : <strong>{{ test.duree }} min</strong></p>
+                </div>
+                <div class="d-flex gap-2">
+                     <span class="mb-badge mb-badge-primary" style="font-size:14px;padding:8px 15px;">
+                        👥 {{ patientCount }} {{ patientCount > 1 ? 'Patients ont' : 'Patient a' }} passé ce test
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        {# Test Details #}
+        <div class="row g-4">
+            <div class="col-md-12">
+                <div class="mb-card" style="padding:25px;">
+                    <h3 style="font-size:18px;font-weight:800;color:var(--text-dark);border-bottom:1px solid #F0F0F0;padding-bottom:15px;margin-bottom:20px;">
+                        Contenu du Test ({{ test.questions|length }} Question{{ test.questions|length > 1 ? 's' : '' }})
+                    </h3>
+                    
+                    <div style="display:flex;flex-direction:column;gap:30px;">
+                        {% for question in test.questions %}
+                        <div style="border-left:4px solid #4A90E2;padding-left:20px;">
+                            <h4 style="font-size:16px;font-weight:700;color:var(--text-dark);margin-bottom:12px;">{{ loop.index }}. {{ question.texteQuestion }}</h4>
+                            
+                            <div style="display:flex;gap:15px;flex-wrap:wrap;">
+                                {% for reponse in question.reponses %}
+                                <div style="background:#F8F9FA;border-radius:10px;padding:10px 15px;border:1px solid #EDEDED;display:flex;align-items:center;gap:10px;min-width:150px;">
+                                    <span style="display:inline-block;width:24px;height:24px;background:#E8F1FC;color:#4A90E2;border-radius:50%;text-align:center;font-size:11px;line-height:24px;font-weight:700;">
+                                        {{ reponse.valeur }}
+                                    </span>
+                                    <span style="font-size:14px;color:var(--text-mid);">{{ reponse.texteReponse }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div style="text-align:center;padding:40px;color:var(--text-mid);">
+                            Aucune question n'a encore été ajoutée à ce test.
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

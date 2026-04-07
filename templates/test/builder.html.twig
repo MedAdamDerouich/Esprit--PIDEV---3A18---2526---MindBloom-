@@ -1,0 +1,193 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Builder de Test — MindBloom{% endblock %}
+
+{% block body %}
+{# ── HEADER — gradient #6FBF9B → #4A90E2 from psychologue dashboard ── #}
+<header style="background:linear-gradient(to right,#6FBF9B,#4A90E2);height:70px;
+               padding:0 20px;display:flex;align-items:center;gap:15px;position:sticky;top:0;z-index:1000;">
+
+    <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+        <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom"
+             style="height:50px;width:auto;object-fit:contain;flex-shrink:0;">
+        <span style="font-size:20px;font-weight:700;color:white;">MindBloom — Espace Psychologue</span>
+    </div>
+
+    <div style="flex:1;"></div>
+
+    <nav style="display:flex;gap:20px;align-items:center;margin-right:20px;">
+        <a href="{{ path('app_psychologue_dashboard') }}" style="color:white;text-decoration:none;font-size:14px;font-weight:600;">Accueil</a>
+        <a href="{{ path('app_test_manage') }}" style="color:white;text-decoration:none;font-size:14px;font-weight:600;border-bottom:2px solid white;padding-bottom:2px;">Mes Tests</a>
+    </nav>
+
+    <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:14px;font-weight:700;color:white;">
+            Bonjour, Dr. {% if app.user %}{{ app.user.fullName|split(' ')|last }}{% endif %}
+        </span>
+    </div>
+</header>
+
+<div style="background:#FAFAF8; min-height: calc(100vh - 70px); padding: 40px;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; gap: 40px;">
+        
+        {# LEFT COLUMN: Existing Questions #}
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="font-size: 24px; font-weight: 800; color: #2C3E50;">Questions de "{{ test.nomTest }}"</h2>
+                <span style="background: #E8F1FC; color: #4A90E2; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: 700;">
+                    {{ questions|length }} ajoutées
+                </span>
+            </div>
+
+            {% for flash in app.flashes('success') %}
+                <div style="background:#D5F5E3; color:#27AE60; padding:15px 20px; border-radius:12px; font-weight:600; margin-bottom: 10px;">
+                    ✅ {{ flash }}
+                </div>
+            {% endfor %}
+
+            <div style="display: flex; flex-direction: column; gap: 15px; max-height: 70vh; overflow-y: auto; padding-right: 10px;">
+                {% for question in questions %}
+                    <div style="background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 5px solid #5FBF9F;">
+                        <h4 style="font-size: 16px; font-weight: 700; color: #34495E; margin-bottom: 15px;">{{ question.texteQuestion }}</h4>
+                        
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            {% for reponse in question.reponses %}
+                                <div style="background: #F4F6F6; padding: 6px 12px; border-radius: 8px; font-size: 13px; color: #7F8C8D; border: 1px solid #EAEDED;">
+                                    <b>{{ reponse.texteReponse }}</b> <span style="color:#95A5A6;">({{ reponse.valeur }} pts)</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div style="text-align: center; padding: 50px 20px; background: white; border-radius: 15px; border: 2px dashed #E5E8E8;">
+                        <span style="font-size: 30px; margin-bottom: 15px; display: block;">📝</span>
+                        <p style="color: #95A5A6; font-weight: 500;">Aucune question ajoutée pour l'instant.<br>Commencez à droite !</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# RIGHT COLUMN: Add New Question #}
+        <div style="width: 450px; flex-shrink: 0;">
+            <div style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); position: sticky; top: 90px;">
+                <h3 style="font-size: 20px; font-weight: 800; color: #2C3E50; margin-bottom: 25px;">Ajouter une Question</h3>
+                
+                <form id="builder-form" action="{{ path('app_test_builder', {'id': test.id}) }}" method="POST">
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-weight: 700; color: #34495E; margin-bottom: 10px; font-size: 14px;">La question :</label>
+                        <input type="text" name="texte_question" required placeholder="Ex: Avez-vous des difficultés à dormir ?"
+                               style="width: 100%; padding: 12px 15px; border: 2px solid #F0F3F4; border-radius: 10px; font-size: 14px; outline: none; transition: 0.3s;"
+                               onfocus="this.style.borderColor='#4A90E2'" onblur="this.style.borderColor='#F0F3F4'">
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: 700; color: #34495E; margin-bottom: 10px; font-size: 14px;">
+                            Les choix de réponses <span style="font-weight:normal; color:#95A5A6;">(ex: Jamais, Parfois...)</span>
+                        </label>
+                        
+                        {# 4 standard response slots #}
+                        <div style="display:flex; flex-direction:column; gap:10px;" id="responses-container">
+                            
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" name="reponse[]" placeholder="Jamais" value="Jamais" required
+                                       style="flex: 2; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
+                                <input type="number" name="valeur[]" placeholder="0 pts" value="0" required
+                                       style="flex: 1; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
+                            </div>
+
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" name="reponse[]" placeholder="Parfois" value="Parfois" required
+                                       style="flex: 2; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
+                                <input type="number" name="valeur[]" placeholder="10 pts" value="10" required
+                                       style="flex: 1; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
+                            </div>
+                            
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" name="reponse[]" placeholder="Souvent" value="Souvent" required
+                                       style="flex: 2; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
+                                <input type="number" name="valeur[]" placeholder="20 pts" value="20" required
+                                       style="flex: 1; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
+                            </div>
+
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" name="reponse[]" placeholder="Toujours" value="Toujours" required
+                                       style="flex: 2; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
+                                <input type="number" name="valeur[]" placeholder="30 pts" value="30" required
+                                       style="flex: 1; padding: 10px; border: 2px solid #F0F3F4; border-radius: 8px; font-size: 13px; outline: none;">
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <button type="submit" style="width:100%; background:#4A90E2; color:white; border:none; padding:15px; border-radius:10px; font-weight:700; cursor:pointer; margin-top:15px; transition:0.2s;"
+                            onmouseover="this.style.background='#3A7BC8'" onmouseout="this.style.background='#4A90E2'">
+                        + Enregistrer la question
+                    </button>
+                    
+                    <a href="{{ path('app_test_manage') }}" style="display:block; text-align:center; width:100%; background:#F8F9F9; color:#7F8C8D; text-decoration:none; padding:15px; border-radius:10px; font-weight:600; margin-top:10px; transition:0.2s;"
+                       onmouseover="this.style.background='#EAEDED'" onmouseout="this.style.background='#F8F9F9'">
+                        ✅ Terminer le Test
+                    </a>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('builder-form');
+    
+    form.addEventListener('submit', function(e) {
+        let hasError = false;
+        let errorMessage = '';
+
+        const questionInput = document.querySelector('input[name="texte_question"]').value.trim();
+        
+        if (questionInput.length < 5) {
+            hasError = true;
+            errorMessage = 'La question doit contenir au moins 5 caractères.';
+        }
+
+        if (!hasError) {
+            const reponsesInputs = document.querySelectorAll('input[name="reponse[]"]');
+            const valeursInputs = document.querySelectorAll('input[name="valeur[]"]');
+            
+            let allEmpty = true;
+            for (let i = 0; i < reponsesInputs.length; i++) {
+                if (reponsesInputs[i].value.trim() !== '') {
+                    allEmpty = false;
+                    const val = valeursInputs[i].value;
+                    if (val === '' || isNaN(val) || parseInt(val) < 0) {
+                        hasError = true;
+                        errorMessage = 'Chaque réponse fournie doit avoir une valeur positive valide.';
+                        break;
+                    }
+                }
+            }
+
+            if (!hasError && allEmpty) {
+                hasError = true;
+                errorMessage = 'Vous devez fournir au moins une réponse pour cette question.';
+            }
+        }
+
+        if (hasError) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur de Saisie',
+                text: errorMessage,
+                confirmButtonColor: '#4A90E2'
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

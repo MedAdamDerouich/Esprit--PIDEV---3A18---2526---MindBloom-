@@ -23,7 +23,7 @@ class Wallet
     private ?User $user = null;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    private float $balance = 0.0;
+    private string $balance = '0.0';
 
     #[ORM\Column(name: 'last_recharge_date', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $lastRechargeDate = null;

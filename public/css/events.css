@@ -1,0 +1,505 @@
+/* ========================================
+   MindBloom - Events Module CSS
+   Design inspiré du JavaFX
+   ======================================== */
+
+:root {
+    --primary-gradient-start: #667eea;
+    --primary-gradient-end: #764ba2;
+    --green: #27ae60;
+    --red: #e74c3c;
+    --blue: #3498db;
+    --teal: #5FBF9F;
+    --orange: #E67E22;
+    --bg-light: #F5F3EF;
+    --bg-light-alt: #f5f7fa;
+    --text-dark: #2c3e50;
+    --text-mid: #7f8c8d;
+    --border-color: #E0E0E0;
+}
+
+/* ========================================
+   Admin Events - Top Bar
+   ======================================== */
+.event-top-bar {
+    background: white;
+    border-bottom: 1px solid var(--border-color);
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.page-title {
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.page-subtitle {
+    font-size: 13px;
+    color: var(--text-mid);
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-input {
+    width: 270px;
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-gradient-start);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.btn-event-add {
+    background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
+    color: white;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 13px;
+    text-decoration: none;
+    display: inline-block;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-event-add:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+/* ========================================
+   Events Table
+   ======================================== */
+.events-table-container {
+    background: white;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.events-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.events-table thead {
+    background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
+    color: white;
+}
+
+.events-table thead th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 13px;
+    border: none;
+}
+
+.events-table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.events-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.events-table tbody td {
+    padding: 15px;
+    vertical-align: middle;
+    font-size: 13px;
+    color: var(--text-dark);
+}
+
+.event-thumbnail {
+    width: 70px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.event-thumbnail-placeholder {
+    width: 70px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ecf0f1;
+    border-radius: 6px;
+    font-size: 24px;
+}
+
+.price-gratuit {
+    color: var(--green);
+    font-style: italic;
+    font-weight: 600;
+}
+
+.price-paid {
+    color: var(--text-dark);
+    font-weight: 700;
+}
+
+/* Badge Statut */
+.badge-status {
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.badge-actif {
+    background: #d4edda;
+    color: #155724;
+}
+
+.badge-annule {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-termine {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+
+.btn-action {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+    background: #ecf0f1;
+}
+
+.btn-action:hover {
+    transform: translateY(-2px);
+}
+
+.btn-view:hover {
+    background: var(--blue);
+}
+
+.btn-participants:hover {
+    background: var(--teal);
+}
+
+.btn-edit:hover {
+    background: var(--orange);
+}
+
+.btn-delete {
+    background: #fee;
+}
+
+.btn-delete:hover {
+    background: var(--red);
+    color: white;
+}
+
+/* ========================================
+   Event Form
+   ======================================== */
+.event-form-header {
+    background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
+    color: white;
+    padding: 20px 30px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+}
+
+.event-form-header h4 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.btn-back {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.2s ease;
+}
+
+.btn-back:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.event-form-card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 0 0 10px 10px;
+    padding: 30px;
+}
+
+.form-group-event {
+    margin-bottom: 20px;
+}
+
+.form-group-event label {
+    display: block;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.form-group-event input,
+.form-group-event textarea,
+.form-group-event select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #bdc3c7;
+    border-radius: 6px;
+    font-size: 13px;
+    transition: border-color 0.2s ease;
+}
+
+.form-group-event input:focus,
+.form-group-event textarea:focus,
+.form-group-event select:focus {
+    outline: none;
+    border-color: var(--primary-gradient-start);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.img-preview {
+    max-width: 200px;
+    max-height: 150px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    margin-top: 10px;
+}
+
+.form-actions {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    border-top: 1px solid var(--border-color);
+    padding-top: 20px;
+}
+
+.btn-cancel {
+    padding: 10px 24px;
+    background: #8E8E8E;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-cancel:hover {
+    background: #707070;
+    color: white;
+}
+
+.btn-submit {
+    padding: 10px 24px;
+    background: linear-gradient(135deg, var(--green), #229954);
+    color: white;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+}
+
+/* ========================================
+   Patient Events - Card Grid
+   ======================================== */
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+    padding: 30px;
+}
+
+.event-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.event-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.event-card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.event-card-image-placeholder {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    font-size: 64px;
+    color: white;
+}
+
+.event-card-body {
+    padding: 20px;
+}
+
+.event-card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+.event-card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.event-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-mid);
+}
+
+.event-card-description {
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.event-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 15px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.event-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-gradient-start);
+}
+
+.btn-participate {
+    background: linear-gradient(135deg, var(--green), #229954);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-participate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+    color: white;
+}
+
+.btn-participate:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+/* ========================================
+   Footer
+   ======================================== */
+.event-footer {
+    text-align: center;
+    padding: 15px;
+    background: white;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-mid);
+    font-size: 12px;
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
+@media (max-width: 768px) {
+    .event-top-bar {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .search-input {
+        width: 100%;
+    }
+    
+    .events-table {
+        font-size: 11px;
+    }
+    
+    .event-thumbnail {
+        width: 50px;
+        height: 35px;
+    }
+    
+    .events-grid {
+        grid-template-columns: 1fr;
+    }
+}

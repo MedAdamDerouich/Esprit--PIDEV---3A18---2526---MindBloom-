@@ -1,0 +1,79 @@
+<style>
+    .web2-form-group {
+        margin-bottom: 25px;
+    }
+    .web2-label {
+        display: block;
+        font-weight: 700;
+        color: #2C3E50;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+    .web2-input {
+        width: 100%;
+        padding: 15px 20px;
+        border: 2px solid #F0F3F4;
+        border-radius: 12px;
+        font-size: 15px;
+        color: #34495E;
+        background-color: #FDFEFE;
+        transition: all 0.3s ease;
+    }
+    .web2-input:focus {
+        border-color: #4A90E2;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
+    }
+    .web2-btn {
+        background: #5FBF9F;
+        color: white;
+        border: none;
+        border-radius: 15px;
+        padding: 15px 40px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 5px 15px rgba(95, 191, 159, 0.3);
+        transition: transform 0.2s;
+        width: 100%;
+        margin-top: 20px;
+    }
+    .web2-btn:hover {
+        transform: translateY(-2px);
+    }
+    .text-danger { color: #E74C3C; font-size: 13px; margin-top: 5px; }
+</style>
+
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+    
+    <div class="web2-form-group">
+        {{ form_label(form.nom_test, null, {'label_attr': {'class': 'web2-label'}}) }}
+        {{ form_widget(form.nom_test, {'attr': {'class': 'web2-input', 'placeholder': 'Ex: Évaluation du stress'}}) }}
+        <div class="text-danger">{{ form_errors(form.nom_test) }}</div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="web2-form-group">
+                {{ form_label(form.categorie, null, {'label_attr': {'class': 'web2-label'}}) }}
+                {{ form_widget(form.categorie, {'attr': {'class': 'web2-input'}}) }}
+                <div class="text-danger">{{ form_errors(form.categorie) }}</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="web2-form-group">
+                {{ form_label(form.duree, null, {'label_attr': {'class': 'web2-label'}}) }}
+                {{ form_widget(form.duree, {'attr': {'class': 'web2-input', 'placeholder': 'En minutes'}}) }}
+                <div class="text-danger">{{ form_errors(form.duree) }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="web2-form-group">
+        {{ form_label(form.date_test, null, {'label_attr': {'class': 'web2-label'}}) }}
+        {{ form_widget(form.date_test, {'attr': {'class': 'web2-input'}}) }}
+        <div class="text-danger">{{ form_errors(form.date_test) }}</div>
+    </div>
+
+    <button type="submit" class="web2-btn">{{ button_label|default('Enregistrer le test') }}</button>
+{{ form_end(form) }}

@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ test.nomTest }} — MindBloom{% endblock %}
+
+{% block body %}
+
+
+<div style="background:#FAFAF8; min-height: calc(100vh - 80px); padding: 50px;">
+    <div style="max-width: 800px; margin: 0 auto;">
+        
+        <a href="{{ is_granted('ROLE_PSYCHOLOGUE') ? path('app_test_manage') : path('app_test_index') }}" style="display:inline-block; margin-bottom: 20px; color: #7F8C8D; text-decoration: none; font-size: 14px; font-weight: 500;">
+            ← Retour aux tests
+        </a>
+
+        <div style="background: white; border-radius: 20px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); margin-bottom: 30px;">
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <span style="background: #E8F1FC; color: #4A90E2; padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 700;">{{ test.categorie }}</span>
+                <span style="background: #F4F6F6; color: #7F8C8D; padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;">⏱️ {{ test.duree }} min</span>
+            </div>
+            <h1 style="font-size: 32px; font-weight: 800; color: #2C3E50; margin-bottom: 10px;">{{ test.nomTest }}</h1>
+            {% if is_granted('ROLE_PSYCHOLOGUE') %}
+            <p style="color: #7F8C8D; line-height: 1.6; font-size: 15px;">
+                Mode consultation : Affichage des questions et des réponses configurées. Vos modifications éventuelles se font via l'outil de construction.
+            </p>
+            {% else %}
+            <p style="color: #7F8C8D; line-height: 1.6; font-size: 15px;">
+                Veuillez répondre honnêtement à chacune des questions ci-dessous. Il n'y a pas de mauvaises réponses, le but est d'évaluer votre état avec précision.
+            </p>
+            {% endif %}
+        </div>
+
+        {% if not is_granted('ROLE_PSYCHOLOGUE') %}
+        <form action="{{ path('app_test_submit', {'id': test.id}) }}" method="POST">
+        {% endif %}
+            {% for index, question in questions %}
+                <div style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); margin-bottom: 20px;">
+                    <h3 style="font-size: 18px; font-weight: 700; color: #2C3E50; margin-bottom: 20px;">
+                        <span style="color: #4A90E2; margin-right: 5px;">{{ index + 1 }}.</span> {{ question.texteQuestion }}
+                    </h3>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        {% for reponse in question.reponses %}
+                            <label style="display: flex; align-items: center; padding: 12px 20px; border: 2px solid {{ is_granted('ROLE_PSYCHOLOGUE') ? '#F0F3F4' : '#F0F3F4' }}; border-radius: 12px; cursor: {{ is_granted('ROLE_PSYCHOLOGUE') ? 'default' : 'pointer' }}; transition: all 0.2s;"
+                                   {% if not is_granted('ROLE_PSYCHOLOGUE') %}
+                                   onmouseover="this.style.borderColor='#4A90E2'; this.style.background='#F8FAFD';"
+                                   onmouseout="if(!this.querySelector('input').checked){this.style.borderColor='#F0F3F4'; this.style.background='transparent';}"
+                                   {% endif %}>
+                                {% if not is_granted('ROLE_PSYCHOLOGUE') %}
+                                    <input type="radio" name="question_{{ question.id }}" value="{{ reponse.id }}" required style="margin-right: 15px; transform: scale(1.2);">
+                                {% else %}
+                                    <span style="display:inline-block; width:22px; height:22px; background:#E8F1FC; color:#4A90E2; border-radius:50%; text-align:center; font-size:10px; line-height:22px; font-weight:700; margin-right:12px;">
+                                        {{ reponse.valeur }}
+                                    </span>
+                                {% endif %}
+                                <span style="font-size: 15px; color: #34495E;">{{ reponse.texteReponse }}</span>
+                            </label>
+                        {% else %}
+                            <p style="color: #E74C3C; font-size: 14px;">Aucune réponse configurée pour cette question.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div style="background: white; border-radius: 20px; padding: 40px; text-align: center; color: #7F8C8D;">
+                    <p>Ce test ne contient aucune question pour le moment.</p>
+                </div>
+            {% endfor %}
+
+            {% if questions|length > 0 and not is_granted('ROLE_PSYCHOLOGUE') %}
+                <div style="text-align: center; margin-top: 40px;">
+                    <button type="submit" style="background: #4A90E2; color: white; border: none; border-radius: 15px; padding: 15px 40px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                        Soumettre mes réponses
+                    </button>
+                </div>
+            {% endif %}
+
+        {% if not is_granted('ROLE_PSYCHOLOGUE') %}
+        </form>
+        {% endif %}
+
+    </div>
+</div>
+
+<script>
+    // Add active styling to selected radio buttons
+    document.addEventListener('DOMContentLoaded', () => {
+        const radios = document.querySelectorAll('input[type="radio"]');
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Reset all labels in this group
+                const name = this.getAttribute('name');
+                document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+                    r.closest('label').style.borderColor = '#F0F3F4';
+                    r.closest('label').style.background = 'transparent';
+                });
+                
+                // Highlight selected
+                if (this.checked) {
+                    this.closest('label').style.borderColor = '#4A90E2';
+                    this.closest('label').style.background = '#F8FAFD';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

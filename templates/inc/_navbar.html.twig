@@ -18,8 +18,10 @@
         <a href="{{ path('app_patient_cabinets_index') }}" 
            style="font-size:14px;color:#2C3E50;text-decoration:none;{{ app.request.attributes.get('_route') == 'app_patient_cabinets_index' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Rendez-vous</a>
         
-        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Tests</a>
-        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Événements</a>
+        <a href="{{ path('app_test_index') }}" 
+           style="font-size:14px;color:#2C3E50;text-decoration:none;{{ app.request.attributes.get('_route') starts with 'app_test' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Tests</a>
+        <a href="{{ path('app_patient_event_index') }}" 
+           style="font-size:14px;color:#2C3E50;text-decoration:none;{{ app.request.attributes.get('_route') starts with 'app_patient_event' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Événements</a>
         
         <a href="{{ path('app_patient_reservations') }}" 
            style="font-size:14px;color:#2C3E50;text-decoration:none;{{ app.request.attributes.get('_route') == 'app_patient_reservations' ? 'font-weight:700;color:#4A90E2;border-bottom:2px solid #4A90E2;' : '' }}">Mes Réservations</a>
@@ -74,6 +76,38 @@
            style="background:#e74c3c;color:white;border-radius:20px;padding:7px 15px;
                   font-size:11px;font-weight:600;text-decoration:none;">Déconnexion</a>
     </div>
+</header>
+{% elseif is_granted('ROLE_PSYCHOLOGUE') %}
+<header style="background:linear-gradient(to right,#6FBF9B,#4A90E2);height:70px;
+               padding:0 30px;display:flex;align-items:center;gap:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);position:sticky;top:0;z-index:1000;">
+
+    <a href="{{ path('app_psychologue_dashboard') }}" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+        <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom"
+             style="height:50px;width:auto;object-fit:contain;flex-shrink:0;">
+        <span style="font-size:18px;font-weight:700;color:white;">MindBloom — Espace Psychologue</span>
+    </a>
+
+    <div style="flex:1;"></div>
+
+    {# Name + Profile #}
+    <div style="display:flex;align-items:center;gap:15px;">
+        <span style="font-size:14px;font-weight:700;color:white;">
+            Bonjour, Dr. {{ app.user.fullName|split(' ')|last }}
+        </span>
+        <a href="{{ path('app_profile') }}"
+           style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.2);
+                  display:flex;align-items:center;justify-content:center;
+                  font-size:18px;text-decoration:none;color:white;flex-shrink:0;"
+           title="Modifier mon profil">👤</a>
+    </div>
+
+    <div style="width:1px;height:30px;background:rgba(255,255,255,0.3);margin:0 5px;"></div>
+
+    <a href="{{ path('app_logout') }}" style="padding:8px 18px;font-size:13px;font-weight:700;color:white;
+                    border:1px solid rgba(255,255,255,0.5);border-radius:20px;
+                    text-decoration:none;background:transparent;cursor:pointer;">
+        Déconnexion
+    </a>
 </header>
 {% elseif is_granted('ROLE_ADMIN') %}
     {# Admin Navbar logic... #}

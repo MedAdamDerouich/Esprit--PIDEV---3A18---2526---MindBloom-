@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gérer Mes Tests — MindBloom{% endblock %}
+
+{% block body %}
+
+
+<div style="background:#FAFAF8; min-height: calc(100vh - 70px); padding: 50px;">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+            <div>
+                <span style="display:inline-block;background:#E8F1FC;color:#4A90E2;border-radius:20px;padding:6px 15px;font-size:13px;margin-bottom:10px;font-weight:600;">
+                    ⚙️ Gestion
+                </span>
+                <h1 style="font-size:36px;font-weight:900;color:#2C3E50;">Mes Tests d'Autoévaluation</h1>
+            </div>
+            
+            <a href="{{ path('app_test_new') }}" style="background: #5FBF9F; color: white; padding: 12px 25px; border-radius: 12px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 10px rgba(95, 191, 159, 0.3); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                + Créer un nouveau test
+            </a>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 30px;">
+            {% for test in tests %}
+                <div style="width: 350px; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.04); transition: transform 0.3s ease, box-shadow 0.3s ease; position: relative; overflow: hidden;"
+                     onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 15px 35px rgba(0,0,0,0.08)'"
+                     onmouseout="this.style.transform='none'; this.style.boxShadow='0 10px 25px rgba(0,0,0,0.04)'">
+                    
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, #6FBF9B, #4A90E2);"></div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                        <div style="background: #F4F6F6; color: #7F8C8D; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 700;">
+                            {{ test.categorie }}
+                        </div>
+                        <div style="display: flex; gap: 5px; color: #95A5A6; font-size: 13px; align-items: center;">
+                            ⏱️ {{ test.duree }} min
+                        </div>
+                    </div>
+                    
+                    <h3 style="font-size: 22px; font-weight: 800; color: #2C3E50; margin-bottom: 15px; line-height: 1.3;">{{ test.nomTest }}</h3>
+                    
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                            <span style="background: #EDF9F5; color: #5FBF9F; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;">
+                                📝 {{ test.questions|length }} questions
+                            </span>
+                            <span style="background: #E8F1FC; color: #4A90E2; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;">
+                                👥 {{ patientCounts[test.id] ?? 0 }} patients ont passé ce test
+                            </span>
+                        </div>
+                        
+                        <hr style="border:none; border-top: 1px solid #F0F0F0; margin-bottom: 20px;">
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; color: #BDC3C7;">Créé le {{ test.dateTest ? test.dateTest|date('d/m/Y') : '' }}</span>
+                            
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <a href="{{ path('app_test_show', {'id': test.id}) }}" style="color:#4A90E2;text-decoration:none;font-size:18px;" title="Coup d'œil (Aperçu)">👁️</a>
+                                <a href="{{ path('app_test_edit', {'id': test.id}) }}" style="color:#F39C12;text-decoration:none;font-size:18px;" title="Modifier le test">✏️</a>
+                                {{ include('test/_delete_form.html.twig', {'test': test}) }}
+                            </div>
+                        </div>
+                </div>
+            {% else %}
+                <div style="width: 100%; text-align: center; padding: 60px; background: white; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.03);">
+                    <div style="font-size: 40px; margin-bottom: 20px;">📝</div>
+                    <h4 style="font-size: 20px; font-weight: 700; color: #2C3E50; margin-bottom: 10px;">Vous n'avez pas encore créé de test</h4>
+                    <p style="color: #7F8C8D; margin-bottom: 25px;">Créez votre premier test d'autoévaluation pour y inviter vos patients.</p>
+                    <a href="{{ path('app_test_new') }}" style="background: #4A90E2; color: white; padding: 12px 25px; border-radius: 12px; font-weight: 700; text-decoration: none;">
+                        Créer mon premier test
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

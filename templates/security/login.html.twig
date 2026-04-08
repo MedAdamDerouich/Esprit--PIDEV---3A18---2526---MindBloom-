@@ -3,7 +3,83 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/auth.css') }}?v=2">
+    <style>
+    /* ── Auth page base ── */
+    html, body { background: #F9F7F2 !important; background-color: #F9F7F2 !important; }
+
+    .auth-panel-left__content > * {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    body.auth-ready .auth-brand-block {
+      animation: authReveal 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s forwards;
+    }
+    body.auth-ready .auth-botanical {
+      animation: authReveal 0.9s cubic-bezier(0.22,1,0.36,1) 0.25s forwards;
+    }
+    body.auth-ready .auth-metrics {
+      animation: authReveal 0.7s cubic-bezier(0.22,1,0.36,1) 0.45s forwards;
+    }
+    @keyframes authReveal {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .auth-card {
+      opacity: 0;
+      transform: translateY(28px) scale(0.98);
+    }
+    body.auth-ready .auth-card {
+      animation: cardReveal 0.75s cubic-bezier(0.22,1,0.36,1) 0.15s forwards;
+    }
+    @keyframes cardReveal {
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .auth-card__header,
+    .auth-field,
+    .auth-options,
+    .auth-btn,
+    .auth-divider,
+    .auth-footer {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    body.auth-ready .auth-card__header          { animation: fieldReveal 0.5s ease 0.30s forwards; }
+    body.auth-ready .auth-field:nth-of-type(1)  { animation: fieldReveal 0.5s ease 0.40s forwards; }
+    body.auth-ready .auth-field:nth-of-type(2)  { animation: fieldReveal 0.5s ease 0.48s forwards; }
+    body.auth-ready .auth-options               { animation: fieldReveal 0.5s ease 0.56s forwards; }
+    body.auth-ready .auth-btn                   { animation: fieldReveal 0.5s ease 0.64s forwards; }
+    body.auth-ready .auth-divider               { animation: fieldReveal 0.5s ease 0.72s forwards; }
+    body.auth-ready .auth-footer                { animation: fieldReveal 0.5s ease 0.78s forwards; }
+    @keyframes fieldReveal {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .auth-input:focus {
+      animation: inputGlow 2s ease-in-out infinite;
+    }
+    @keyframes inputGlow {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(74,180,100,0.12), 0 0 20px rgba(74,180,100,0.06); }
+      50%       { box-shadow: 0 0 0 3px rgba(74,180,100,0.22), 0 0 30px rgba(74,180,100,0.12); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .auth-panel-left__content > *,
+      .auth-card,
+      .auth-card__header,
+      .auth-field,
+      .auth-options,
+      .auth-btn,
+      .auth-divider,
+      .auth-footer {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+      }
+      .auth-input:focus { animation: none; }
+    }
+    </style>
 {% endblock %}
 
 {% block body %}
@@ -15,50 +91,114 @@
 
             <div class="auth-brand-block">
                 <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom">
+                <div class="auth-brand-name">Mind<em>Bloom</em></div>
                 <p class="auth-brand-tagline">Plateforme de bien-être mental</p>
             </div>
 
-            <div class="auth-feature-list">
-                <div class="auth-feature">
-                    <div class="auth-feature__icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
-                            <rect x="9" y="3" width="6" height="4" rx="1"/>
-                            <path d="M9 14l2 2 4-4"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4>Tests Psychologiques</h4>
-                        <p>Évaluez votre bien-être avec nos tests certifiés</p>
-                    </div>
-                </div>
+            {# Botanical SVG illustration #}
+            <div class="auth-botanical">
+                <svg viewBox="0 0 300 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <radialGradient id="glowGrad" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%"   stop-color="#A8CEED" stop-opacity="0.4"/>
+                      <stop offset="100%" stop-color="#4A90E2" stop-opacity="0"/>
+                    </radialGradient>
+                    <linearGradient id="stemGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%"   stop-color="#5FBF9F"/>
+                      <stop offset="100%" stop-color="#3a9478"/>
+                    </linearGradient>
+                    <linearGradient id="leafGrad1" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%"   stop-color="#6FCFB0"/>
+                      <stop offset="100%" stop-color="#4DAE8E"/>
+                    </linearGradient>
+                    <linearGradient id="leafGrad2" x1="1" y1="0" x2="0" y2="1">
+                      <stop offset="0%"   stop-color="#74B8E8"/>
+                      <stop offset="100%" stop-color="#4A90E2"/>
+                    </linearGradient>
+                    <linearGradient id="petalGrad" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%"   stop-color="#C5DFF8" stop-opacity="0.95"/>
+                      <stop offset="100%" stop-color="#9ED8C7" stop-opacity="0.8"/>
+                    </linearGradient>
+                    <filter id="glow">
+                      <feGaussianBlur stdDeviation="3" result="blur"/>
+                      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                    <filter id="softglow">
+                      <feGaussianBlur stdDeviation="5" result="blur"/>
+                      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                  </defs>
 
-                <div class="auth-feature">
-                    <div class="auth-feature__icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="4" width="18" height="18" rx="2"/>
-                            <line x1="16" y1="2" x2="16" y2="6"/>
-                            <line x1="8" y1="2" x2="8" y2="6"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4>Rendez-vous en ligne</h4>
-                        <p>Réservez facilement avec un psychologue qualifié</p>
-                    </div>
-                </div>
+                  {# Ambient glow #}
+                  <ellipse cx="150" cy="290" rx="90" ry="28" fill="url(#glowGrad)" opacity="0.5"/>
 
-                <div class="auth-feature">
-                    <div class="auth-feature__icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4>Suivi personnalisé</h4>
-                        <p>Un accompagnement adapté à votre parcours</p>
-                    </div>
-                </div>
+                  <g class="plant-group">
+                    {# Main stem #}
+                    <path class="stem-path" d="M150 300 C150 280 148 260 150 240 C152 220 148 200 152 180 C156 160 150 140 150 120"
+                          stroke="url(#stemGrad)" stroke-width="3" stroke-linecap="round"/>
+                    {# Left branch #}
+                    <path class="stem-path" d="M150 220 C140 210 125 205 110 195 C95 185 82 180 70 168"
+                          stroke="url(#stemGrad)" stroke-width="2" stroke-linecap="round"/>
+                    {# Right branch #}
+                    <path class="stem-path" d="M152 190 C162 180 175 175 190 165 C205 155 215 150 228 140"
+                          stroke="url(#stemGrad)" stroke-width="2" stroke-linecap="round"/>
+                    {# Upper left branch #}
+                    <path class="stem-path" d="M150 155 C138 147 122 142 108 132 C94 122 84 118 72 108"
+                          stroke="url(#stemGrad)" stroke-width="1.5" stroke-linecap="round"/>
+
+                    {# Left leaves — teal #}
+                    <ellipse class="leaf-shape leaf-1" cx="68" cy="165" rx="32" ry="14"
+                             fill="url(#leafGrad1)" transform="rotate(-35 68 165)" filter="url(#glow)"/>
+                    <ellipse class="leaf-shape leaf-2" cx="55" cy="148" rx="22" ry="10"
+                             fill="url(#leafGrad2)" transform="rotate(-50 55 148)" opacity="0.85"/>
+                    <ellipse class="leaf-shape leaf-3" cx="80" cy="178" rx="18" ry="8"
+                             fill="url(#leafGrad1)" transform="rotate(-20 80 178)" opacity="0.7"/>
+
+                    {# Right leaves — blue #}
+                    <ellipse class="leaf-shape leaf-4" cx="232" cy="138" rx="30" ry="13"
+                             fill="url(#leafGrad2)" transform="rotate(30 232 138)" filter="url(#glow)"/>
+                    <ellipse class="leaf-shape leaf-5" cx="218" cy="152" rx="20" ry="9"
+                             fill="url(#leafGrad1)" transform="rotate(15 218 152)" opacity="0.75"/>
+
+                    {# Upper leaves #}
+                    <ellipse class="leaf-shape leaf-6" cx="70" cy="106" rx="28" ry="11"
+                             fill="url(#leafGrad1)" transform="rotate(-40 70 106)" filter="url(#glow)"/>
+                    <ellipse class="leaf-shape leaf-7" cx="82" cy="120" rx="16" ry="7"
+                             fill="url(#leafGrad2)" transform="rotate(-25 82 120)" opacity="0.65"/>
+
+                    {# Center bloom petals #}
+                    <g filter="url(#softglow)">
+                      <ellipse class="petal" cx="150" cy="108" rx="14" ry="26"
+                               fill="url(#petalGrad)" transform="rotate(0 150 120)"/>
+                      <ellipse class="petal" cx="150" cy="108" rx="14" ry="26"
+                               fill="url(#petalGrad)" transform="rotate(60 150 120)"/>
+                      <ellipse class="petal" cx="150" cy="108" rx="14" ry="26"
+                               fill="url(#petalGrad)" transform="rotate(120 150 120)"/>
+                      <ellipse class="petal" cx="150" cy="108" rx="14" ry="26"
+                               fill="url(#petalGrad)" transform="rotate(180 150 120)"/>
+                      <ellipse class="petal" cx="150" cy="108" rx="14" ry="26"
+                               fill="url(#petalGrad)" transform="rotate(240 150 120)"/>
+                      <ellipse class="petal" cx="150" cy="108" rx="14" ry="26"
+                               fill="url(#petalGrad)" transform="rotate(300 150 120)"/>
+                    </g>
+                    <circle cx="150" cy="120" r="10" fill="#E8F4FD" opacity="0.95" filter="url(#softglow)"
+                            style="animation: bloomPulse 3s ease-in-out infinite; animation-delay: 2.6s;"/>
+                    <circle cx="150" cy="120" r="6" fill="#ffffff" opacity="1"/>
+                  </g>
+
+                  {# Floating spores — brand colors #}
+                  <circle class="spore" cx="100" cy="240" r="2.5" fill="#A8CEED" style="--dx: 30px"/>
+                  <circle class="spore" cx="200" cy="200" r="2"   fill="#9ED8C7" style="--dx: -20px"/>
+                  <circle class="spore" cx="130" cy="260" r="1.5" fill="#4A90E2" style="--dx: 15px"/>
+                  <circle class="spore" cx="175" cy="250" r="2"   fill="#5FBF9F" style="--dx: -35px"/>
+                  <circle class="spore" cx="120" cy="220" r="1.5" fill="#A8CEED" style="--dx: 25px"/>
+
+                  {# Dew drops #}
+                  <circle cx="82"  cy="158" r="3"   fill="rgba(168,206,237,0.7)" filter="url(#glow)"
+                          style="animation: bloomPulse 5s ease-in-out infinite; animation-delay: 3s;"/>
+                  <circle cx="222" cy="133" r="2.5" fill="rgba(158,216,199,0.6)" filter="url(#glow)"
+                          style="animation: bloomPulse 5s ease-in-out infinite; animation-delay: 3.5s;"/>
+                </svg>
             </div>
 
             <div class="auth-metrics">
@@ -86,7 +226,7 @@
         <div class="auth-card">
 
             <div class="auth-card__header">
-                <h2>Bon retour</h2>
+                <h2>Bon<em> retour</em></h2>
                 <p>Connectez-vous à votre espace MindBloom</p>
             </div>
 
@@ -105,7 +245,7 @@
                             <circle cx="12" cy="7" r="4"/>
                         </svg>
                         <input type="text" id="username" name="_username" class="auth-input"
-                               placeholder="votre_username"
+                               placeholder="Entrez votre nom d'utilisateur"
                                value="{{ last_username }}" autocomplete="username" required>
                     </div>
                 </div>
@@ -132,7 +272,7 @@
 
                 <button type="submit" class="auth-btn">
                     Se connecter
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="5" y1="12" x2="19" y2="12"/>
                         <polyline points="12 5 19 12 12 19"/>
                     </svg>
@@ -151,4 +291,57 @@
     </div>
 
 </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+(function () {
+  'use strict';
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.body.classList.add('auth-ready');
+  if (reduced) return;
+
+  /* Card 3D tilt */
+  var card = document.querySelector('.auth-card');
+  if (card) {
+    card.addEventListener('mousemove', function (e) {
+      var r = card.getBoundingClientRect();
+      var nx = ((e.clientX - r.left) / r.width)  * 2 - 1;
+      var ny = ((e.clientY - r.top)  / r.height) * 2 - 1;
+      card.style.transition = 'transform 0.08s ease-out, box-shadow 0.15s';
+      card.style.transform  = 'perspective(900px) rotateX(' + (-ny * 3.5) + 'deg) rotateY(' + (nx * 3.5) + 'deg)';
+    });
+    card.addEventListener('mouseleave', function () {
+      card.style.transition = 'transform 0.5s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s';
+      card.style.transform  = 'perspective(900px) rotateX(0deg) rotateY(0deg)';
+    });
+  }
+
+  /* Botanical parallax */
+  var leftPanel = document.querySelector('.auth-panel-left');
+  var plantGrp  = document.querySelector('.plant-group');
+  if (leftPanel && plantGrp) {
+    leftPanel.addEventListener('mousemove', function (e) {
+      var r = leftPanel.getBoundingClientRect();
+      var nx = ((e.clientX - r.left) / r.width)  * 2 - 1;
+      var ny = ((e.clientY - r.top)  / r.height) * 2 - 1;
+      plantGrp.style.transform  = 'rotate(' + (nx * 2) + 'deg) translateY(' + (ny * -6) + 'px)';
+      plantGrp.style.transition = 'transform 0.3s ease-out';
+    });
+    leftPanel.addEventListener('mouseleave', function () {
+      plantGrp.style.transform  = '';
+      plantGrp.style.transition = 'transform 0.8s cubic-bezier(0.22,1,0.36,1)';
+    });
+  }
+
+  /* Input icon brightens when filled */
+  document.querySelectorAll('.auth-input').forEach(function (input) {
+    input.addEventListener('input', function () {
+      var icon = this.parentElement.querySelector('.auth-input-icon');
+      if (icon) icon.style.color = this.value.length > 0 ? 'rgba(74,180,100,0.8)' : 'rgba(74,180,100,0.4)';
+    });
+  });
+})();
+</script>
 {% endblock %}

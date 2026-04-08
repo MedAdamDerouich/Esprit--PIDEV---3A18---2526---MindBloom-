@@ -3,7 +3,98 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/auth.css') }}?v=2">
+    <style>
+    /* ── Override global body background ── */
+    html, body { background: #0a0f0d !important; background-color: #0a0f0d !important; }
+
+    .auth-panel-left__content > * {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    body.auth-ready .auth-brand-block {
+      animation: authReveal 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s forwards;
+    }
+    body.auth-ready .auth-botanical {
+      animation: authReveal 0.9s cubic-bezier(0.22,1,0.36,1) 0.25s forwards;
+    }
+    body.auth-ready .auth-metrics {
+      animation: authReveal 0.7s cubic-bezier(0.22,1,0.36,1) 0.45s forwards;
+    }
+    @keyframes authReveal {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .auth-card {
+      opacity: 0;
+      transform: translateY(28px) scale(0.98);
+    }
+    body.auth-ready .auth-card {
+      animation: cardReveal 0.75s cubic-bezier(0.22,1,0.36,1) 0.15s forwards;
+    }
+    @keyframes cardReveal {
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .auth-card__header,
+    .auth-field,
+    .auth-btn,
+    .auth-divider,
+    .auth-footer {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    body.auth-ready .auth-card__header    { animation: fieldReveal 0.45s ease 0.28s forwards; }
+    body.auth-ready .auth-field:nth-of-type(1)  { animation: fieldReveal 0.45s ease 0.36s forwards; }
+    body.auth-ready .auth-field:nth-of-type(2)  { animation: fieldReveal 0.45s ease 0.42s forwards; }
+    body.auth-ready .auth-field:nth-of-type(3)  { animation: fieldReveal 0.45s ease 0.48s forwards; }
+    body.auth-ready .auth-field:nth-of-type(4)  { animation: fieldReveal 0.45s ease 0.54s forwards; }
+    body.auth-ready .auth-field:nth-of-type(5)  { animation: fieldReveal 0.45s ease 0.60s forwards; }
+    body.auth-ready .auth-field:nth-of-type(6)  { animation: fieldReveal 0.45s ease 0.65s forwards; }
+    body.auth-ready .auth-field:nth-of-type(7)  { animation: fieldReveal 0.45s ease 0.70s forwards; }
+    body.auth-ready .auth-btn             { animation: fieldReveal 0.45s ease 0.76s forwards; }
+    body.auth-ready .auth-divider         { animation: fieldReveal 0.45s ease 0.82s forwards; }
+    body.auth-ready .auth-footer          { animation: fieldReveal 0.45s ease 0.86s forwards; }
+    @keyframes fieldReveal {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .auth-input:focus {
+      animation: inputGlow 2s ease-in-out infinite;
+    }
+    @keyframes inputGlow {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(74,180,100,0.12), 0 0 20px rgba(74,180,100,0.06); }
+      50%       { box-shadow: 0 0 0 3px rgba(74,180,100,0.22), 0 0 30px rgba(74,180,100,0.12); }
+    }
+
+    /* Role selector 3D tilt */
+    .auth-role {
+      transform-style: preserve-3d;
+      transition: all 0.22s, transform 0.22s;
+    }
+    .auth-role:hover {
+      transform: perspective(400px) rotateY(-5deg) translateY(-2px);
+    }
+    .auth-role.selected {
+      transform: perspective(400px) rotateY(0deg) translateY(-1px);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .auth-panel-left__content > *,
+      .auth-card,
+      .auth-card__header,
+      .auth-field,
+      .auth-btn,
+      .auth-divider,
+      .auth-footer {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+      }
+      .auth-input:focus { animation: none; }
+      .auth-role:hover, .auth-role.selected { transform: none; }
+    }
+    </style>
 {% endblock %}
 
 {% block body %}
@@ -15,47 +106,131 @@
 
             <div class="auth-brand-block">
                 <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom">
+                <div class="auth-brand-name">Mind<em>Bloom</em></div>
                 <p class="auth-brand-tagline">Rejoignez notre communauté</p>
             </div>
 
-            <div class="auth-feature-list">
-                <div class="auth-feature">
-                    <div class="auth-feature__icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                            <polyline points="22 4 12 14.01 9 11.01"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4>Inscription gratuite</h4>
-                        <p>Créez votre compte en moins de 2 minutes</p>
-                    </div>
-                </div>
+            {# Botanical SVG — slightly different composition for register #}
+            <div class="auth-botanical">
+                <svg viewBox="0 0 300 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <radialGradient id="rGlowGrad" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%"   stop-color="#c8b4f0" stop-opacity="0.25"/>
+                      <stop offset="100%" stop-color="#4ab464"  stop-opacity="0"/>
+                    </radialGradient>
+                    <linearGradient id="rStemGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%"   stop-color="#6dbf84"/>
+                      <stop offset="100%" stop-color="#2d6b3e"/>
+                    </linearGradient>
+                    <linearGradient id="rLeafA" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%"   stop-color="#7fcf95"/>
+                      <stop offset="100%" stop-color="#3a8c52"/>
+                    </linearGradient>
+                    <linearGradient id="rLeafB" x1="1" y1="0" x2="0" y2="1">
+                      <stop offset="0%"   stop-color="#5db876"/>
+                      <stop offset="100%" stop-color="#2d6b3e"/>
+                    </linearGradient>
+                    <linearGradient id="rPetalA" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%"   stop-color="#e0d0ff" stop-opacity="0.85"/>
+                      <stop offset="100%" stop-color="#b794f0" stop-opacity="0.65"/>
+                    </linearGradient>
+                    <linearGradient id="rPetalB" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%"   stop-color="#c8f0d8" stop-opacity="0.85"/>
+                      <stop offset="100%" stop-color="#7fcf95" stop-opacity="0.65"/>
+                    </linearGradient>
+                    <filter id="rGlow">
+                      <feGaussianBlur stdDeviation="3" result="blur"/>
+                      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                    <filter id="rSoftglow">
+                      <feGaussianBlur stdDeviation="7" result="blur"/>
+                      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                  </defs>
 
-                <div class="auth-feature">
-                    <div class="auth-feature__icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4>Données sécurisées</h4>
-                        <p>Vos informations personnelles sont protégées</p>
-                    </div>
-                </div>
+                  <ellipse cx="150" cy="295" rx="100" ry="28" fill="url(#rGlowGrad)" opacity="0.7"/>
 
-                <div class="auth-feature">
-                    <div class="auth-feature__icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4>Accompagnement continu</h4>
-                        <p>Un suivi personnalisé tout au long de votre parcours</p>
-                    </div>
-                </div>
+                  <g class="plant-group">
+                    {# Two stems — symmetrical #}
+                    <path class="stem-path" d="M150 305 C150 285 145 260 148 240 C151 220 147 200 150 175 C153 150 148 130 150 110"
+                          stroke="url(#rStemGrad)" stroke-width="3.5" stroke-linecap="round"/>
+                    <path class="stem-path" d="M150 230 C136 218 118 210 100 198 C82 186 68 178 56 164"
+                          stroke="url(#rStemGrad)" stroke-width="2.5" stroke-linecap="round"/>
+                    <path class="stem-path" d="M150 210 C164 198 182 192 200 180 C218 168 232 160 244 148"
+                          stroke="url(#rStemGrad)" stroke-width="2.5" stroke-linecap="round"/>
+                    <path class="stem-path" d="M149 162 C135 152 116 145 98 133 C80 121 68 113 56 100"
+                          stroke="url(#rStemGrad)" stroke-width="1.8" stroke-linecap="round"/>
+                    <path class="stem-path" d="M151 148 C165 138 182 132 200 120 C218 108 230 100 242 90"
+                          stroke="url(#rStemGrad)" stroke-width="1.8" stroke-linecap="round"/>
+
+                    {# Leaves — left side #}
+                    <ellipse class="leaf-shape leaf-1" cx="54" cy="160" rx="36" ry="14"
+                             fill="url(#rLeafA)" transform="rotate(-38 54 160)" filter="url(#rGlow)"/>
+                    <ellipse class="leaf-shape leaf-2" cx="40" cy="143" rx="24" ry="10"
+                             fill="url(#rLeafB)" transform="rotate(-55 40 143)"/>
+                    <ellipse class="leaf-shape leaf-3" cx="65" cy="175" rx="20" ry="8"
+                             fill="url(#rLeafA)" transform="rotate(-22 65 175)" opacity="0.7"/>
+
+                    {# Leaves — right side #}
+                    <ellipse class="leaf-shape leaf-4" cx="246" cy="145" rx="34" ry="13"
+                             fill="url(#rLeafB)" transform="rotate(32 246 145)" filter="url(#rGlow)"/>
+                    <ellipse class="leaf-shape leaf-5" cx="232" cy="160" rx="22" ry="9"
+                             fill="url(#rLeafA)" transform="rotate(18 232 160)" opacity="0.75"/>
+
+                    {# Upper left leaves #}
+                    <ellipse class="leaf-shape leaf-6" cx="54" cy="97" rx="30" ry="12"
+                             fill="url(#rLeafA)" transform="rotate(-42 54 97)" filter="url(#rGlow)"/>
+                    <ellipse class="leaf-shape leaf-7" cx="68" cy="112" rx="18" ry="7"
+                             fill="url(#rLeafB)" transform="rotate(-28 68 112)" opacity="0.65"/>
+
+                    {# Upper right leaves #}
+                    <ellipse class="leaf-shape" cx="244" cy="87" rx="28" ry="11" opacity="0"
+                             fill="url(#rLeafB)" transform="rotate(38 244 87)" filter="url(#rGlow)"
+                             style="animation: leafUnfurl 0.8s cubic-bezier(0.34,1.56,0.64,1) 1.9s forwards;"/>
+                    <ellipse class="leaf-shape" cx="232" cy="102" rx="16" ry="7" opacity="0"
+                             fill="url(#rLeafA)" transform="rotate(22 232 102)"
+                             style="animation: leafUnfurl 0.8s cubic-bezier(0.34,1.56,0.64,1) 2.05s forwards;"/>
+
+                    {# Dual-color bloom — green + purple petals alternating #}
+                    <g filter="url(#rSoftglow)">
+                      <ellipse class="petal" cx="150" cy="96" rx="13" ry="25"
+                               fill="url(#rPetalA)" transform="rotate(0 150 110)"/>
+                      <ellipse class="petal" cx="150" cy="96" rx="13" ry="25"
+                               fill="url(#rPetalB)" transform="rotate(60 150 110)"/>
+                      <ellipse class="petal" cx="150" cy="96" rx="13" ry="25"
+                               fill="url(#rPetalA)" transform="rotate(120 150 110)"/>
+                      <ellipse class="petal" cx="150" cy="96" rx="13" ry="25"
+                               fill="url(#rPetalB)" transform="rotate(180 150 110)"/>
+                      <ellipse class="petal" cx="150" cy="96" rx="13" ry="25"
+                               fill="url(#rPetalA)" transform="rotate(240 150 110)"/>
+                      <ellipse class="petal" cx="150" cy="96" rx="13" ry="25"
+                               fill="url(#rPetalB)" transform="rotate(300 150 110)"/>
+                    </g>
+                    <circle cx="150" cy="110" r="11" fill="#f0eaff" opacity="0.9" filter="url(#rSoftglow)"
+                            style="animation: bloomPulse 3s ease-in-out infinite; animation-delay: 2.7s;"/>
+                    <circle cx="150" cy="110" r="6"  fill="#ffffff" opacity="0.95"/>
+
+                    {# Small bud on upper right #}
+                    <circle cx="242" cy="87" r="8" fill="url(#rPetalA)" opacity="0"
+                            filter="url(#rGlow)"
+                            style="animation: petalBloom 0.5s ease 2.2s forwards;"/>
+                    <circle cx="242" cy="87" r="4" fill="rgba(255,255,255,0.8)" opacity="0"
+                            style="animation: petalBloom 0.5s ease 2.4s forwards;"/>
+                  </g>
+
+                  {# Spores #}
+                  <circle class="spore" cx="95"  cy="245" r="2.5" fill="#a8e6bc" style="--dx: 28px"/>
+                  <circle class="spore" cx="205" cy="205" r="2"   fill="#e0d0ff" style="--dx: -22px"/>
+                  <circle class="spore" cx="128" cy="268" r="1.5" fill="#6dbf84" style="--dx: 18px"/>
+                  <circle class="spore" cx="180" cy="255" r="2"   fill="#c8b4f0" style="--dx: -30px"/>
+                  <circle class="spore" cx="115" cy="225" r="1.5" fill="#c8f0d8" style="--dx: 22px"/>
+
+                  {# Dew drops #}
+                  <circle cx="68"  cy="153" r="3"   fill="rgba(200,240,216,0.6)" filter="url(#rGlow)"
+                          style="animation: bloomPulse 5s ease-in-out infinite; animation-delay: 3.1s;"/>
+                  <circle cx="236" cy="140" r="2.5" fill="rgba(224,208,255,0.6)" filter="url(#rGlow)"
+                          style="animation: bloomPulse 5s ease-in-out infinite; animation-delay: 3.7s;"/>
+                </svg>
             </div>
 
             <div class="auth-metrics">
@@ -83,7 +258,7 @@
         <div class="auth-card auth-card--wide">
 
             <div class="auth-card__header">
-                <h2>Créer un compte</h2>
+                <h2>Créer un<em> compte</em></h2>
                 <p>Rejoignez MindBloom et prenez soin de vous</p>
             </div>
 
@@ -92,19 +267,19 @@
             {{ form_start(registrationForm, {action: path('app_register'), method: 'post', attr: {class: 'auth-form'}}) }}
                 {{ form_widget(registrationForm.roles, {attr: {id: 'roleInput', value: 'PATIENT'}}) }}
 
-                {# Role selector - inside form #}
+                {# Role selector #}
                 <div class="auth-field" style="margin-bottom: 16px;">
                     <label>Je suis un(e)</label>
                     <div class="auth-role-selector" id="roleSelector">
                         <div class="auth-role selected" onclick="selectRole('PATIENT', this)">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                                 <circle cx="12" cy="7" r="4"/>
                             </svg>
                             <span>Patient</span>
                         </div>
                         <div class="auth-role" onclick="selectRole('PSYCHOLOGUE', this)">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
                             </svg>
                             <span>Psychologue</span>
@@ -115,7 +290,7 @@
                 <div class="row g-3">
                     <div class="col-12">
                         <div class="auth-field" style="margin-bottom:0;">
-                            <label>Nom complet <span class="text-danger">*</span></label>
+                            <label>Nom complet <span style="color:#f87171;">*</span></label>
                             <div class="auth-input-wrap">
                                 <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -131,7 +306,7 @@
 
                     <div class="col-md-6">
                         <div class="auth-field" style="margin-bottom:0;">
-                            <label>Nom d'utilisateur <span class="text-danger">*</span></label>
+                            <label>Nom d'utilisateur <span style="color:#f87171;">*</span></label>
                             {{ form_widget(registrationForm.username, {
                                 'attr': {'class': 'auth-input', 'placeholder': 'username'}
                             }) }}
@@ -141,7 +316,7 @@
 
                     <div class="col-md-6">
                         <div class="auth-field" style="margin-bottom:0;">
-                            <label>Email <span class="text-danger">*</span></label>
+                            <label>Email <span style="color:#f87171;">*</span></label>
                             {{ form_widget(registrationForm.email, {
                                 'attr': {'class': 'auth-input', 'placeholder': 'email@exemple.com'}
                             }) }}
@@ -161,7 +336,7 @@
 
                     <div class="col-md-6">
                         <div class="auth-field" style="margin-bottom:0;">
-                            <label>Date de naissance <span class="text-danger">*</span></label>
+                            <label>Date de naissance <span style="color:#f87171;">*</span></label>
                             {{ form_widget(registrationForm.dateOfBirth, {
                                 'attr': {'class': 'auth-input'}
                             }) }}
@@ -180,7 +355,7 @@
 
                     <div class="col-md-6">
                         <div class="auth-field" style="margin-bottom:0;">
-                            <label>Mot de passe <span class="text-danger">*</span></label>
+                            <label>Mot de passe <span style="color:#f87171;">*</span></label>
                             {{ form_widget(registrationForm.plainPassword.first, {
                                 'attr': {'class': 'auth-input', 'placeholder': 'Min. 8 caractères', 'id': 'password-field'}
                             }) }}
@@ -194,7 +369,7 @@
 
                     <div class="col-md-6">
                         <div class="auth-field" style="margin-bottom:0;">
-                            <label>Confirmer <span class="text-danger">*</span></label>
+                            <label>Confirmer <span style="color:#f87171;">*</span></label>
                             {{ form_widget(registrationForm.plainPassword.second, {
                                 'attr': {'class': 'auth-input', 'placeholder': 'Confirmez le mot de passe', 'id': 'password-confirm-field'}
                             }) }}
@@ -205,7 +380,7 @@
 
                 <button type="submit" class="auth-btn" style="margin-top:24px;">
                     Créer mon compte
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="5" y1="12" x2="19" y2="12"/>
                         <polyline points="12 5 19 12 12 19"/>
                     </svg>
@@ -230,153 +405,117 @@
 {{ parent() }}
 <script>
 function selectRole(role, el) {
-    document.querySelectorAll('.auth-role').forEach(o => o.classList.remove('selected'));
+    document.querySelectorAll('.auth-role').forEach(function(o) { o.classList.remove('selected'); });
     el.classList.add('selected');
-    // Target by name to be safe regardless of rendered id
     var roleField = document.getElementById('roleInput')
         || document.querySelector('input[name="registration_form[roles]"]');
     if (roleField) roleField.value = role;
 }
 
-// Password strength checker
-document.addEventListener('DOMContentLoaded', function() {
-    // Find password fields by name attribute (more reliable than ID)
-    const passwordField = document.querySelector('input[name="registration_form[plainPassword][first]"]');
-    const confirmField = document.querySelector('input[name="registration_form[plainPassword][second]"]');
-    const strengthBar = document.getElementById('password-strength-bar');
-    const strengthText = document.getElementById('password-strength-text');
-    const matchText = document.getElementById('password-match-text');
+document.addEventListener('DOMContentLoaded', function () {
+    var passwordField = document.querySelector('input[name="registration_form[plainPassword][first]"]');
+    var confirmField  = document.querySelector('input[name="registration_form[plainPassword][second]"]');
+    var strengthBar   = document.getElementById('password-strength-bar');
+    var strengthText  = document.getElementById('password-strength-text');
+    var matchText     = document.getElementById('password-match-text');
 
-    console.log('Password field found:', passwordField);
-    console.log('Confirm field found:', confirmField);
-
-    function checkPasswordStrength(password) {
-        let score = 0;
-        const checks = {
-            length: password.length >= 8,
-            lowercase: /[a-z]/.test(password),
-            uppercase: /[A-Z]/.test(password),
-            numbers: /\d/.test(password),
-            special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-            longLength: password.length >= 12
+    function checkStrength(p) {
+        var s = 0, c = {
+            len: p.length >= 8, lower: /[a-z]/.test(p),
+            upper: /[A-Z]/.test(p), num: /\d/.test(p),
+            special: /[!@#$%^&*(),.?":{}|<>]/.test(p), long: p.length >= 12
         };
-
-        if (checks.length) score++;
-        if (checks.lowercase) score++;
-        if (checks.uppercase) score++;
-        if (checks.numbers) score++;
-        if (checks.special) score++;
-        if (checks.longLength) score++;
-
-        return { score, checks };
+        Object.values(c).forEach(function(v) { if (v) s++; });
+        return { score: s, checks: c };
     }
 
-    function updateStrengthIndicator(password) {
+    function updateStrength(p) {
         if (!strengthBar || !strengthText) return;
-        
-        if (!password) {
-            strengthBar.style.width = '0%';
-            strengthBar.style.backgroundColor = '#e0e0e0';
-            strengthText.textContent = '';
-            return;
-        }
-
-        const { score, checks } = checkPasswordStrength(password);
-        let width, color, text;
-
-        if (score <= 2) {
-            width = '33%';
-            color = '#dc3545'; // Red - Faible
-            text = 'Faible - Ajoutez majuscules, chiffres et caractères spéciaux';
-        } else if (score <= 4) {
-            width = '66%';
-            color = '#fd7e14'; // Orange - Moyen
-            text = 'Moyen - Ajoutez des caractères spéciaux pour plus de sécurité';
-        } else {
-            width = '100%';
-            color = '#28a745'; // Green - Fort
-            text = 'Fort - Excellent mot de passe !';
-        }
-
+        if (!p) { strengthBar.style.width = '0%'; strengthText.textContent = ''; return; }
+        var r = checkStrength(p);
+        var width, color, label;
+        if (r.score <= 2)      { width='33%';  color='#f87171'; label='Faible'; }
+        else if (r.score <= 4) { width='66%';  color='#fb923c'; label='Moyen'; }
+        else                   { width='100%'; color='#4ab464'; label='Fort ✓'; }
         strengthBar.style.width = width;
         strengthBar.style.backgroundColor = color;
-        strengthText.textContent = text;
         strengthText.style.color = color;
-
-        // Show tips
-        let tips = [];
-        if (!checks.length) tips.push('au moins 8 caractères');
-        if (!checks.uppercase) tips.push('une majuscule');
-        if (!checks.lowercase) tips.push('une minuscule');
-        if (!checks.numbers) tips.push('un chiffre');
-        if (!checks.special) tips.push('un caractère spécial (!@#$...)');
-
-        if (tips.length > 0 && score < 5) {
-            strengthText.textContent = text + ' - Manque: ' + tips.slice(0, 2).join(', ');
-        }
+        var tips = [];
+        if (!r.checks.len)     tips.push('8+ caractères');
+        if (!r.checks.upper)   tips.push('majuscule');
+        if (!r.checks.num)     tips.push('chiffre');
+        if (!r.checks.special) tips.push('caractère spécial');
+        strengthText.textContent = label + (tips.length && r.score < 5 ? ' — Manque: ' + tips.slice(0,2).join(', ') : '');
     }
 
-    function checkPasswordMatch() {
+    function checkMatch() {
         if (!passwordField || !confirmField || !matchText) return;
-        
-        const password = passwordField.value;
-        const confirm = confirmField.value;
-
-        if (!confirm) {
-            matchText.textContent = '';
-            return;
-        }
-
-        if (password === confirm) {
+        if (!confirmField.value) { matchText.textContent = ''; return; }
+        if (passwordField.value === confirmField.value) {
             matchText.textContent = '✓ Les mots de passe correspondent';
-            matchText.style.color = '#28a745';
+            matchText.style.color = '#4ab464';
         } else {
             matchText.textContent = '✗ Les mots de passe ne correspondent pas';
-            matchText.style.color = '#dc3545';
+            matchText.style.color = '#f87171';
         }
     }
 
     if (passwordField) {
-        passwordField.addEventListener('input', function() {
-            updateStrengthIndicator(this.value);
-            checkPasswordMatch();
-        });
-        passwordField.addEventListener('keyup', function() {
-            updateStrengthIndicator(this.value);
-            checkPasswordMatch();
-        });
+        passwordField.addEventListener('input', function () { updateStrength(this.value); checkMatch(); });
     }
-
     if (confirmField) {
-        confirmField.addEventListener('input', checkPasswordMatch);
-        confirmField.addEventListener('keyup', checkPasswordMatch);
+        confirmField.addEventListener('input', checkMatch);
     }
 });
 </script>
 
-<style>
-.password-strength-container {
-    height: 8px;
-    background-color: #e0e0e0;
-    border-radius: 4px;
-    overflow: hidden;
-    margin-top: 8px;
-}
+<script>
+(function () {
+    'use strict';
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.body.classList.add('auth-ready');
+    if (reduced) return;
 
-.password-strength-bar {
-    height: 100%;
-    width: 0%;
-    transition: width 0.3s ease, background-color 0.3s ease;
-    border-radius: 4px;
-}
+    /* Card 3D tilt (gentler for wider card) */
+    var card = document.querySelector('.auth-card');
+    if (card) {
+        card.addEventListener('mousemove', function (e) {
+            var r = card.getBoundingClientRect();
+            var nx = ((e.clientX - r.left) / r.width)  * 2 - 1;
+            var ny = ((e.clientY - r.top)  / r.height) * 2 - 1;
+            card.style.transition = 'transform 0.08s ease-out, box-shadow 0.15s';
+            card.style.transform  = 'perspective(1100px) rotateX(' + (-ny * 2.5) + 'deg) rotateY(' + (nx * 2.5) + 'deg)';
+        });
+        card.addEventListener('mouseleave', function () {
+            card.style.transition = 'transform 0.5s cubic-bezier(0.22,1,0.36,1), box-shadow 0.3s';
+            card.style.transform  = 'perspective(1100px) rotateX(0deg) rotateY(0deg)';
+        });
+    }
 
-.password-strength-text,
-.password-match-text {
-    display: block;
-    font-size: 12px;
-    margin-top: 6px;
-    min-height: 18px;
-    font-weight: 500;
-}
-</style>
+    /* Botanical parallax */
+    var leftPanel = document.querySelector('.auth-panel-left');
+    var plantGrp  = document.querySelector('.plant-group');
+    if (leftPanel && plantGrp) {
+        leftPanel.addEventListener('mousemove', function (e) {
+            var r = leftPanel.getBoundingClientRect();
+            var nx = ((e.clientX - r.left) / r.width)  * 2 - 1;
+            var ny = ((e.clientY - r.top)  / r.height) * 2 - 1;
+            plantGrp.style.transform  = 'rotate(' + (nx * 2.5) + 'deg) translateY(' + (ny * -8) + 'px)';
+            plantGrp.style.transition = 'transform 0.3s ease-out';
+        });
+        leftPanel.addEventListener('mouseleave', function () {
+            plantGrp.style.transform  = '';
+            plantGrp.style.transition = 'transform 0.8s cubic-bezier(0.22,1,0.36,1)';
+        });
+    }
+
+    /* Input icon brightens when filled */
+    document.querySelectorAll('.auth-input').forEach(function (input) {
+        input.addEventListener('input', function () {
+            var icon = this.parentElement.querySelector('.auth-input-icon');
+            if (icon) icon.style.color = this.value.length > 0 ? 'rgba(74,180,100,0.8)' : 'rgba(74,180,100,0.4)';
+        });
+    });
+})();
+</script>
 {% endblock %}

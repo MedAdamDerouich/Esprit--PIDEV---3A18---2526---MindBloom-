@@ -15,6 +15,74 @@
     #hero-canvas { display: none; }
   }
 </style>
+
+<style>
+/* ── Hero text entrance ─────────────────────────────────────── */
+#hero-badge,
+#hero-title,
+#hero-desc,
+#hero-cta {
+  opacity: 0;
+  transform: translateY(28px);
+}
+body.anim-ready #hero-badge {
+  animation: mbFadeSlideUp 0.65s cubic-bezier(0.22,1,0.36,1) 0.1s forwards;
+}
+body.anim-ready #hero-title {
+  animation: mbFadeSlideUp 0.65s cubic-bezier(0.22,1,0.36,1) 0.25s forwards;
+}
+body.anim-ready #hero-desc {
+  animation: mbFadeSlideUp 0.65s cubic-bezier(0.22,1,0.36,1) 0.4s forwards;
+}
+body.anim-ready #hero-cta {
+  animation: mbFadeSlideUp 0.65s cubic-bezier(0.22,1,0.36,1) 0.55s forwards;
+}
+@keyframes mbFadeSlideUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Hero logo 3D float ─────────────────────────────────────── */
+.logo-3d-wrap {
+  perspective: 900px;
+  perspective-origin: center center;
+}
+#hero-logo {
+  animation: mbLogoFloat 4s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes mbLogoFloat {
+  0%   { transform: translateY(0px)   rotateY(0deg); }
+  25%  { transform: translateY(-10px) rotateY(4deg); }
+  50%  { transform: translateY(-14px) rotateY(0deg); }
+  75%  { transform: translateY(-10px) rotateY(-4deg); }
+  100% { transform: translateY(0px)   rotateY(0deg); }
+}
+
+/* ── Service cards 3D tilt + entrance ───────────────────────── */
+.service-card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.18s ease-out, box-shadow 0.18s ease-out;
+  will-change: transform;
+  opacity: 0;
+}
+
+/* ── prefers-reduced-motion overrides ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  #hero-badge, #hero-title, #hero-desc, #hero-cta {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  #hero-logo {
+    animation: none !important;
+  }
+  .service-card-3d {
+    opacity: 1 !important;
+    transition: none !important;
+  }
+}
+</style>
 {% endblock %}
 
 {% block body %}
@@ -33,18 +101,18 @@
 
         <div style="max-width:600px;display:flex;flex-direction:column;gap:25px;
                     position:relative;z-index:2;">
-            <span style="display:inline-block;background:#E8F1FC;color:#4A90E2;
+            <span id="hero-badge" style="display:inline-block;background:#E8F1FC;color:#4A90E2;
                          border-radius:20px;padding:5px 15px;font-size:13px;width:fit-content;">
                 ✨ Votre bien-être mental compte
             </span>
-            <span style="font-size:46px;font-weight:900;color:#2C3E50;line-height:1.1;">
+            <span id="hero-title" style="font-size:46px;font-weight:900;color:#2C3E50;line-height:1.1;">
                 Cultivez votre bien-être mental avec MindBloom
             </span>
-            <span style="font-size:17px;color:#7F8C8D;line-height:1.6;">
+            <span id="hero-desc" style="font-size:17px;color:#7F8C8D;line-height:1.6;">
                 Accédez à des psychologues certifiés, des ressources personnalisées
                 et une communauté bienveillante pour vous accompagner.
             </span>
-            <div style="margin-top:10px;">
+            <div id="hero-cta" style="margin-top:10px;">
                 <a href="{{ path('app_test_index') }}"
                    style="display:inline-block;background:#4A90E2;color:white;padding:0 0;
                           border-radius:10px;font-weight:700;text-decoration:none;font-size:14px;
@@ -55,29 +123,29 @@
         </div>
 
         <div style="position:relative;z-index:2;flex-shrink:0;">
-            <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom"
+            <img id="hero-logo" src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom"
                  style="width:380px;height:380px;object-fit:contain;">
         </div>
     </div>
 
     {# Stats Bar #}
-    <div style="background:white;border-top:1px solid #F0F0F0;border-bottom:1px solid #F0F0F0;
+    <div id="stats-bar" style="background:white;border-top:1px solid #F0F0F0;border-bottom:1px solid #F0F0F0;
                 height:140px;display:flex;align-items:center;justify-content:center;gap:80px;">
 
         <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
-            <span style="font-size:30px;font-weight:700;color:#4A90E2;">50+</span>
+            <span class="stat-counter" data-target="50" data-format="N+" style="font-size:30px;font-weight:700;color:#4A90E2;">50+</span>
             <span style="color:#7F8C8D;">Psychologues</span>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
-            <span style="font-size:30px;font-weight:700;color:#4A90E2;">10k+</span>
+            <span class="stat-counter" data-target="10" data-format="Nk+" style="font-size:30px;font-weight:700;color:#4A90E2;">10k+</span>
             <span style="color:#7F8C8D;">Patients accompagnés</span>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
-            <span style="font-size:30px;font-weight:700;color:#4A90E2;">4.9/5</span>
+            <span class="stat-counter" data-target="49" data-format="N.X/5" style="font-size:30px;font-weight:700;color:#4A90E2;">4.9/5</span>
             <span style="color:#7F8C8D;">Satisfaction</span>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
-            <span style="font-size:30px;font-weight:700;color:#4A90E2;">24/7</span>
+            <span class="stat-counter" data-target="24" data-format="N/7" style="font-size:30px;font-weight:700;color:#4A90E2;">24/7</span>
             <span style="color:#7F8C8D;">Support disponible</span>
         </div>
     </div>
@@ -94,7 +162,7 @@
         <div style="display:flex;gap:20px;margin-top:40px;justify-content:center;">
 
             {# Rendez-vous #}
-            <div style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
+            <div class="service-card-3d" style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
                         box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;">
                 <div style="width:45px;height:45px;background:#E8F1FC;border-radius:10px;
                              display:flex;align-items:center;justify-content:center;font-size:22px;">📅</div>
@@ -107,7 +175,7 @@
             </div>
 
             {# Tests #}
-            <div style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
+            <div class="service-card-3d" style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
                         box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;">
                 <div style="width:45px;height:45px;background:#EDF9F5;border-radius:10px;
                              display:flex;align-items:center;justify-content:center;font-size:22px;">🧠</div>
@@ -120,7 +188,7 @@
             </div>
 
             {# Gérer Tests Autoévaluation #}
-            <div onclick="window.location.href='{{ path('app_test_manage') }}';" style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
+            <div class="service-card-3d" onclick="window.location.href='{{ path('app_test_manage') }}';" style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
                         box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;cursor:pointer;">
                 <div style="width:45px;height:45px;background:#E8F1FC;border-radius:10px;
                              display:flex;align-items:center;justify-content:center;font-size:22px;">📝</div>
@@ -133,7 +201,7 @@
             </div>
 
             {# Événements #}
-            <div style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
+            <div class="service-card-3d" style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
                         box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;">
                 <div style="width:45px;height:45px;background:#E8F1FC;border-radius:10px;
                              display:flex;align-items:center;justify-content:center;font-size:22px;">👥</div>
@@ -146,7 +214,7 @@
             </div>
 
             {# Produits #}
-            <div style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
+            <div class="service-card-3d" style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
                         box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;">
                 <div style="width:45px;height:45px;background:#EDF9F5;border-radius:10px;
                              display:flex;align-items:center;justify-content:center;font-size:22px;">💚</div>
@@ -312,6 +380,172 @@
     material.dispose();
     sprite.dispose();
   });
+
+})();
+</script>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── Accessibility gate ─────────────────────────────────────────────── */
+  var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Activate CSS staggered entrance (prevents FOUC on slow connections) */
+  document.body.classList.add('anim-ready');
+
+  if (reducedMotion) {
+    ['hero-badge', 'hero-title', 'hero-desc', 'hero-cta'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) { el.style.opacity = '1'; el.style.transform = 'none'; }
+    });
+    document.querySelectorAll('.service-card-3d').forEach(function (el) {
+      el.style.opacity = '1';
+    });
+    return;
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     FEATURE 1 — Hero logo: add perspective wrapper class
+  ════════════════════════════════════════════════════════════════════════ */
+  var heroLogo = document.getElementById('hero-logo');
+  if (heroLogo && heroLogo.parentElement) {
+    heroLogo.parentElement.classList.add('logo-3d-wrap');
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     FEATURE 2 — Stats bar animated counters
+  ════════════════════════════════════════════════════════════════════════ */
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function formatCounter(value, fmt) {
+    var n = Math.floor(value);
+    switch (fmt) {
+      case 'N+':    return n + '+';
+      case 'Nk+':   return n + 'k+';
+      case 'N/7':   return n + '/7';
+      case 'N.X/5':
+        /* target stored ×10 (49 → 4.9) for smooth decimal animation */
+        var tenths = Math.floor(value);
+        var whole  = Math.floor(tenths / 10);
+        var frac   = tenths % 10;
+        return whole + '.' + frac + '/5';
+      default:      return String(n);
+    }
+  }
+
+  function animateCounter(el) {
+    var target   = parseFloat(el.getAttribute('data-target')) || 0;
+    var fmt      = el.getAttribute('data-format') || 'N';
+    var duration = 1500;
+    var startTs  = null;
+
+    function step(ts) {
+      if (!startTs) startTs = ts;
+      var elapsed  = ts - startTs;
+      var progress = Math.min(elapsed / duration, 1);
+      el.textContent = formatCounter(easeOutCubic(progress) * target, fmt);
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        el.textContent = formatCounter(target, fmt);
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  var statsBar = document.getElementById('stats-bar');
+  if (statsBar && 'IntersectionObserver' in window) {
+    var statsObserver = new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          obs.unobserve(entry.target);
+          document.querySelectorAll('.stat-counter').forEach(animateCounter);
+        }
+      });
+    }, { threshold: 0.4 });
+    statsObserver.observe(statsBar);
+  } else if (statsBar) {
+    /* Fallback: show final formatted values immediately */
+    document.querySelectorAll('.stat-counter').forEach(function (el) {
+      el.textContent = formatCounter(
+        parseFloat(el.getAttribute('data-target')) || 0,
+        el.getAttribute('data-format') || 'N'
+      );
+    });
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     FEATURE 3 — Service cards: 3D tilt on hover + staggered entrance
+  ════════════════════════════════════════════════════════════════════════ */
+  var MAX_TILT = 15;
+
+  function clamp(val, min, max) {
+    return Math.min(Math.max(val, min), max);
+  }
+
+  var cards = document.querySelectorAll('.service-card-3d');
+
+  cards.forEach(function (card) {
+    /* Initial entrance state */
+    card.style.transform = 'perspective(700px) rotateX(0deg) rotateY(0deg) translateY(30px)';
+
+    /* 3D tilt on mouse move */
+    card.addEventListener('mousemove', function (e) {
+      var rect = card.getBoundingClientRect();
+      var nx   = ((e.clientX - rect.left) / rect.width)  * 2 - 1;
+      var ny   = ((e.clientY - rect.top)  / rect.height) * 2 - 1;
+      var rotX = clamp(-ny * MAX_TILT, -MAX_TILT, MAX_TILT);
+      var rotY = clamp( nx * MAX_TILT, -MAX_TILT, MAX_TILT);
+      var shadowX = rotY * 0.5;
+      var shadowY = -rotX * 0.5 + 15;
+      card.style.transform =
+        'perspective(700px) rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg) translateY(0px)';
+      card.style.boxShadow =
+        shadowX + 'px ' + shadowY + 'px 30px rgba(0,0,0,0.12)';
+    });
+
+    /* Reset on mouse leave */
+    card.addEventListener('mouseleave', function () {
+      card.style.transform = 'perspective(700px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+      card.style.boxShadow = '0 10px 15px rgba(0,0,0,0.05)';
+    });
+  });
+
+  /* Staggered entrance via IntersectionObserver */
+  if ('IntersectionObserver' in window) {
+    var cardObserver = new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          var card  = entry.target;
+          var index = Array.prototype.indexOf.call(cards, card);
+          obs.unobserve(card);
+          setTimeout(function () {
+            card.style.transition =
+              'opacity 0.55s cubic-bezier(0.22,1,0.36,1), ' +
+              'transform 0.55s cubic-bezier(0.22,1,0.36,1), ' +
+              'box-shadow 0.18s ease-out';
+            card.style.opacity   = '1';
+            card.style.transform = 'perspective(700px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+            /* After entrance completes, restore snappy tilt transition */
+            setTimeout(function () {
+              card.style.transition = 'transform 0.18s ease-out, box-shadow 0.18s ease-out';
+            }, 600);
+          }, index * 100);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    cards.forEach(function (card) { cardObserver.observe(card); });
+  } else {
+    /* Fallback: show all cards immediately */
+    cards.forEach(function (card) {
+      card.style.opacity   = '1';
+      card.style.transform = 'perspective(700px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+    });
+  }
 
 })();
 </script>

@@ -2,10 +2,15 @@
 <aside class="mb-sidebar">
     <div class="sidebar-logo">
         <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom">
-        <div class="logo-sub">Admin Panel</div>
+        <div class="sidebar-brand-row">
+            <div class="logo-sub">Admin Panel</div>
+            <div class="sidebar-dot"></div>
+        </div>
     </div>
 
     <nav class="sidebar-nav">
+        <div class="nav-section-label">Navigation</div>
+
         <a href="{{ path('app_admin_dashboard') }}"
            class="{{ app.request.attributes.get('_route') == 'app_admin_dashboard' ? 'active' : '' }}">
             <span class="nav-icon">📊</span> Dashboard
@@ -20,12 +25,12 @@
            style="display:flex; align-items:center; justify-content:space-between;">
             <span><span class="nav-icon">🩺</span> Validations</span>
             {% if _pendingCount > 0 %}
-                <span style="background:#ffc107; color:#333; font-size:11px; font-weight:800;
-                             border-radius:10px; padding:2px 8px; min-width:20px; text-align:center;">
-                    {{ _pendingCount }}
-                </span>
+                <span class="nav-badge">{{ _pendingCount }}</span>
             {% endif %}
         </a>
+
+        <div class="nav-section-label" style="margin-top:8px;">Gestion</div>
+
         <a href="{{ path('app_admin_wallets') }}"
            class="{{ app.request.attributes.get('_route') starts with 'app_admin_wallet' ? 'active' : '' }}">
             <span class="nav-icon">💰</span> Wallets
@@ -50,11 +55,25 @@
            class="{{ app.request.attributes.get('_route') starts with 'app_admin_test' ? 'active' : '' }}">
             <span class="nav-icon">📋</span> Tests
         </a>
-
-        <hr class="mb-divider">
-
-        <a href="{{ path('app_logout') }}" class="nav-logout">
-            <span class="nav-icon">🚪</span> Déconnexion
-        </a>
     </nav>
+
+    {# Admin profile + logout at bottom #}
+    <div class="sidebar-bottom">
+        <div class="sidebar-admin-card">
+            <div class="sac-avatar">
+                {% if app.user.profileImage %}
+                    <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}" alt="">
+                {% else %}
+                    {{ app.user.fullName|first|upper }}
+                {% endif %}
+            </div>
+            <div class="sac-info">
+                <div class="sac-name">{{ app.user.fullName }}</div>
+                <div class="sac-role">Administrateur</div>
+            </div>
+        </div>
+        <a href="{{ path('app_logout') }}" class="sidebar-logout-btn">
+            🚪 Déconnexion
+        </a>
+    </div>
 </aside>

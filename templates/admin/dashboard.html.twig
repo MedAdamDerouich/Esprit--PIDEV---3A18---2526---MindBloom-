@@ -3,225 +3,328 @@
 
 {% block stylesheets %}
 <style>
-/* ── Top bar ── */
-.dash-topbar {
+/* ── Page wrapper ── */
+.dash-page { background: #F4F6FB; min-height: 100vh; padding: 32px 36px 48px; }
+
+/* ── Greeting header ── */
+.dash-greeting {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 32px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #EFEFEF;
+    align-items: center;
+    background: linear-gradient(135deg, #eef5ff 0%, #f6fbff 60%, #f0faf6 100%);
+    border: 1px solid #e0ecfb;
+    border-radius: 20px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
 }
-.dash-topbar h1 {
-    font-size: 22px;
-    font-weight: 700;
-    color: #1a1a2e;
-    margin: 0 0 4px;
+.dash-greeting .greeting-left h1 {
+    font-size: 26px;
+    font-weight: 900;
+    color: #1a2744;
+    margin: 0 0 6px;
+    line-height: 1.2;
 }
-.dash-topbar .date {
-    font-size: 12px;
-    color: #aaa;
+.dash-greeting .greeting-left .subtitle {
+    font-size: 14px;
+    color: #7a8aaa;
     font-weight: 400;
 }
-.dash-topbar .admin-info {
+.dash-greeting .greeting-right {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
 }
-.dash-topbar .admin-info .name {
-    font-size: 13px;
-    font-weight: 600;
-    color: #333;
-    text-align: right;
+.dash-greeting .admin-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    border: 1px solid #dce8f8;
+    border-radius: 50px;
+    padding: 8px 16px 8px 10px;
+    box-shadow: 0 2px 8px rgba(74,144,226,0.08);
 }
-.dash-topbar .admin-info .role {
-    font-size: 11px;
-    color: #aaa;
-    text-align: right;
+.dash-greeting .admin-pill .av {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4A90E2, #5FBF9F);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: white;
+    flex-shrink: 0; overflow: hidden;
+}
+.dash-greeting .admin-pill .av img { width: 100%; height: 100%; object-fit: cover; }
+.dash-greeting .admin-pill .av-name { font-size: 13px; font-weight: 700; color: #1a2744; }
+.dash-greeting .admin-pill .av-role {
+    font-size: 11px; color: #4A90E2; font-weight: 600;
+    background: #eaf2fb; border-radius: 20px; padding: 2px 8px; display: inline-block; margin-top: 2px;
+}
+.dash-date {
+    font-size: 12px; color: #aab4cc; font-weight: 500;
+    background: white; border: 1px solid #e8eef8; border-radius: 20px;
+    padding: 6px 14px;
 }
 
-/* ── Numbers strip ── */
-.numbers-strip {
-    display: flex;
+/* ── KPI cards strip ── */
+.kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.kpi-card {
     background: white;
-    border: 1px solid #EFEFEF;
-    border-radius: 10px;
-    margin-bottom: 28px;
+    border-radius: 16px;
+    padding: 20px 22px;
+    border-left: 4px solid #4A90E2;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    animation: slideUp 0.4s ease both;
+    position: relative;
     overflow: hidden;
 }
-.num-block {
-    flex: 1;
-    padding: 22px 28px;
-    border-right: 1px solid #F3F3F3;
+.kpi-card::after {
+    content: attr(data-icon);
+    position: absolute;
+    right: 14px; top: 50%; transform: translateY(-50%);
+    font-size: 36px; opacity: 0.09; line-height: 1;
 }
-.num-block:last-child { border-right: none; }
-.num-block .n {
-    font-size: 32px;
-    font-weight: 800;
-    color: #1a1a2e;
-    line-height: 1;
-    margin-bottom: 6px;
+.kpi-card:nth-child(1) { border-left-color: #4A90E2; animation-delay: 0.05s; }
+.kpi-card:nth-child(2) { border-left-color: #27ae60; animation-delay: 0.10s; }
+.kpi-card:nth-child(3) { border-left-color: #5FBF9F; animation-delay: 0.15s; }
+.kpi-card:nth-child(4) { border-left-color: #8E44AD; animation-delay: 0.20s; }
+.kpi-card:nth-child(5) { border-left-color: #E67E22; animation-delay: 0.25s; }
+.kpi-val {
+    font-size: 34px; font-weight: 900; line-height: 1; color: #1a2744;
 }
-.num-block .l {
-    font-size: 12px;
-    color: #999;
-}
-.num-block .n.green  { color: #27ae60; }
-.num-block .n.blue   { color: #4A90E2; }
-.num-block .n.teal   { color: #5FBF9F; }
-.num-block .n.orange { color: #E67E22; }
+.kpi-card:nth-child(1) .kpi-val { color: #4A90E2; }
+.kpi-card:nth-child(2) .kpi-val { color: #27ae60; }
+.kpi-card:nth-child(3) .kpi-val { color: #5FBF9F; }
+.kpi-card:nth-child(4) .kpi-val { color: #8E44AD; }
+.kpi-card:nth-child(5) .kpi-val { color: #E67E22; }
+.kpi-label { font-size: 12px; color: #8897b0; font-weight: 600; margin-top: 4px; }
+.kpi-sub { font-size: 11px; color: #c0cbd8; font-weight: 400; }
 
-/* ── Module stat cards ── */
+/* ── Module grid ── */
 .module-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 28px;
+    gap: 14px;
+    margin-bottom: 24px;
 }
 .mod-card {
     background: white;
-    border: 1px solid #EFEFEF;
-    border-radius: 12px;
-    padding: 20px 22px;
+    border: 1px solid #edf1f8;
+    border-radius: 16px;
+    padding: 20px 20px 18px;
     display: flex;
-    align-items: center;
-    gap: 16px;
-    transition: box-shadow 0.2s, transform 0.2s;
+    align-items: flex-start;
+    gap: 15px;
+    transition: box-shadow 0.25s, transform 0.25s, border-color 0.25s;
     text-decoration: none;
-}
-.mod-card:hover {
-    box-shadow: 0 6px 20px rgba(0,0,0,0.07);
-    transform: translateY(-2px);
-}
-.mod-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    flex-shrink: 0;
-}
-.mod-body .mod-count {
-    font-size: 26px;
-    font-weight: 800;
-    color: #1a1a2e;
-    line-height: 1;
-    margin-bottom: 4px;
-}
-.mod-body .mod-label {
-    font-size: 12px;
-    color: #999;
-    font-weight: 500;
-}
-
-/* ── Middle columns ── */
-.mid-right {
-    background: white;
-    border: 1px solid #EFEFEF;
-    border-radius: 10px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* ── Role bars ── */
-.role-bar-row { display: flex; flex-direction: column; gap: 4px; }
-.role-bar-row .rb-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-}
-.role-bar-row .rb-name { font-size: 13px; color: #444; font-weight: 500; }
-.role-bar-row .rb-count { font-size: 13px; font-weight: 700; color: #1a1a2e; }
-.role-bar-track {
-    height: 6px;
-    background: #F3F3F3;
-    border-radius: 10px;
+    animation: slideUp 0.4s ease both;
+    position: relative;
     overflow: hidden;
 }
-.role-bar-fill {
-    height: 100%;
-    border-radius: 10px;
-    transition: width 1s ease;
+.mod-card:nth-child(1) { animation-delay: 0.10s; }
+.mod-card:nth-child(2) { animation-delay: 0.14s; }
+.mod-card:nth-child(3) { animation-delay: 0.18s; }
+.mod-card:nth-child(4) { animation-delay: 0.22s; }
+.mod-card:nth-child(5) { animation-delay: 0.26s; }
+.mod-card:nth-child(6) { animation-delay: 0.30s; }
+.mod-card:nth-child(7) { animation-delay: 0.34s; }
+.mod-card:nth-child(8) { animation-delay: 0.38s; }
+.mod-card:hover {
+    box-shadow: 0 8px 28px rgba(74,144,226,0.12);
+    transform: translateY(-3px);
+    border-color: #c6daf5;
+}
+.mod-card:hover .mod-arrow { opacity: 1; transform: translateX(0); }
+.mod-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+}
+.mod-body { flex: 1; }
+.mod-body .mod-count {
+    font-size: 28px; font-weight: 900; color: #1a2744;
+    line-height: 1; margin-bottom: 4px;
+}
+.mod-body .mod-label { font-size: 13px; color: #555e74; font-weight: 600; }
+.mod-body .mod-desc { font-size: 11px; color: #aab4cc; margin-top: 2px; }
+.mod-arrow {
+    position: absolute; right: 16px; bottom: 16px;
+    font-size: 14px; color: #4A90E2; opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity 0.2s, transform 0.2s;
 }
 
-/* ── Recent users table ── */
+/* ── Two-column middle row ── */
+.mid-row {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 16px;
+    margin-bottom: 24px;
+    align-items: start;
+}
+
+/* ── Role breakdown ── */
+.role-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 24px 28px;
+    border: 1px solid #edf1f8;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.role-panel .panel-title {
+    font-size: 15px; font-weight: 700; color: #1a2744; margin-bottom: 4px;
+}
+.role-panel .panel-sub { font-size: 12px; color: #aab4cc; margin-bottom: 22px; }
+
+.role-row { margin-bottom: 18px; }
+.role-row:last-child { margin-bottom: 0; }
+.role-row-top {
+    display: flex; justify-content: space-between;
+    align-items: baseline; margin-bottom: 7px;
+}
+.role-row-top .rn { font-size: 13px; color: #444d62; font-weight: 600; }
+.role-row-top .rc {
+    font-size: 13px; font-weight: 800; color: #1a2744;
+}
+.role-row-top .rp { font-size: 11px; color: #aab4cc; margin-left: 4px; }
+.role-track {
+    height: 10px; border-radius: 20px; overflow: hidden;
+}
+.role-fill {
+    height: 100%; border-radius: 20px;
+    width: 0;
+    transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ── Quick actions panel ── */
+.quick-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 24px 22px;
+    border: 1px solid #edf1f8;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    display: flex; flex-direction: column; gap: 10px;
+}
+.quick-panel .panel-title {
+    font-size: 15px; font-weight: 700; color: #1a2744; margin-bottom: 4px;
+}
+.quick-panel .panel-sub { font-size: 12px; color: #aab4cc; margin-bottom: 8px; }
+.qa-btn {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #f5f8ff;
+    border: 1px solid #e4edf8;
+    text-decoration: none;
+    transition: all 0.2s;
+    position: relative;
+}
+.qa-btn:hover { background: #4A90E2; border-color: #4A90E2; }
+.qa-btn:hover .qa-label { color: white; }
+.qa-btn:hover .qa-icon-wrap { background: rgba(255,255,255,0.25); }
+.qa-btn:hover .qa-arrow { color: white; }
+.qa-icon-wrap {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: #e8f1fc; display: flex; align-items: center;
+    justify-content: center; font-size: 18px; flex-shrink: 0;
+    transition: background 0.2s;
+}
+.qa-label { font-size: 13px; font-weight: 600; color: #334060; flex: 1; transition: color 0.2s; }
+.qa-arrow { font-size: 13px; color: #aab4cc; transition: color 0.2s; }
+.qa-badge {
+    background: #ffc107; color: #333; font-size: 10px; font-weight: 800;
+    border-radius: 10px; padding: 2px 7px; min-width: 20px; text-align: center;
+}
+
+/* ── Recent users ── */
 .recent-wrap {
     background: white;
-    border: 1px solid #EFEFEF;
-    border-radius: 10px;
+    border: 1px solid #edf1f8;
+    border-radius: 16px;
     overflow: hidden;
-    margin-top: 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    animation: slideUp 0.5s ease 0.3s both;
 }
 .recent-wrap .rw-header {
-    padding: 16px 24px;
-    border-bottom: 1px solid #F3F3F3;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 18px 26px;
+    border-bottom: 1px solid #f0f4fb;
+    display: flex; justify-content: space-between; align-items: center;
+    background: linear-gradient(90deg, #f7f9ff 0%, #fafcff 100%);
 }
-.recent-wrap .rw-header h6 {
-    font-size: 13px;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
+.recent-wrap .rw-header .rw-title {
+    font-size: 15px; font-weight: 700; color: #1a2744; margin: 0;
+}
+.recent-wrap .rw-header .rw-subtitle {
+    font-size: 11px; color: #aab4cc; margin-top: 2px;
 }
 .recent-wrap .rw-header a {
-    font-size: 12px;
-    color: #4A90E2;
-    text-decoration: none;
+    font-size: 12px; color: #4A90E2; text-decoration: none;
+    background: #eaf2fb; border-radius: 20px; padding: 5px 14px; font-weight: 600;
+    transition: background 0.2s;
 }
+.recent-wrap .rw-header a:hover { background: #4A90E2; color: white; }
+
 .rw-table { width: 100%; border-collapse: collapse; }
 .rw-table thead th {
-    padding: 10px 24px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #bbb;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: #FAFAFA;
-    border-bottom: 1px solid #F3F3F3;
-    text-align: left;
+    padding: 11px 24px;
+    font-size: 11px; font-weight: 700; color: #99a8be;
+    text-transform: uppercase; letter-spacing: 0.7px;
+    background: linear-gradient(90deg, #f7f9ff, #fafcff);
+    border-bottom: 1px solid #edf1f8; text-align: left;
 }
 .rw-table tbody td {
     padding: 14px 24px;
-    font-size: 13px;
-    color: #444;
-    border-bottom: 1px solid #F9F9F9;
+    font-size: 13px; color: #444d62;
+    border-bottom: 1px solid #f4f6fb;
     vertical-align: middle;
 }
 .rw-table tbody tr:last-child td { border-bottom: none; }
-.rw-table tbody tr:hover td { background: #FAFCFF; }
+.rw-table tbody tr { transition: background 0.15s; }
+.rw-table tbody tr:hover td { background: #f0f6ff; }
 
-.u-name { font-weight: 600; color: #1a1a2e; font-size: 13px; }
-.u-username { font-size: 11px; color: #bbb; }
+.u-name { font-weight: 700; color: #1a2744; font-size: 13px; }
+.u-username {
+    font-size: 11px; color: #aab4cc;
+    background: #f3f6fb; border-radius: 20px;
+    padding: 2px 8px; display: inline-block; margin-top: 3px;
+}
 
-/* status pill — simple text, no bold background */
+/* Avatar role ring */
+.av-ring-patient  { box-shadow: 0 0 0 2px #5FBF9F; }
+.av-ring-psycho   { box-shadow: 0 0 0 2px #4A90E2; }
+.av-ring-admin    { box-shadow: 0 0 0 2px #e74c3c; }
+
 .pill {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700;
 }
 .pill-green  { background: #eafaf1; color: #27ae60; }
 .pill-grey   { background: #F3F3F3; color: #999; }
 .pill-blue   { background: #eaf2fb; color: #4A90E2; }
 .pill-teal   { background: #eafaf5; color: #5FBF9F; }
 .pill-red    { background: #fdecea; color: #e74c3c; }
+.pill-purple { background: #f5eeff; color: #8E44AD; }
 
-.edit-link {
-    font-size: 12px;
-    color: #4A90E2;
-    text-decoration: none;
-    padding: 4px 12px;
-    border: 1px solid #d4e8f7;
-    border-radius: 6px;
+.details-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; color: #4A90E2; text-decoration: none;
+    padding: 5px 13px; border: 1px solid #c6daf5;
+    border-radius: 8px; font-weight: 600; transition: all 0.2s;
 }
-.edit-link:hover { background: #eaf2fb; }
+.details-btn:hover { background: #4A90E2; color: white; border-color: #4A90E2; }
+
+/* ── Animations ── */
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
 </style>
 {% endblock %}
 
@@ -230,184 +333,261 @@
     {{ include('admin/_sidebar.html.twig') }}
 
     <div class="admin-content" style="flex:1;">
+    <div class="dash-page">
 
-        {# Top bar #}
-        <div class="dash-topbar">
-            <div>
-                <h1>Tableau de bord</h1>
-                <span class="date">{{ "now"|date("d/m/Y") }}</span>
+        {# ── Greeting header ── #}
+        <div class="dash-greeting">
+            <div class="greeting-left">
+                <h1 id="greeting-text">Bonjour, {{ app.user.fullName|split(' ')|first }} 👋</h1>
+                <div class="subtitle">Voici ce qui se passe sur MindBloom aujourd'hui.</div>
             </div>
-            <div class="admin-info">
-                <div>
-                    <div class="name">{{ app.user.fullName }}</div>
-                    <div class="role">Administrateur</div>
-                </div>
-                <div class="mb-avatar" style="width:38px;height:38px;font-size:14px;">
-                    {% if app.user.profileImage %}
-                        <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}" alt="">
-                    {% else %}
-                        {{ app.user.fullName|first|upper }}
-                    {% endif %}
+            <div class="greeting-right">
+                <div class="dash-date">📅 {{ "now"|date("d MMMM Y", "fr") ?? "now"|date("d/m/Y") }}</div>
+                <div class="admin-pill">
+                    <div class="av">
+                        {% if app.user.profileImage %}
+                            <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}" alt="">
+                        {% else %}
+                            {{ app.user.fullName|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="av-name">{{ app.user.fullName }}</div>
+                        <div class="av-role">Administrateur</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        {# Numbers strip #}
-        <div class="numbers-strip">
-            <div class="num-block">
-                <div class="n">{{ stats.users }}</div>
-                <div class="l">Utilisateurs au total</div>
+        {# ── KPI strip ── #}
+        <div class="kpi-strip">
+            <div class="kpi-card" data-icon="👤">
+                <div class="kpi-val" data-count="{{ stats.users }}">{{ stats.users }}</div>
+                <div class="kpi-label">Utilisateurs</div>
+                <div class="kpi-sub">total inscrits</div>
             </div>
-            <div class="num-block">
-                <div class="n green">{{ stats.active }}</div>
-                <div class="l">Comptes actifs</div>
+            <div class="kpi-card" data-icon="✅">
+                <div class="kpi-val" data-count="{{ stats.active }}">{{ stats.active }}</div>
+                <div class="kpi-label">Comptes actifs</div>
+                <div class="kpi-sub">en ce moment</div>
             </div>
-            <div class="num-block">
-                <div class="n blue">{{ stats.psychologues }}</div>
-                <div class="l">Psychologues</div>
+            <div class="kpi-card" data-icon="🩺">
+                <div class="kpi-val" data-count="{{ stats.psychologues }}">{{ stats.psychologues }}</div>
+                <div class="kpi-label">Psychologues</div>
+                <div class="kpi-sub">professionnels certifiés</div>
             </div>
-            <div class="num-block">
-                <div class="n teal">{{ stats.cabinets ?? 0 }}</div>
-                <div class="l">Cabinets</div>
+            <div class="kpi-card" data-icon="🏥">
+                <div class="kpi-val" data-count="{{ stats.cabinets ?? 0 }}">{{ stats.cabinets ?? 0 }}</div>
+                <div class="kpi-label">Cabinets</div>
+                <div class="kpi-sub">espaces de consultation</div>
             </div>
-            <div class="num-block">
-                <div class="n orange">{{ stats.revenue }} DT</div>
-                <div class="l">Total en wallets</div>
+            <div class="kpi-card" data-icon="💰">
+                <div class="kpi-val" data-count="{{ stats.revenue }}">{{ stats.revenue }}</div>
+                <div class="kpi-label">DT en wallets</div>
+                <div class="kpi-sub">solde total</div>
             </div>
         </div>
 
-        {# Module stat cards grid #}
+        {# ── Module grid ── #}
         <div class="module-grid">
 
             <a href="{{ path('app_admin_produit_index') }}" class="mod-card">
                 <div class="mod-icon" style="background:#FFF3E0;">🛍️</div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#E67E22;">{{ stats.produits }}</div>
+                    <div class="mod-count" style="color:#E67E22;" data-count="{{ stats.produits }}">{{ stats.produits }}</div>
                     <div class="mod-label">Produits</div>
+                    <div class="mod-desc">Gérer le catalogue</div>
                 </div>
+                <span class="mod-arrow">→</span>
             </a>
 
-            <a href="#" class="mod-card">
+            <a href="{{ path('app_admin_event_index') }}" class="mod-card">
                 <div class="mod-icon" style="background:#E8F5E9;">📅</div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#27ae60;">{{ stats.evenements }}</div>
+                    <div class="mod-count" style="color:#27ae60;" data-count="{{ stats.evenements }}">{{ stats.evenements }}</div>
                     <div class="mod-label">Événements</div>
+                    <div class="mod-desc">Ateliers &amp; conférences</div>
                 </div>
+                <span class="mod-arrow">→</span>
             </a>
 
             <a href="{{ path('app_admin_cabinets') }}" class="mod-card">
                 <div class="mod-icon" style="background:#E3F2FD;">🏥</div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#4A90E2;">{{ stats.cabinets }}</div>
+                    <div class="mod-count" style="color:#4A90E2;" data-count="{{ stats.cabinets }}">{{ stats.cabinets }}</div>
                     <div class="mod-label">Cabinets</div>
+                    <div class="mod-desc">Espaces de consultation</div>
                 </div>
+                <span class="mod-arrow">→</span>
             </a>
 
             <a href="{{ path('app_admin_order_index') }}" class="mod-card">
                 <div class="mod-icon" style="background:#F3E5F5;">📦</div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#8E44AD;">{{ stats.commandes }}</div>
+                    <div class="mod-count" style="color:#8E44AD;" data-count="{{ stats.commandes }}">{{ stats.commandes }}</div>
                     <div class="mod-label">Commandes</div>
+                    <div class="mod-desc">Suivi des achats</div>
                 </div>
+                <span class="mod-arrow">→</span>
             </a>
 
-            <a href="#" class="mod-card">
+            <a href="{{ path('app_admin_test_index') }}" class="mod-card">
                 <div class="mod-icon" style="background:#E0F7FA;">📋</div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#00ACC1;">{{ stats.tests }}</div>
+                    <div class="mod-count" style="color:#00ACC1;" data-count="{{ stats.tests }}">{{ stats.tests }}</div>
                     <div class="mod-label">Tests</div>
+                    <div class="mod-desc">Évaluations psychologiques</div>
                 </div>
+                <span class="mod-arrow">→</span>
             </a>
 
             <a href="{{ path('app_admin_wallets') }}" class="mod-card">
-                <div class="mod-icon" style="background:#E8F5E9;">💰</div>
+                <div class="mod-icon" style="background:#E8F5E9;">💳</div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#5FBF9F;">{{ stats.revenue }}</div>
-                    <div class="mod-label">DT en wallets</div>
+                    <div class="mod-count" style="color:#5FBF9F;" data-count="{{ stats.revenue }}">{{ stats.revenue }}</div>
+                    <div class="mod-label">Wallets</div>
+                    <div class="mod-desc">Soldes &amp; transactions</div>
                 </div>
+                <span class="mod-arrow">→</span>
             </a>
 
             <a href="{{ path('app_admin_cabinets') }}" class="mod-card">
                 <div class="mod-icon" style="background:#FFF8E1;">📆</div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#F39C12;">{{ stats.reservations }}</div>
+                    <div class="mod-count" style="color:#F39C12;" data-count="{{ stats.reservations }}">{{ stats.reservations }}</div>
                     <div class="mod-label">Réservations</div>
+                    <div class="mod-desc">Créneaux réservés</div>
                 </div>
+                <span class="mod-arrow">→</span>
             </a>
 
             <a href="{{ path('app_admin_users') }}" class="mod-card">
-                <div class="mod-icon" style="background:#FDECEA;">👥</div>
+                <div class="mod-icon" style="background:#FDECEA;">🚫</div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#E74C3C;">{{ stats.suspended }}</div>
-                    <div class="mod-label">Comptes suspendus</div>
+                    <div class="mod-count" style="color:#E74C3C;" data-count="{{ stats.suspended }}">{{ stats.suspended }}</div>
+                    <div class="mod-label">Suspendus</div>
+                    <div class="mod-desc">Comptes désactivés</div>
                 </div>
+                <span class="mod-arrow">→</span>
             </a>
 
         </div>
 
-        {# Role breakdown — full width #}
-        <div class="mid-right mb-3" style="flex-direction:row;align-items:center;gap:32px;padding:20px 28px;">
-            <div style="font-size:13px;font-weight:600;color:#333;white-space:nowrap;min-width:90px;">
-                Répartition<br><span style="font-size:11px;color:#bbb;font-weight:400;">par rôle</span>
+        {# ── Middle row: role breakdown + quick actions ── #}
+        <div class="mid-row">
+
+            {# Role breakdown #}
+            <div class="role-panel">
+                <div class="panel-title">🌱 Communauté MindBloom</div>
+                <div class="panel-sub">Répartition des membres par rôle</div>
+
+                {% set total = stats.users > 0 ? stats.users : 1 %}
+                {% set pct_patients = ((stats.patients / total) * 100)|round %}
+                {% set pct_psycho   = ((stats.psychologues / total) * 100)|round %}
+                {% set pct_admins   = ((stats.admins / total) * 100)|round %}
+
+                <div class="role-row">
+                    <div class="role-row-top">
+                        <span class="rn">👥 Patients</span>
+                        <span><span class="rc">{{ stats.patients }}</span><span class="rp">· {{ pct_patients }}%</span></span>
+                    </div>
+                    <div class="role-track" style="background:#e8faf3;">
+                        <div class="role-fill" style="background:#5FBF9F;" data-width="{{ pct_patients }}"></div>
+                    </div>
+                </div>
+
+                <div class="role-row">
+                    <div class="role-row-top">
+                        <span class="rn">🩺 Psychologues</span>
+                        <span><span class="rc">{{ stats.psychologues }}</span><span class="rp">· {{ pct_psycho }}%</span></span>
+                    </div>
+                    <div class="role-track" style="background:#eaf2fb;">
+                        <div class="role-fill" style="background:#4A90E2;" data-width="{{ pct_psycho }}"></div>
+                    </div>
+                </div>
+
+                <div class="role-row">
+                    <div class="role-row-top">
+                        <span class="rn">🔑 Admins</span>
+                        <span><span class="rc">{{ stats.admins }}</span><span class="rp">· {{ pct_admins }}%</span></span>
+                    </div>
+                    <div class="role-track" style="background:#fff3e0;">
+                        <div class="role-fill" style="background:#E67E22;" data-width="{{ pct_admins }}"></div>
+                    </div>
+                </div>
+
+                <div style="margin-top:20px;padding-top:18px;border-top:1px solid #f0f4fb;">
+                    <a href="{{ path('app_admin_users') }}"
+                       style="display:flex;align-items:center;justify-content:center;gap:8px;
+                              padding:11px 20px;background:linear-gradient(90deg,#4A90E2,#5FBF9F);
+                              color:white;border-radius:10px;font-size:13px;font-weight:700;
+                              text-decoration:none;transition:opacity 0.2s;"
+                       onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+                        👤 Voir tous les utilisateurs
+                    </a>
+                </div>
             </div>
 
-            {% set total = stats.users > 0 ? stats.users : 1 %}
+            {# Quick actions #}
+            <div class="quick-panel">
+                <div class="panel-title">⚡ Actions rapides</div>
+                <div class="panel-sub">Raccourcis vers les tâches fréquentes</div>
 
-            <div style="flex:1;">
-                <div class="rb-top mb-1">
-                    <span class="rb-name">Patients</span>
-                    <span class="rb-count">{{ stats.patients }}</span>
-                </div>
-                <div class="role-bar-track">
-                    <div class="role-bar-fill" style="width:{{ ((stats.patients/total)*100)|round }}%;background:#5FBF9F;"></div>
-                </div>
-            </div>
+                {% set _pendingCount = pending_psychologues_count() %}
+                <a href="{{ path('app_admin_pending_psychologues') }}" class="qa-btn">
+                    <div class="qa-icon-wrap" style="background:#fff3e0;">🩺</div>
+                    <span class="qa-label">Valider des psychologues</span>
+                    {% if _pendingCount > 0 %}
+                        <span class="qa-badge">{{ _pendingCount }}</span>
+                    {% endif %}
+                    <span class="qa-arrow">›</span>
+                </a>
 
-            <div style="flex:1;">
-                <div class="rb-top mb-1">
-                    <span class="rb-name">Psychologues</span>
-                    <span class="rb-count">{{ stats.psychologues }}</span>
-                </div>
-                <div class="role-bar-track">
-                    <div class="role-bar-fill" style="width:{{ ((stats.psychologues/total)*100)|round }}%;background:#4A90E2;"></div>
-                </div>
-            </div>
+                <a href="{{ path('app_admin_order_index') }}" class="qa-btn">
+                    <div class="qa-icon-wrap" style="background:#f3e5f5;">📦</div>
+                    <span class="qa-label">Voir les commandes</span>
+                    <span class="qa-arrow">›</span>
+                </a>
 
-            <div style="flex:1;">
-                <div class="rb-top mb-1">
-                    <span class="rb-name">Admins</span>
-                    <span class="rb-count">{{ stats.admins }}</span>
-                </div>
-                <div class="role-bar-track">
-                    <div class="role-bar-fill" style="width:{{ ((stats.admins/total)*100)|round }}%;background:#E67E22;"></div>
-                </div>
-            </div>
+                <a href="{{ path('app_admin_event_index') }}" class="qa-btn">
+                    <div class="qa-icon-wrap" style="background:#e8f5e9;">📅</div>
+                    <span class="qa-label">Gérer les événements</span>
+                    <span class="qa-arrow">›</span>
+                </a>
 
-            <div style="border-left:1px solid #F3F3F3;padding-left:28px;flex-shrink:0;">
-                <a href="{{ path('app_admin_users') }}"
-                   style="display:block;padding:10px 20px;background:#4A90E2;color:white;
-                          border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;
-                          text-align:center;white-space:nowrap;">
-                    Voir tous les utilisateurs
+                <a href="{{ path('app_admin_wallets') }}" class="qa-btn">
+                    <div class="qa-icon-wrap" style="background:#e3f2fd;">💳</div>
+                    <span class="qa-label">Consulter les wallets</span>
+                    <span class="qa-arrow">›</span>
+                </a>
+
+                <a href="{{ path('app_admin_produit_index') }}" class="qa-btn">
+                    <div class="qa-icon-wrap" style="background:#fff3e0;">🛍️</div>
+                    <span class="qa-label">Gérer les produits</span>
+                    <span class="qa-arrow">›</span>
                 </a>
             </div>
+
         </div>
 
-        {# Recent users #}
+        {# ── Recent users ── #}
         <div class="recent-wrap">
             <div class="rw-header">
-                <h6>Derniers inscrits</h6>
+                <div>
+                    <div class="rw-title">🧑‍🤝‍🧑 Nouveaux membres</div>
+                    <div class="rw-subtitle">Les derniers comptes créés sur la plateforme</div>
+                </div>
                 <a href="{{ path('app_admin_users') }}">Voir tous →</a>
             </div>
             <table class="rw-table">
                 <thead>
                     <tr>
-                        <th>Nom</th>
+                        <th>Membre</th>
                         <th>Email</th>
                         <th>Rôle</th>
                         <th>Statut</th>
-                        <th>Inscrit le</th>
-                        <th>Action</th>
+                        <th>Inscrit</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -415,7 +595,8 @@
                     <tr>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <div class="mb-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">
+                                <div class="mb-avatar {% if 'ROLE_ADMIN' in user.roles %}av-ring-admin{% elseif 'ROLE_PSYCHOLOGUE' in user.roles %}av-ring-psycho{% else %}av-ring-patient{% endif %}"
+                                     style="width:34px;height:34px;font-size:12px;flex-shrink:0;">
                                     {% if user.profileImage %}
                                         <img src="{{ asset('uploads/profiles/' ~ user.profileImage) }}" alt="">
                                     {% else %}
@@ -428,36 +609,38 @@
                                 </div>
                             </div>
                         </td>
-                        <td style="color:#999;">{{ user.email }}</td>
+                        <td style="color:#8897b0;font-size:12px;">{{ user.email }}</td>
                         <td>
                             {% if 'ROLE_ADMIN' in user.roles %}
-                                <span class="pill pill-red">Admin</span>
+                                <span class="pill pill-red">🔑 Admin</span>
                             {% elseif 'ROLE_PSYCHOLOGUE' in user.roles %}
-                                <span class="pill pill-blue">Psychologue</span>
+                                <span class="pill pill-blue">🩺 Psychologue</span>
                             {% else %}
-                                <span class="pill pill-teal">Patient</span>
+                                <span class="pill pill-teal">👤 Patient</span>
                             {% endif %}
                         </td>
                         <td>
                             {% if user.status == 'ACTIVE' %}
-                                <span class="pill pill-green">Actif</span>
+                                <span class="pill pill-green">● Actif</span>
                             {% else %}
-                                <span class="pill pill-grey">Suspendu</span>
+                                <span class="pill pill-grey">● Suspendu</span>
                             {% endif %}
                         </td>
-                        <td style="color:#bbb;font-size:12px;">
+                        <td class="rel-date"
+                            data-date="{{ user.createdAt ? user.createdAt|date('Y-m-d') : '' }}"
+                            style="color:#aab4cc;font-size:12px;">
                             {{ user.createdAt ? user.createdAt|date('d/m/Y') : '—' }}
                         </td>
                         <td>
-                            <a href="{{ path('app_admin_user_show', {id: user.id}) }}" class="edit-link">
-                                Détails
+                            <a href="{{ path('app_admin_user_show', {id: user.id}) }}" class="details-btn">
+                                👁 Détails
                             </a>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" style="text-align:center;color:#ccc;padding:32px;font-size:13px;">
-                            Aucun utilisateur pour le moment.
+                        <td colspan="6" style="text-align:center;color:#c8d0e0;padding:40px;font-size:13px;">
+                            😶 Aucun utilisateur pour le moment.
                         </td>
                     </tr>
                     {% endfor %}
@@ -466,7 +649,50 @@
         </div>
 
     </div>
+    </div>
 </div>
 {% endblock %}
 
-{% block javascripts %}{% endblock %}
+{% block javascripts %}
+<script>
+(function () {
+  /* ── Time-based greeting ── */
+  var h = new Date().getHours();
+  var g = h >= 18 ? 'Bonsoir' : h >= 12 ? 'Bon après-midi' : 'Bonjour';
+  var el = document.getElementById('greeting-text');
+  if (el) el.textContent = g + ', ' + el.textContent.split(', ')[1];
+
+  /* ── Animated counters ── */
+  document.querySelectorAll('[data-count]').forEach(function (el) {
+    var target = parseInt(el.getAttribute('data-count')) || 0;
+    if (target === 0) return;
+    var start = 0;
+    var duration = 900;
+    var step = target / (duration / 16);
+    var timer = setInterval(function () {
+      start = Math.min(start + step, target);
+      el.textContent = Math.floor(start);
+      if (start >= target) { el.textContent = target; clearInterval(timer); }
+    }, 16);
+  });
+
+  /* ── Role bar animation ── */
+  setTimeout(function () {
+    document.querySelectorAll('.role-fill').forEach(function (bar) {
+      bar.style.width = (bar.getAttribute('data-width') || '0') + '%';
+    });
+  }, 300);
+
+  /* ── Relative dates ── */
+  document.querySelectorAll('.rel-date[data-date]').forEach(function (el) {
+    var ds = el.getAttribute('data-date');
+    if (!ds) return;
+    var d = new Date(ds);
+    var diff = Math.floor((Date.now() - d.getTime()) / 86400000);
+    if (diff === 0)      el.textContent = "Aujourd'hui";
+    else if (diff === 1) el.textContent = 'Hier';
+    else if (diff < 7)   el.textContent = 'Il y a ' + diff + ' jours';
+  });
+})();
+</script>
+{% endblock %}

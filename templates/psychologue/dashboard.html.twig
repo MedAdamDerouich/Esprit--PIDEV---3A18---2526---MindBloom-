@@ -1,92 +1,603 @@
 {% extends 'base.html.twig' %}
 {% block title %}Espace Psychologue — MindBloom{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sage:    #5FBF9F;
+  --sage-dk: #3d9e80;
+  --blue:    #4A90E2;
+  --blue-dk: #2563EB;
+  --ink:     #1a2332;
+  --ink-mid: #4a5568;
+  --ink-lt:  #8a97a8;
+  --cream:   #F7F4EE;
+  --white:   #ffffff;
+  --card-sh: 0 2px 0 rgba(0,0,0,0.04), 0 8px 32px rgba(26,35,50,0.09);
+  --card-sh-hover: 0 4px 0 rgba(95,191,159,0.2), 0 20px 50px rgba(26,35,50,0.16);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+.psy-page {
+  min-height: calc(100vh - 70px);
+  background: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ── Animated background mesh ── */
+.psy-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.psy-bg__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  animation: orbDrift linear infinite alternate;
+}
+.psy-bg__orb--1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, #a8d8c8 0%, transparent 70%);
+  top: -200px; right: -100px;
+  animation-duration: 18s;
+}
+.psy-bg__orb--2 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #b8d0f0 0%, transparent 70%);
+  bottom: -150px; left: -80px;
+  animation-duration: 22s;
+  animation-delay: -8s;
+}
+.psy-bg__orb--3 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, #d4e8d0 0%, transparent 70%);
+  top: 50%; left: 45%;
+  animation-duration: 15s;
+  animation-delay: -4s;
+}
+@keyframes orbDrift {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(40px, -30px) scale(1.05); }
+  66%  { transform: translate(-20px, 20px) scale(0.95); }
+  100% { transform: translate(25px, -15px) scale(1.02); }
+}
+
+/* Grain overlay */
+.psy-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ── Layout ── */
+.psy-wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 56px 32px 80px;
+}
+
+/* ── Hero header ── */
+.psy-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 56px;
+  opacity: 0;
+  transform: translateY(24px);
+  animation: slideUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s forwards;
+}
+.psy-hero__left {}
+.psy-hero__eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--sage);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.psy-hero__eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 24px; height: 2px;
+  background: var(--sage);
+  border-radius: 2px;
+}
+.psy-hero__title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(38px, 5vw, 58px);
+  color: var(--ink);
+  line-height: 1.05;
+  letter-spacing: -0.5px;
+}
+.psy-hero__title em {
+  font-style: italic;
+  color: var(--sage);
+}
+.psy-hero__sub {
+  font-size: 15px;
+  color: var(--ink-mid);
+  margin-top: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+.psy-hero__badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--white);
+  border: 1.5px solid rgba(95,191,159,0.25);
+  border-radius: 50px;
+  padding: 10px 20px 10px 12px;
+  box-shadow: 0 2px 16px rgba(95,191,159,0.1);
+  flex-shrink: 0;
+}
+.psy-hero__badge-dot {
+  width: 10px; height: 10px;
+  background: #22c55e;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
+  50%      { box-shadow: 0 0 0 6px rgba(34,197,94,0.1); }
+}
+.psy-hero__badge span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ── Stats row ── */
+.psy-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 40px;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: slideUp 0.65s cubic-bezier(0.22,1,0.36,1) 0.25s forwards;
+}
+.psy-stat {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 22px 24px;
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: var(--card-sh);
+  position: relative;
+  overflow: hidden;
+}
+.psy-stat::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 3px;
+  background: linear-gradient(90deg, var(--sage), var(--blue));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+.psy-stat:hover::before { transform: scaleX(1); }
+.psy-stat__num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 36px;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.psy-stat__num span {
+  font-size: 20px;
+  color: var(--sage);
+}
+.psy-stat__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-lt);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.psy-stat__icon {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 32px;
+  opacity: 0.12;
+}
+
+/* ── Cards grid ── */
+.psy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+/* ── Individual card ── */
+.psy-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 0;
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: var(--card-sh);
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.35s cubic-bezier(0.22,1,0.36,1),
+              box-shadow 0.35s cubic-bezier(0.22,1,0.36,1),
+              border-color 0.3s;
+  opacity: 0;
+  transform: translateY(30px);
+}
+.psy-card:nth-child(1) { animation: slideUp 0.6s cubic-bezier(0.22,1,0.36,1) 0.38s forwards; }
+.psy-card:nth-child(2) { animation: slideUp 0.6s cubic-bezier(0.22,1,0.36,1) 0.46s forwards; }
+.psy-card:nth-child(3) { animation: slideUp 0.6s cubic-bezier(0.22,1,0.36,1) 0.54s forwards; }
+.psy-card:nth-child(4) { animation: slideUp 0.6s cubic-bezier(0.22,1,0.36,1) 0.62s forwards; }
+
+.psy-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: var(--card-sh-hover);
+  border-color: rgba(95,191,159,0.3);
+}
+
+/* Card accent bar */
+.psy-card__accent {
+  height: 5px;
+  width: 100%;
+  flex-shrink: 0;
+  transition: height 0.3s ease;
+}
+.psy-card:hover .psy-card__accent { height: 7px; }
+.psy-card--1 .psy-card__accent { background: linear-gradient(90deg, #5FBF9F, #a8d8c8); }
+.psy-card--2 .psy-card__accent { background: linear-gradient(90deg, #4A90E2, #93c5fd); }
+.psy-card--3 .psy-card__accent { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
+.psy-card--4 .psy-card__accent { background: linear-gradient(90deg, #8b5cf6, #c4b5fd); }
+
+.psy-card__body {
+  padding: 28px 30px 30px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.psy-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.psy-card__icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.psy-card:hover .psy-card__icon { transform: scale(1.15) rotate(-4deg); }
+
+.psy-card--1 .psy-card__icon { background: rgba(95,191,159,0.12); }
+.psy-card--2 .psy-card__icon { background: rgba(74,144,226,0.12); }
+.psy-card--3 .psy-card__icon { background: rgba(245,158,11,0.12); }
+.psy-card--4 .psy-card__icon { background: rgba(139,92,246,0.12); }
+
+.psy-card__arrow {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-lt);
+  transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.3s;
+  flex-shrink: 0;
+}
+.psy-card:hover .psy-card__arrow {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: white;
+  transform: translate(3px, -3px);
+}
+
+.psy-card__title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 21px;
+  color: var(--ink);
+  line-height: 1.2;
+  letter-spacing: -0.2px;
+}
+
+.psy-card__desc {
+  font-size: 13.5px;
+  color: var(--ink-mid);
+  line-height: 1.65;
+  font-weight: 400;
+}
+
+.psy-card__footer {
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-lt);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: color 0.2s;
+}
+.psy-card:hover .psy-card__footer { color: var(--ink); }
+.psy-card__footer-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.psy-card--1 .psy-card__footer-dot { background: var(--sage); }
+.psy-card--2 .psy-card__footer-dot { background: var(--blue); }
+.psy-card--3 .psy-card__footer-dot { background: #f59e0b; }
+.psy-card--4 .psy-card__footer-dot { background: #8b5cf6; }
+
+/* ── Slide-up keyframe (shared) ── */
+@keyframes slideUp {
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Decorative line element ── */
+.psy-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-lt);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  animation: slideUp 0.5s ease 0.33s forwards;
+}
+.psy-section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.08), transparent);
+}
+
+/* ── Counter animation ── */
+.count-up { display: inline-block; }
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .psy-hero { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .psy-stats { grid-template-columns: repeat(3, 1fr); }
+  .psy-grid  { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .psy-wrap { padding: 32px 16px 60px; }
+  .psy-stats { grid-template-columns: 1fr; }
+  .psy-hero__title { font-size: 34px; }
+}
+</style>
+{% endblock %}
+
 {% block body %}
 
-
-
-{# ── CENTER ── #}
-<div style="background:#F5F3EF;min-height:calc(100vh - 70px);
-            display:flex;flex-direction:column;align-items:center;
-            padding-top:40px;gap:30px;">
-
-    <span style="font-size:36px;font-weight:700;color:#2C3E50;">Bienvenue sur MindBloom</span>
-
-    <span style="font-size:16px;color:#8E8E8E;">
-        Gérez votre activité de psychologue en toute sérénité.
-    </span>
-
-    {# 2×2 cards grid #}
-    <div style="display:grid;grid-template-columns:330px 330px;gap:30px;">
-
-        {# Card 1 — Cabinet #}
-        <a href="{{ path('app_cabinet') }}" style="text-decoration:none; color:inherit; display:block;">
-            <div style="background:white;border-radius:15px;padding:20px;height:100%;min-height:150px;
-                        box-shadow:0 4px 10px rgba(0,0,0,0.08);cursor:pointer;
-                        display:flex;flex-direction:column;gap:15px;box-sizing:border-box;">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <div style="width:40px;height:40px;background:rgba(111,191,155,0.15);
-                                 border-radius:10px;display:flex;align-items:center;
-                                 justify-content:center;font-size:18px;flex-shrink:0;">🏢</div>
-                    <span style="font-size:18px;font-weight:700;color:#2C3E50;">Gérer mon Cabinet</span>
-                </div>
-                <span style="color:#8E8E8E;font-size:14px;line-height:1.5;">
-                    Ajouter ou modifier les informations de votre cabinet
-                </span>
-            </div>
-        </a>
-
-        {# Card 2 — Créneaux #}
-        <a href="{{ path('app_creneau_index') }}" style="text-decoration:none; color:inherit; display:block;">
-            <div style="background:white;border-radius:15px;padding:20px;height:100%;min-height:150px;
-                        box-shadow:0 4px 10px rgba(0,0,0,0.08);cursor:pointer;
-                        display:flex;flex-direction:column;gap:15px;box-sizing:border-box;">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <div style="width:40px;height:40px;background:rgba(111,191,155,0.15);
-                                 border-radius:10px;display:flex;align-items:center;
-                                 justify-content:center;font-size:18px;flex-shrink:0;">📅</div>
-                    <span style="font-size:18px;font-weight:700;color:#2C3E50;">Gérer mes Créneaux</span>
-                </div>
-                <span style="color:#8E8E8E;font-size:14px;line-height:1.5;">
-                    Planifier et organiser vos disponibilités
-                </span>
-            </div>
-        </a>
-
-        {# Card 3 — Réservations #}
-        <a href="{{ path('app_reservation_index') }}" style="text-decoration:none; color:inherit; display:block;">
-            <div style="background:white;border-radius:15px;padding:20px;height:100%;min-height:150px;
-                        box-shadow:0 4px 10px rgba(0,0,0,0.08);cursor:pointer;
-                        display:flex;flex-direction:column;gap:15px;box-sizing:border-box;">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <div style="width:40px;height:40px;background:rgba(111,191,155,0.15);
-                                 border-radius:10px;display:flex;align-items:center;
-                                 justify-content:center;font-size:18px;flex-shrink:0;">📋</div>
-                    <span style="font-size:18px;font-weight:700;color:#2C3E50;">Voir mes Réservations</span>
-                </div>
-                <span style="color:#8E8E8E;font-size:14px;line-height:1.5;">
-                    Consulter les rendez-vous à venir
-                </span>
-            </div>
-        </a>
-
-        {# Card 4 — Tests #}
-        <div onclick="window.location.href='{{ path('app_test_manage') }}';"
-             style="background:white;border-radius:15px;padding:20px;min-height:150px;
-                    box-shadow:0 4px 10px rgba(0,0,0,0.08);cursor:pointer;
-                    display:flex;flex-direction:column;gap:15px;">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:40px;height:40px;background:rgba(111,191,155,0.15);
-                             border-radius:10px;display:flex;align-items:center;
-                             justify-content:center;font-size:18px;flex-shrink:0;">📝</div>
-                <span style="font-size:18px;font-weight:700;color:#2C3E50;">Gérer Tests Autoévaluation</span>
-            </div>
-            <span style="color:#8E8E8E;font-size:14px;line-height:1.5;">
-                Créer et gérer vos tests pour patients
-            </span>
-        </div>
-
-    </div>
+<!-- Animated background -->
+<div class="psy-bg">
+  <div class="psy-bg__orb psy-bg__orb--1"></div>
+  <div class="psy-bg__orb psy-bg__orb--2"></div>
+  <div class="psy-bg__orb psy-bg__orb--3"></div>
 </div>
 
+<div class="psy-page">
+  <div class="psy-wrap">
+
+    <!-- Hero -->
+    <div class="psy-hero">
+      <div class="psy-hero__left">
+        <div class="psy-hero__eyebrow">Espace Psychologue</div>
+        <h1 class="psy-hero__title">
+          Bienvenue sur<br><em>MindBloom</em>
+        </h1>
+        <p class="psy-hero__sub">Gérez votre activité en toute sérénité.<br>Tout est centralisé, clair et à portée de clic.</p>
+      </div>
+      <div class="psy-hero__badge">
+        <div class="psy-hero__badge-dot"></div>
+        <span>Session active</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="psy-stats">
+      <div class="psy-stat">
+        <div class="psy-stat__num"><span class="count-up" data-target="0">0</span></div>
+        <div class="psy-stat__label">Réservations à venir</div>
+        <div class="psy-stat__icon">📅</div>
+      </div>
+      <div class="psy-stat">
+        <div class="psy-stat__num"><span class="count-up" data-target="0">0</span></div>
+        <div class="psy-stat__label">Tests créés</div>
+        <div class="psy-stat__icon">📝</div>
+      </div>
+      <div class="psy-stat">
+        <div class="psy-stat__num"><span class="count-up" data-target="98">0</span><span>%</span></div>
+        <div class="psy-stat__label">Satisfaction patients</div>
+        <div class="psy-stat__icon">⭐</div>
+      </div>
+    </div>
+
+    <!-- Section label -->
+    <div class="psy-section-label">Accès rapide</div>
+
+    <!-- Cards -->
+    <div class="psy-grid">
+
+      <!-- Card 1 — Cabinet -->
+      <a href="{{ path('app_cabinet') }}" class="psy-card psy-card--1">
+        <div class="psy-card__accent"></div>
+        <div class="psy-card__body">
+          <div class="psy-card__top">
+            <div class="psy-card__icon">🏢</div>
+            <div class="psy-card__arrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+              </svg>
+            </div>
+          </div>
+          <div class="psy-card__title">Gérer mon Cabinet</div>
+          <div class="psy-card__desc">Ajouter ou modifier les informations de votre cabinet, adresse, contact et présentation.</div>
+          <div class="psy-card__footer">
+            <div class="psy-card__footer-dot"></div>
+            Configurer
+          </div>
+        </div>
+      </a>
+
+      <!-- Card 2 — Créneaux -->
+      <a href="{{ path('app_creneau_index') }}" class="psy-card psy-card--2">
+        <div class="psy-card__accent"></div>
+        <div class="psy-card__body">
+          <div class="psy-card__top">
+            <div class="psy-card__icon">📅</div>
+            <div class="psy-card__arrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+              </svg>
+            </div>
+          </div>
+          <div class="psy-card__title">Gérer mes Créneaux</div>
+          <div class="psy-card__desc">Planifiez et organisez vos disponibilités hebdomadaires avec précision.</div>
+          <div class="psy-card__footer">
+            <div class="psy-card__footer-dot"></div>
+            Planifier
+          </div>
+        </div>
+      </a>
+
+      <!-- Card 3 — Réservations -->
+      <a href="{{ path('app_reservation_index') }}" class="psy-card psy-card--3">
+        <div class="psy-card__accent"></div>
+        <div class="psy-card__body">
+          <div class="psy-card__top">
+            <div class="psy-card__icon">📋</div>
+            <div class="psy-card__arrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+              </svg>
+            </div>
+          </div>
+          <div class="psy-card__title">Voir mes Réservations</div>
+          <div class="psy-card__desc">Consultez l'ensemble de vos rendez-vous à venir et gérez les confirmations.</div>
+          <div class="psy-card__footer">
+            <div class="psy-card__footer-dot"></div>
+            Consulter
+          </div>
+        </div>
+      </a>
+
+      <!-- Card 4 — Tests -->
+      <a href="{{ path('app_test_manage') }}" class="psy-card psy-card--4">
+        <div class="psy-card__accent"></div>
+        <div class="psy-card__body">
+          <div class="psy-card__top">
+            <div class="psy-card__icon">📝</div>
+            <div class="psy-card__arrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+              </svg>
+            </div>
+          </div>
+          <div class="psy-card__title">Tests Autoévaluation</div>
+          <div class="psy-card__desc">Créez et gérez vos tests psychométriques personnalisés pour vos patients.</div>
+          <div class="psy-card__footer">
+            <div class="psy-card__footer-dot"></div>
+            Gérer
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+/* Animation 1: Counter roll-up */
+(function () {
+  function easeOutQuart(t) { return 1 - Math.pow(1 - t, 4); }
+  function animateCount(el) {
+    var target = parseInt(el.dataset.target, 10);
+    if (target === 0) return;
+    var duration = 1400;
+    var start = null;
+    function step(ts) {
+      if (!start) start = ts;
+      var progress = Math.min((ts - start) / duration, 1);
+      el.textContent = Math.floor(easeOutQuart(progress) * target);
+      if (progress < 1) requestAnimationFrame(step);
+      else el.textContent = target;
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* Animation 2: IntersectionObserver — trigger counts + card reveals when in view */
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        var el = entry.target;
+        if (el.classList.contains('count-up')) {
+          setTimeout(function() { animateCount(el); }, 200);
+        }
+        io.unobserve(el);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  document.querySelectorAll('.count-up').forEach(function(el) { io.observe(el); });
+
+  /* Animation 3: Magnetic card hover — subtle cursor-following tilt */
+  document.querySelectorAll('.psy-card').forEach(function(card) {
+    card.addEventListener('mousemove', function(e) {
+      var r = card.getBoundingClientRect();
+      var nx = ((e.clientX - r.left) / r.width  - 0.5) * 2;
+      var ny = ((e.clientY - r.top)  / r.height - 0.5) * 2;
+      card.style.transition = 'transform 0.08s ease-out, box-shadow 0.35s, border-color 0.3s';
+      card.style.transform  =
+        'translateY(-6px) scale(1.01) perspective(800px) rotateX(' + (-ny * 4) + 'deg) rotateY(' + (nx * 4) + 'deg)';
+    });
+    card.addEventListener('mouseleave', function() {
+      card.style.transition = 'transform 0.5s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s, border-color 0.3s';
+      card.style.transform  = '';
+    });
+  });
+})();
+</script>
 {% endblock %}

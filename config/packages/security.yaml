@@ -22,6 +22,8 @@ security:
                 default_target_path: app_dashboard
                 username_parameter: _username
                 password_parameter: _password
+            custom_authenticators:
+                - App\Security\GoogleAuthenticator
             logout:
                 path: app_logout
                 target: app_login
@@ -30,9 +32,10 @@ security:
                 lifetime: 604800
 
     access_control:
-        - { path: ^/login,    roles: PUBLIC_ACCESS }
-        - { path: ^/register, roles: PUBLIC_ACCESS }
-        - { path: ^/admin,    roles: ROLE_ADMIN }
+        - { path: ^/login,           roles: PUBLIC_ACCESS }
+        - { path: ^/register,        roles: PUBLIC_ACCESS }
+        - { path: ^/connect/google,  roles: PUBLIC_ACCESS }
+        - { path: ^/admin,           roles: ROLE_ADMIN }
         - { path: ^/,         roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

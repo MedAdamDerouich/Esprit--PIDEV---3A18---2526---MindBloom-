@@ -14,6 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\HasLifecycleCallbacks]
 #[UniqueEntity(fields: ['email'],    message: 'Cet email est déjà utilisé.')]
 #[UniqueEntity(fields: ['username'], message: 'Ce nom d\'utilisateur est déjà pris.')]
+#[UniqueEntity(fields: ['googleId'], message: 'Ce compte Google est déjà lié à un autre utilisateur.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     const ROLE_PATIENT     = 'PATIENT';
@@ -68,8 +69,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 20, columnDefinition: "ENUM('PATIENT','PSYCHOLOGUE','ADMIN') DEFAULT 'PATIENT'")]
     private string $role = self::ROLE_PATIENT;
 
-    #[ORM\Column(type: 'string', length: 255)]
-    private string $password = '';
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $password = null;
 
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
     #[Assert\Regex(
@@ -104,6 +105,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(name: 'updated_at', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
+
+    #[ORM\Column(name: 'google_id', type: 'string', length: 255, nullable: true, unique: true)]
+    private ?string $googleId = null;
 
     #[ORM\PrePersist]
     public function onPrePersist(): void
@@ -169,8 +173,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRole(): string { return $this->role; }
     public function setRole(string $v): static { $this->role = $v; return $this; }
 
-    public function getPassword(): string { return $this->password; }
-    public function setPassword(string $v): static { $this->password = $v; return $this; }
+    public function getPassword(): ?string { return $this->password; }
+    public function setPassword(?string $v): static { $this->password = $v; return $this; }
 
     public function getPhone(): ?string { return $this->phone; }
     public function setPhone(?string $v): static { $this->phone = $v; return $this; }
@@ -194,4 +198,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getCreatedAt(): ?\DateTimeInterface { return $this->createdAt; }
     public function getUpdatedAt(): ?\DateTimeInterface { return $this->updatedAt; }
+
+    public function getGoogleId(): ?string { return $this->googleId; }
+    public function setGoogleId(?string $v): static { $this->googleId = $v; return $this; }
 }

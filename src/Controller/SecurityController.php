@@ -2,24 +2,48 @@
 
 namespace App\Controller;
 
+use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends AbstractController
 {
     #[Route('/login', name: 'app_login')]
-    public function login(AuthenticationUtils $authenticationUtils): Response
-    {
+    public function login(
+        AuthenticationUtils $authenticationUtils,
+        #[Autowire('%env(RECAPTCHA_SITE_KEY)%')] string $recaptchaSiteKey,
+    ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_dashboard');
         }
 
         return $this->render('security/login.html.twig', [
-            'last_username' => $authenticationUtils->getLastUsername(),
-            'error'         => $authenticationUtils->getLastAuthenticationError(),
+            'last_username'      => $authenticationUtils->getLastUsername(),
+            'error'              => $authenticationUtils->getLastAuthenticationError(),
+            'recaptcha_site_key' => $recaptchaSiteKey,
         ]);
+    }
+
+    #[Route('/connect/google', name: 'connect_google_start')]
+    public function connectGoogle(
+        ClientRegistry $clientRegistry,
+        #[Autowire('%env(GOOGLE_REDIRECT_URI)%')] string $redirectUri,
+    ): Response {
+        return $clientRegistry
+            ->getClient('google')
+            ->redirect(['email', 'profile', 'openid'], ['redirect_uri' => $redirectUri]);
+    }
+
+    #[Route('/connect/google/check', name: 'connect_google_check')]
+    public function connectGoogleCheck(): never
+    {
+        // This route is intercepted entirely by GoogleAuthenticator::supports().
+        // The controller body is never reached during a normal OAuth callback.
+        throw new \LogicException('This line should not be reached.');
     }
 
     #[Route('/logout', name: 'app_logout')]

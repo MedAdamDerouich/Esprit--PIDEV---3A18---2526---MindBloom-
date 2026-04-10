@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(composer require:*)",
+      "Bash(php bin/console make:migration --no-interaction)",
+      "Bash(php bin/console cache:clear)",
+      "Bash(php bin/console debug:router)",
+      "Bash(php bin/console debug:event-dispatcher kernel.request)",
+      "Bash(php bin/console debug:router connect_google_check)",
+      "Bash(php bin/console debug:router connect_google_check --show-controllers)",
+      "Bash(php -r \"echo php_ini_loaded_file\\(\\);\")",
+      "Bash(rm -rf var/cache/dev)",
+      "Bash(php bin/console cache:warmup)"
     ]
   }
 }

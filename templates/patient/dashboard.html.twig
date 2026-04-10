@@ -91,7 +91,7 @@ body.anim-ready #hero-cta {
 
 
 {# ── MAIN CONTENT ── #}
-<div style="background:#FAFAF8;">
+<div id="main-wrapper" style="background:#FAFAF8;">
 
     {# Hero Section #}
     <div id="hero-section" style="display:flex;align-items:center;justify-content:center;gap:60px;
@@ -134,28 +134,28 @@ body.anim-ready #hero-cta {
 
         <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
             <span class="stat-counter" data-target="50" data-format="N+" style="font-size:30px;font-weight:700;color:#4A90E2;">50+</span>
-            <span style="color:#7F8C8D;">Psychologues</span>
+            <span class="stat-label" style="color:#7F8C8D;">Psychologues</span>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
             <span class="stat-counter" data-target="10" data-format="Nk+" style="font-size:30px;font-weight:700;color:#4A90E2;">10k+</span>
-            <span style="color:#7F8C8D;">Patients accompagnés</span>
+            <span class="stat-label" style="color:#7F8C8D;">Patients accompagnés</span>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
             <span class="stat-counter" data-target="49" data-format="N.X/5" style="font-size:30px;font-weight:700;color:#4A90E2;">4.9/5</span>
-            <span style="color:#7F8C8D;">Satisfaction</span>
+            <span class="stat-label" style="color:#7F8C8D;">Satisfaction</span>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
             <span class="stat-counter" data-target="24" data-format="N/7" style="font-size:30px;font-weight:700;color:#4A90E2;">24/7</span>
-            <span style="color:#7F8C8D;">Support disponible</span>
+            <span class="stat-label" style="color:#7F8C8D;">Support disponible</span>
         </div>
     </div>
 
     {# Services Section #}
-    <div style="background:#FAFAF8;padding:80px 40px 100px;display:flex;flex-direction:column;
+    <div id="services-section" style="background:#FAFAF8;padding:80px 40px 100px;display:flex;flex-direction:column;
                 align-items:center;gap:20px;">
 
-        <span style="font-size:36px;font-weight:700;color:#2C3E50;">Nos services pour vous</span>
-        <span style="font-size:15px;color:#7F8C8D;text-align:center;max-width:650px;line-height:1.6;">
+        <span id="services-title" style="font-size:36px;font-weight:700;color:#2C3E50;">Nos services pour vous</span>
+        <span id="services-subtitle" style="font-size:15px;color:#7F8C8D;text-align:center;max-width:650px;line-height:1.6;">
             Découvrez tous les outils et ressources à votre disposition pour prendre soin de votre santé mentale
         </span>
 
@@ -164,10 +164,10 @@ body.anim-ready #hero-cta {
             {# Rendez-vous #}
             <div class="service-card-3d" style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
                         box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;">
-                <div style="width:45px;height:45px;background:#E8F1FC;border-radius:10px;
+                <div class="card-icon-box-blue" style="width:45px;height:45px;background:#E8F1FC;border-radius:10px;
                              display:flex;align-items:center;justify-content:center;font-size:22px;">📅</div>
-                <span style="font-size:20px;font-weight:700;color:#2C3E50;">Rendez-vous</span>
-                <span style="color:#95A5A6;font-size:14px;line-height:1.5;">
+                <span class="card-title" style="font-size:20px;font-weight:700;color:#2C3E50;">Rendez-vous</span>
+                <span class="card-desc" style="color:#95A5A6;font-size:14px;line-height:1.5;">
                     Consultez nos psychologues certifiés en ligne ou en présentiel
                 </span>
                 <a href="{{ path('app_patient_cabinets_index') }}" style="color:#4A90E2;text-decoration:none;font-size:14px;
@@ -177,10 +177,10 @@ body.anim-ready #hero-cta {
             {# Tests #}
             <div class="service-card-3d" style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
                         box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;">
-                <div style="width:45px;height:45px;background:#EDF9F5;border-radius:10px;
+                <div class="card-icon-box-green" style="width:45px;height:45px;background:#EDF9F5;border-radius:10px;
                              display:flex;align-items:center;justify-content:center;font-size:22px;">🧠</div>
-                <span style="font-size:20px;font-weight:700;color:#2C3E50;">Tests</span>
-                <span style="color:#95A5A6;font-size:14px;line-height:1.5;">
+                <span class="card-title" style="font-size:20px;font-weight:700;color:#2C3E50;">Tests</span>
+                <span class="card-desc" style="color:#95A5A6;font-size:14px;line-height:1.5;">
                     Évaluez votre bien-être mental avec nos tests validés scientifiquement
                 </span>
                 <a href="{{ path('app_test_index') }}" style="color:#5FBF9F;text-decoration:none;font-size:14px;
@@ -190,10 +190,10 @@ body.anim-ready #hero-cta {
             {# Gérer Tests Autoévaluation #}
             <div class="service-card-3d" onclick="window.location.href='{{ path('app_test_manage') }}';" style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
                         box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;cursor:pointer;">
-                <div style="width:45px;height:45px;background:#E8F1FC;border-radius:10px;
+                <div class="card-icon-box-blue" style="width:45px;height:45px;background:#E8F1FC;border-radius:10px;
                              display:flex;align-items:center;justify-content:center;font-size:22px;">📝</div>
-                <span style="font-size:20px;font-weight:700;color:#2C3E50;">Gérer test autoevaluations</span>
-                <span style="color:#95A5A6;font-size:14px;line-height:1.5;">
+                <span class="card-title" style="font-size:20px;font-weight:700;color:#2C3E50;">Gérer test autoevaluations</span>
+                <span class="card-desc" style="color:#95A5A6;font-size:14px;line-height:1.5;">
                     Gérer et voir les tests que j'ai déjà créés
                 </span>
                 <a href="{{ path('app_test_manage') }}" style="color:#4A90E2;text-decoration:none;font-size:14px;
@@ -203,10 +203,10 @@ body.anim-ready #hero-cta {
             {# Événements #}
             <div class="service-card-3d" style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
                         box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;">
-                <div style="width:45px;height:45px;background:#E8F1FC;border-radius:10px;
+                <div class="card-icon-box-blue" style="width:45px;height:45px;background:#E8F1FC;border-radius:10px;
                              display:flex;align-items:center;justify-content:center;font-size:22px;">👥</div>
-                <span style="font-size:20px;font-weight:700;color:#2C3E50;">Événements</span>
-                <span style="color:#95A5A6;font-size:14px;line-height:1.5;">
+                <span class="card-title" style="font-size:20px;font-weight:700;color:#2C3E50;">Événements</span>
+                <span class="card-desc" style="color:#95A5A6;font-size:14px;line-height:1.5;">
                     Participez à nos ateliers et groupes de parole
                 </span>
                 <a href="{{ path('app_patient_event_index') }}" style="color:#4A90E2;text-decoration:none;font-size:14px;
@@ -216,10 +216,10 @@ body.anim-ready #hero-cta {
             {# Produits #}
             <div class="service-card-3d" style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
                         box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;">
-                <div style="width:45px;height:45px;background:#EDF9F5;border-radius:10px;
+                <div class="card-icon-box-green" style="width:45px;height:45px;background:#EDF9F5;border-radius:10px;
                              display:flex;align-items:center;justify-content:center;font-size:22px;">💚</div>
-                <span style="font-size:20px;font-weight:700;color:#2C3E50;">Produits</span>
-                <span style="color:#95A5A6;font-size:14px;line-height:1.5;">
+                <span class="card-title" style="font-size:20px;font-weight:700;color:#2C3E50;">Produits</span>
+                <span class="card-desc" style="color:#95A5A6;font-size:14px;line-height:1.5;">
                     Découvrez nos ressources pour votre bien-être quotidien
                 </span>
                 <a href="{{ path('app_produit_index') }}" style="color:#5FBF9F;text-decoration:none;font-size:14px;

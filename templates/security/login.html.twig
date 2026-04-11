@@ -333,6 +333,40 @@
                 Pas encore de compte ?
                 <a href="{{ path('app_register') }}">Créer un compte</a>
             </p>
+
+            {# ── DEV QUICK ACCESS ── #}
+            <div style="margin-top:20px;border-top:1px dashed #E0E0E0;padding-top:16px;">
+                <p style="font-size:11px;font-weight:700;color:#bbb;text-align:center;letter-spacing:1px;margin-bottom:10px;">
+                    ⚡ DEV ACCESS
+                </p>
+                <div style="display:flex;gap:8px;">
+                    <a href="{{ path('dev_login', {role: 'admin'}) }}"
+                        style="flex:1;padding:9px 6px;border-radius:10px;border:1.5px solid #e74c3c;
+                               background:#fff5f5;color:#e74c3c;font-size:12px;font-weight:700;
+                               cursor:pointer;transition:all 0.15s;text-align:center;text-decoration:none;"
+                        onmouseover="this.style.background='#e74c3c';this.style.color='white';"
+                        onmouseout="this.style.background='#fff5f5';this.style.color='#e74c3c';">
+                        🔴 Admin
+                    </a>
+                    <a href="{{ path('dev_login', {role: 'patient'}) }}"
+                        style="flex:1;padding:9px 6px;border-radius:10px;border:1.5px solid #4A90E2;
+                               background:#f0f6ff;color:#4A90E2;font-size:12px;font-weight:700;
+                               cursor:pointer;transition:all 0.15s;text-align:center;text-decoration:none;"
+                        onmouseover="this.style.background='#4A90E2';this.style.color='white';"
+                        onmouseout="this.style.background='#f0f6ff';this.style.color='#4A90E2';">
+                        🔵 Patient
+                    </a>
+                    <a href="{{ path('dev_login', {role: 'psycho'}) }}"
+                        style="flex:1;padding:9px 6px;border-radius:10px;border:1.5px solid #6FBF9B;
+                               background:#f0faf5;color:#6FBF9B;font-size:12px;font-weight:700;
+                               cursor:pointer;transition:all 0.15s;text-align:center;text-decoration:none;"
+                        onmouseover="this.style.background='#6FBF9B';this.style.color='white';"
+                        onmouseout="this.style.background='#f0faf5';this.style.color='#6FBF9B';">
+                        🟢 Psycho
+                    </a>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -390,5 +424,6 @@
     });
   });
 })();
+
 </script>
 {% endblock %}

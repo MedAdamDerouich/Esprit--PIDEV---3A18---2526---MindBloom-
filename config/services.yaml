@@ -31,3 +31,7 @@ services:
     App\Security\GoogleAuthenticator:
         arguments:
             $googleRedirectUri: '%env(GOOGLE_REDIRECT_URI)%'
+
+    Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator:
+        alias: security.authenticator.form_login.main
+        public: true

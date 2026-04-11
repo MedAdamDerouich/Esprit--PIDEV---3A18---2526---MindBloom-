@@ -2,13 +2,17 @@
 
 namespace App\Controller;
 
+use App\Repository\UserRepository;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
+use Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator;
 
 class SecurityController extends AbstractController
 {
@@ -50,5 +54,40 @@ class SecurityController extends AbstractController
     public function logout(): void
     {
         // Symfony handles this automatically
+    }
+
+    #[Route('/dev/login/{role}', name: 'dev_login')]
+    public function devLogin(
+        string $role,
+        Request $request,
+        UserRepository $userRepository,
+        UserAuthenticatorInterface $userAuthenticator,
+        FormLoginAuthenticator $formLoginAuthenticator,
+    ): Response {
+        if ($this->getParameter('kernel.environment') !== 'dev') {
+            throw $this->createNotFoundException();
+        }
+
+        $map = [
+            'admin'   => 'admin123',
+            'patient' => 'patient123',
+            'psycho'  => 'psycho123',
+        ];
+
+        $username = $map[$role] ?? null;
+        if (!$username) {
+            throw $this->createNotFoundException();
+        }
+
+        $user = $userRepository->findOneBy(['username' => $username]);
+        if (!$user) {
+            throw $this->createNotFoundException("User $username not found.");
+        }
+
+        return $userAuthenticator->authenticateUser(
+            $user,
+            $formLoginAuthenticator,
+            $request,
+        ) ?? $this->redirectToRoute('app_dashboard');
     }
 }

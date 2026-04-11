@@ -11,7 +11,11 @@
       "Bash(php bin/console debug:router connect_google_check --show-controllers)",
       "Bash(php -r \"echo php_ini_loaded_file\\(\\);\")",
       "Bash(rm -rf var/cache/dev)",
-      "Bash(php bin/console cache:warmup)"
+      "Bash(php bin/console cache:warmup)",
+      "WebSearch",
+      "WebFetch(domain:mattkeaveney.com)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:toggles.dev)"
     ]
   }
 }

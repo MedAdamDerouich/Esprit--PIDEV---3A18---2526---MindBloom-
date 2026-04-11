@@ -267,7 +267,6 @@
 
             <form method="post" action="{{ path('app_login') }}" class="auth-form">
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-                <input type="hidden" name="_recaptcha_token" id="_recaptcha_token" value="">
 
                 <div class="auth-field">
                     <label for="username">Nom d'utilisateur</label>
@@ -300,6 +299,11 @@
                         <span>Se souvenir de moi</span>
                     </label>
                     <a href="#" class="auth-link">Mot de passe oublié ?</a>
+                </div>
+
+                {# reCAPTCHA v2 checkbox widget #}
+                <div style="display:flex;justify-content:center;margin:8px 0 4px;">
+                    <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
                 </div>
 
                 <button type="submit" class="auth-btn">
@@ -337,7 +341,7 @@
 
 {% block javascripts %}
 {{ parent() }}
-<script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha_site_key }}" async defer></script>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script>
 (function () {
   'use strict';
@@ -385,27 +389,6 @@
       if (icon) icon.style.color = this.value.length > 0 ? 'rgba(74,180,100,0.8)' : 'rgba(74,180,100,0.4)';
     });
   });
-
-  /* reCAPTCHA v3 — inject token into hidden field on form submit */
-  var loginForm = document.querySelector('.auth-form');
-  if (loginForm) {
-    loginForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var form = this;
-      var siteKey = '{{ recaptcha_site_key }}';
-      if (typeof grecaptcha !== 'undefined') {
-        grecaptcha.ready(function () {
-          grecaptcha.execute(siteKey, { action: 'login' }).then(function (token) {
-            document.getElementById('_recaptcha_token').value = token;
-            form.submit();
-          });
-        });
-      } else {
-        // grecaptcha not loaded (e.g., blocked by ad-blocker) — submit without token (fail-open server-side)
-        form.submit();
-      }
-    });
-  }
 })();
 </script>
 {% endblock %}

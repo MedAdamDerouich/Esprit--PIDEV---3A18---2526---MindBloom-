@@ -36,7 +36,7 @@ class RecaptchaLoginListener
             return;
         }
 
-        $token = (string) $request->request->get('_recaptcha_token', '');
+        $token = (string) $request->request->get('g-recaptcha-response', '');
 
         if ($this->recaptchaService->isTokenValid($token)) {
             return; // Score acceptable — let form_login handle credentials

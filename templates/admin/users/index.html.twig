@@ -83,8 +83,11 @@
     animation: fadeUp 0.35s ease both;
     transition: box-shadow 0.25s, transform 0.2s;
     position: relative;
+    cursor: pointer;
 }
 .user-card:hover {
+    background: #F5FAFF;
+    border-color: #D7E9FB;
     box-shadow: 0 8px 28px rgba(0,0,0,0.09);
     transform: translateY(-3px);
 }
@@ -265,6 +268,9 @@
                  data-role="{{ user.roles|join(',') }}"
                  data-status="{{ user.status }}"
                  data-search="{{ (user.fullName ~ ' ' ~ user.email ~ ' ' ~ user.username)|lower }}"
+                 tabindex="0"
+                 onclick="if(!event.target.closest('a,button,form,input,select,textarea,label')){window.location='{{ path('app_admin_user_show', {id: user.id}) }}';}"
+                 onkeydown="if((event.key==='Enter'||event.key===' ') && !event.target.closest('a,button,form,input,select,textarea,label')){event.preventDefault();window.location='{{ path('app_admin_user_show', {id: user.id}) }}';}"
                  style="animation-delay: {{ loop.index0 * 0.04 }}s;">
 
                 {# Status dot #}
@@ -319,9 +325,6 @@
                     {% endif %}
 
                     <div class="card-actions">
-                        <a href="{{ path('app_admin_user_show', {id: user.id}) }}" class="btn-view">
-                            Détails
-                        </a>
                         <form method="post" action="{{ path('app_admin_user_toggle', {id: user.id}) }}">
                             <input type="hidden" name="_token"
                                    value="{{ csrf_token('toggle-user-' ~ user.id) }}">

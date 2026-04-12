@@ -6,7 +6,7 @@
 <div style="padding:30px 40px;background:var(--bg-warm);min-height:calc(100vh - 70px);">
 
     <div class="mb-page-header">
-        <h1>💳 Mon Wallet</h1>
+        <h1><i class="bi bi-wallet2" style="margin-right:10px;"></i>Mon Wallet</h1>
         <p>Gérez votre solde et vos transactions</p>
     </div>
 
@@ -21,13 +21,14 @@
                 </div>
                 <div class="balance-status">
                     {% if wallet.status == 'ACTIVE' %}
-                        ✅ Wallet actif
+                        <i class="bi bi-shield-check" style="color:#4ade80;margin-right:5px;"></i>Wallet actif
                     {% else %}
-                        🚫 Wallet suspendu
+                        <i class="bi bi-slash-circle" style="color:#f87171;margin-right:5px;"></i>Wallet suspendu
                     {% endif %}
                 </div>
                 {% if wallet.lastRechargeDate %}
                 <div style="margin-top:12px;font-size:12px;opacity:0.7;">
+                    <i class="bi bi-clock-history" style="margin-right:4px;"></i>
                     Dernière recharge : {{ wallet.lastRechargeDate|date('d/m/Y à H:i') }}
                 </div>
                 {% endif %}
@@ -36,7 +37,9 @@
             {# Recharge form #}
             {% if wallet.status == 'ACTIVE' %}
             <div class="mb-card">
-                <h6 style="font-weight:700;margin-bottom:16px;">⚡ Recharger le wallet</h6>
+                <h6 style="font-weight:700;margin-bottom:16px;">
+                    <i class="bi bi-lightning-charge-fill" style="color:#f59e0b;margin-right:6px;"></i>Recharger le wallet
+                </h6>
 
                 {# Quick amount buttons #}
                 <div class="d-flex gap-2 mb-3 flex-wrap">
@@ -49,19 +52,92 @@
                     {% endfor %}
                 </div>
 
-                <form method="post" action="{{ path('app_wallet_recharge') }}">
+                <form method="post" action="{{ path('app_wallet_recharge') }}" id="rechargeForm" novalidate>
                     <input type="hidden" name="_token" value="{{ csrf_token('wallet-recharge') }}">
+
+                    {# Amount #}
                     <div class="mb-form-group">
                         <label>Montant (DT)</label>
                         <div class="mb-input-icon-wrap">
-                            <span class="input-icon">💰</span>
+                            <span class="input-icon"><i class="bi bi-currency-exchange"></i></span>
                             <input type="number" name="amount" id="amountInput" class="mb-input"
-                                   min="1" max="10000" step="0.01" placeholder="Ex: 50.00" required>
+                                   min="2" max="10000" step="0.01" placeholder="Ex: 50.00" required>
                         </div>
                     </div>
-                    <button type="submit" class="btn-mb-teal w-100" style="padding:12px;">
-                        Recharger maintenant
+
+                    {# Card separator #}
+                    <div style="display:flex;align-items:center;gap:10px;margin:18px 0 14px;">
+                        <div style="flex:1;height:1px;background:var(--border-soft);"></div>
+                        <span style="font-size:11px;color:var(--text-mid);font-weight:700;letter-spacing:.08em;text-transform:uppercase;">
+                            <i class="bi bi-credit-card-2-front" style="margin-right:5px;font-size:13px;"></i>Informations carte
+                        </span>
+                        <div style="flex:1;height:1px;background:var(--border-soft);"></div>
+                    </div>
+
+                    {# Cardholder name #}
+                    <div class="mb-form-group">
+                        <label for="card_name">Titulaire de la carte</label>
+                        <div class="mb-input-icon-wrap">
+                            <span class="input-icon"><i class="bi bi-person"></i></span>
+                            <input type="text" name="card_name" id="card_name" class="mb-input"
+                                   placeholder="Prénom NOM" autocomplete="cc-name" required>
+                        </div>
+                        <div class="field-error" id="err_name"></div>
+                    </div>
+
+                    {# Card number + brand #}
+                    <div class="mb-form-group">
+                        <label for="card_number">Numéro de carte</label>
+                        <div class="mb-input-icon-wrap" style="position:relative;">
+                            <span class="input-icon"><i class="bi bi-credit-card"></i></span>
+                            <input type="text" name="card_number" id="card_number" class="mb-input"
+                                   placeholder="0000 0000 0000 0000" maxlength="19"
+                                   inputmode="numeric" autocomplete="cc-number" required
+                                   style="padding-right:64px;">
+                            <span id="cardBrand" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);transition:opacity .2s;opacity:0.25;line-height:1;">
+                                <i class="bi bi-credit-card-2-back" style="font-size:20px;color:var(--text-mid);"></i>
+                            </span>
+                        </div>
+                        <div class="field-error" id="err_number"></div>
+                    </div>
+
+                    {# Expiry + CVC on same row #}
+                    <div class="row g-2">
+                        <div class="col-7">
+                            <div class="mb-form-group">
+                                <label for="card_expiry">Expiration</label>
+                                <div class="mb-input-icon-wrap">
+                                    <span class="input-icon"><i class="bi bi-calendar3"></i></span>
+                                    <input type="text" name="card_expiry" id="card_expiry" class="mb-input"
+                                           placeholder="MM/AA" maxlength="5"
+                                           inputmode="numeric" autocomplete="cc-exp" required>
+                                </div>
+                                <div class="field-error" id="err_expiry"></div>
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <div class="mb-form-group">
+                                <label for="card_cvc">CVC</label>
+                                <div class="mb-input-icon-wrap">
+                                    <span class="input-icon"><i class="bi bi-shield-lock"></i></span>
+                                    <input type="text" name="card_cvc" id="card_cvc" class="mb-input"
+                                           placeholder="123" maxlength="3"
+                                           inputmode="numeric" autocomplete="cc-csc" required>
+                                </div>
+                                <div class="field-error" id="err_cvc"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="formError" style="display:none;color:#e74c3c;font-size:13px;margin-bottom:10px;padding:10px 12px;background:rgba(231,76,60,.08);border-radius:8px;border-left:3px solid #e74c3c;"></div>
+
+                    <button type="submit" class="btn-mb-teal w-100" style="padding:12px;margin-top:6px;">
+                        <i class="bi bi-lock-fill" style="margin-right:7px;"></i>Payer &amp; Recharger
                     </button>
+
+                    <div style="text-align:center;margin-top:10px;font-size:11px;color:var(--text-mid);">
+                        <i class="bi bi-shield-check" style="margin-right:4px;"></i>Paiement sécurisé via Stripe · Mode test
+                    </div>
                 </form>
             </div>
             {% endif %}
@@ -71,24 +147,35 @@
         <div class="col-md-7">
             <div class="mb-card" style="height:100%;">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 style="font-weight:700;margin:0;">📜 Historique des transactions</h6>
+                    <h6 style="font-weight:700;margin:0;">
+                        <i class="bi bi-clock-history" style="margin-right:7px;color:var(--teal-mid);"></i>Historique des transactions
+                    </h6>
                     <span class="mb-badge mb-badge-gray">{{ transactions|length }} opération(s)</span>
                 </div>
 
                 {% if transactions is empty %}
                     <div style="text-align:center;padding:40px;color:var(--text-mid);">
-                        <div style="font-size:48px;margin-bottom:12px;">💳</div>
+                        <i class="bi bi-inbox" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.4;"></i>
                         <p>Aucune transaction pour le moment</p>
                     </div>
                 {% else %}
                     {% for tx in transactions %}
                     <div class="transaction-row">
                         <div class="transaction-icon {{ tx.type == 'RECHARGE' ? 'credit' : 'debit' }}">
-                            {{ tx.type == 'RECHARGE' ? '⬆️' : (tx.type == 'PAYMENT' ? '🛍️' : '⬇️') }}
+                            {% if tx.type == 'RECHARGE' %}
+                                <i class="bi bi-arrow-down-circle-fill"></i>
+                            {% elseif tx.type == 'PAYMENT' %}
+                                <i class="bi bi-bag-check-fill"></i>
+                            {% else %}
+                                <i class="bi bi-arrow-up-circle-fill"></i>
+                            {% endif %}
                         </div>
                         <div class="flex-fill">
                             <div class="tx-desc">{{ tx.description ?? tx.type }}</div>
-                            <div class="tx-date">{{ tx.transactionDate|date('d/m/Y à H:i') }}</div>
+                            <div class="tx-date">
+                                <i class="bi bi-clock" style="margin-right:3px;font-size:10px;"></i>
+                                {{ tx.transactionDate|date('d/m/Y à H:i') }}
+                            </div>
                         </div>
                         <div class="tx-amount {{ tx.type == 'RECHARGE' ? 'credit' : 'debit' }}">
                             {{ tx.type == 'RECHARGE' ? '+' : '-' }}{{ tx.amount|number_format(2, '.', ' ') }} DT
@@ -104,9 +191,107 @@
 {% endblock %}
 
 {% block javascripts %}
+<style>
+.field-error { color: #e74c3c; font-size: 12px; margin-top: 4px; min-height: 16px; }
+.mb-input.is-invalid { border-color: #e74c3c !important; background: rgba(231,76,60,.04); }
+.mb-input.is-valid   { border-color: #27ae60 !important; }
+</style>
 <script>
+/* ── Quick amount buttons ── */
 function setAmount(val) {
     document.getElementById('amountInput').value = val;
 }
+
+/* ── Card number: auto-space + brand detection (mirrors Java real-time validation) ── */
+const cardNumberInput = document.getElementById('card_number');
+const cardBrandEl    = document.getElementById('cardBrand');
+
+cardNumberInput.addEventListener('input', function () {
+    let raw = this.value.replace(/\D/g, '').slice(0, 16);
+    this.value = raw.match(/.{1,4}/g)?.join(' ') || '';
+
+    // Brand detection: 4 = Visa, 5 = Mastercard (same as Java)
+    if (raw.startsWith('4')) {
+        cardBrandEl.innerHTML = '<svg width="38" height="24" viewBox="0 0 38 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="24" rx="4" fill="#1A1F71"/><path d="M15.5 16.5h-2.1l1.3-8h2.1l-1.3 8zm7.1-7.8c-.4-.2-1.1-.4-1.9-.4-2.1 0-3.6 1.1-3.6 2.7 0 1.2 1.1 1.9 1.9 2.3.8.4 1.1.7 1.1 1.1 0 .6-.7.9-1.3.9-.9 0-1.3-.1-2-.4l-.3-.1-.3 1.8c.5.2 1.4.5 2.4.5 2.3 0 3.7-1.1 3.7-2.8 0-.9-.6-1.6-1.9-2.2-.8-.4-1.3-.6-1.3-1 0-.3.4-.7 1.3-.7.7 0 1.3.2 1.7.3l.2.1.3-1.7-.3-.1zM27 8.5h-1.6c-.5 0-.9.1-1.1.7l-3.1 7.3h2.2l.4-1.2h2.7l.2 1.2H29L27 8.5zm-2.6 5.3l.8-2.3.5 2.3h-1.3zM13.3 8.5l-2.1 5.5-.2-1.1c-.4-1.3-1.6-2.7-3-3.4l1.9 6.5h2.3l3.4-7.5h-2.3z" fill="white"/><path d="M9.7 8.5H6.3l-.1.2c2.6.7 4.4 2.3 5.1 4.2l-.7-3.7c-.1-.6-.5-.7-1-.7z" fill="#F9A533"/></svg>';
+        cardBrandEl.style.opacity = '1';
+        cardBrandEl.title = 'Visa';
+    } else if (raw.startsWith('5')) {
+        cardBrandEl.innerHTML = '<svg width="38" height="24" viewBox="0 0 38 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="24" rx="4" fill="#252525"/><circle cx="15" cy="12" r="7" fill="#EB001B"/><circle cx="23" cy="12" r="7" fill="#F79E1B"/><path d="M19 6.8a7 7 0 0 1 0 10.4A7 7 0 0 1 19 6.8z" fill="#FF5F00"/></svg>';
+        cardBrandEl.style.opacity = '1';
+        cardBrandEl.title = 'Mastercard';
+    } else {
+        cardBrandEl.innerHTML = '<i class="bi bi-credit-card-2-back" style="font-size:20px;color:var(--text-mid);"></i>';
+        cardBrandEl.style.opacity = raw.length > 0 ? '0.5' : '0.25';
+        cardBrandEl.title = '';
+    }
+
+    validateField(this, /^\d{16}$/.test(raw), document.getElementById('err_number'),
+        'Numéro de carte invalide (16 chiffres requis)');
+});
+
+/* ── Expiry: auto-insert "/" after 2 digits (mirrors Java) ── */
+const expiryInput = document.getElementById('card_expiry');
+expiryInput.addEventListener('input', function () {
+    let raw = this.value.replace(/\D/g, '').slice(0, 4);
+    if (raw.length > 2) {
+        this.value = raw.slice(0, 2) + '/' + raw.slice(2);
+    } else {
+        this.value = raw;
+    }
+    validateField(this, /^(0[1-9]|1[0-2])\/\d{2}$/.test(this.value), document.getElementById('err_expiry'),
+        'Format invalide (MM/AA requis)');
+});
+
+/* ── CVC: digits only, max 3 ── */
+const cvcInput = document.getElementById('card_cvc');
+cvcInput.addEventListener('input', function () {
+    this.value = this.value.replace(/\D/g, '').slice(0, 3);
+    validateField(this, /^\d{3}$/.test(this.value), document.getElementById('err_cvc'),
+        'CVC invalide (3 chiffres requis)');
+});
+
+/* ── Cardholder name ── */
+const nameInput = document.getElementById('card_name');
+nameInput.addEventListener('blur', function () {
+    validateField(this, this.value.trim() !== '', document.getElementById('err_name'),
+        'Le nom du titulaire est requis');
+});
+
+/* ── Helper ── */
+function validateField(input, isValid, errorEl, message) {
+    if (isValid) {
+        input.classList.add('is-valid');
+        input.classList.remove('is-invalid');
+        errorEl.textContent = '';
+    } else {
+        input.classList.add('is-invalid');
+        input.classList.remove('is-valid');
+        errorEl.textContent = message;
+    }
+}
+
+/* ── Form submit guard ── */
+document.getElementById('rechargeForm').addEventListener('submit', function (e) {
+    const name   = nameInput.value.trim();
+    const number = cardNumberInput.value.replace(/\s/g, '');
+    const expiry = expiryInput.value.trim();
+    const cvc    = cvcInput.value.trim();
+    const amount = parseFloat(document.getElementById('amountInput').value);
+    const errors = [];
+
+    if (!name)                                     errors.push('Nom du titulaire requis.');
+    if (!/^\d{16}$/.test(number))                  errors.push('Numéro de carte invalide (16 chiffres).');
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry)) errors.push('Date d\'expiration invalide (MM/AA).');
+    if (!/^\d{3}$/.test(cvc))                      errors.push('CVC invalide (3 chiffres).');
+    if (!amount || amount < 2)                     errors.push('Montant minimum : 2 DT.');
+
+    if (errors.length > 0) {
+        e.preventDefault();
+        const box = document.getElementById('formError');
+        box.innerHTML = errors.map(e => '<i class="bi bi-exclamation-circle" style="margin-right:5px;"></i>' + e).join('<br>');
+        box.style.display = 'block';
+        box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+});
 </script>
 {% endblock %}

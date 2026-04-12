@@ -31,30 +31,113 @@
 
 {# ── Logout confirmation modal ── #}
 <style>
+/* Modal box entrance */
 #logoutModalBox {
-    transform: scale(0.88);
+    transform: scale(0.9) translateY(20px);
     opacity: 0;
-    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease;
+    transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
 }
 #logoutModal.modal-visible #logoutModalBox {
-    transform: scale(1);
+    transform: scale(1) translateY(0);
     opacity: 1;
 }
-/* Door panel 3D — uses parent perspective div */
-#logout-door-panel {
+
+/* ── 3D Door (pure HTML divs, NOT SVG) ── */
+.door-scene {
+    width: 90px;
+    height: 100px;
+    margin: 0 auto 20px;
+    position: relative;
+}
+
+/* Frame (visible behind the door when it opens) */
+.door-frame {
+    position: absolute;
+    top: 4px;
+    left: 10px;
+    right: 10px;
+    bottom: 8px;
+    background: #C4956A;
+    border-radius: 5px 5px 2px 2px;
+    border: 2.5px solid #A0724A;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Dark interior visible when door opens */
+.door-frame-inner {
+    position: absolute;
+    inset: 3px;
+    background: #2C2018;
+    border-radius: 3px 3px 0 0;
+}
+
+/* Floor */
+.door-floor {
+    position: absolute;
+    bottom: 0;
+    left: 4px;
+    right: 4px;
+    height: 6px;
+    background: #A0724A;
+    border-radius: 2px;
+}
+
+/* 3D perspective wrapper */
+.door-perspective {
+    position: absolute;
+    top: 7px;
+    left: 13px;
+    right: 13px;
+    bottom: 11px;
+    perspective: 350px;
+}
+
+/* The actual door panel that swings */
+.door-panel {
     position: absolute;
     inset: 0;
     transform-origin: left center;
     transform: rotateY(0deg);
-    transition: transform 0.85s cubic-bezier(0.22,1,0.36,1);
+    transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
     transform-style: preserve-3d;
-    background: #E8C99A;
+    background: linear-gradient(160deg, #F2DDB8 0%, #E4C68E 100%);
     border-radius: 3px;
-    border: 1.5px solid #B8824E;
+    border: 1.5px solid #C49858;
+    box-shadow: 1px 0 4px rgba(0,0,0,0.15);
     box-sizing: border-box;
 }
-#logoutModal.door-open #logout-door-panel {
-    transform: rotateY(-75deg);
+
+/* Door opens when .door-open is added */
+#logoutModal.door-open .door-panel {
+    transform: rotateY(-72deg);
+    box-shadow: 6px 2px 12px rgba(0,0,0,0.35);
+}
+
+/* Panel inset decorations */
+.door-inset {
+    position: absolute;
+    border: 1.5px solid #C8A670;
+    border-radius: 2px;
+    background: rgba(200,166,112,0.08);
+}
+.door-inset.top-l    { top: 6px;  left: 5px; width: 24px; height: 28px; }
+.door-inset.top-r    { top: 6px;  right: 5px; width: 24px; height: 28px; }
+.door-inset.bottom-l { top: 38px; left: 5px; width: 24px; height: 24px; }
+.door-inset.bottom-r { top: 38px; right: 5px; width: 24px; height: 24px; }
+
+/* Doorknob */
+.door-knob {
+    position: absolute;
+    right: 7px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background: radial-gradient(circle at 35% 35%, #E8C840, #B08A20);
+    border-radius: 50%;
+    border: 1px solid #9A7618;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
 }
 </style>
 
@@ -63,25 +146,21 @@
     <div id="logoutModalBox" style="background:white;border-radius:16px;padding:36px 32px;width:380px;
                 box-shadow:0 20px 60px rgba(0,0,0,0.2);text-align:center;">
 
-        {# Animated door SVG — starts closed, opens on confirm click #}
-        <div style="margin-bottom:18px;display:flex;justify-content:center;">
-            <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- Door frame -->
-                <rect x="10" y="8" width="60" height="66" rx="3" fill="#D4A574" stroke="#A0724A" stroke-width="2.5"/>
-                <!-- Floor -->
-                <rect x="6" y="72" width="68" height="4" rx="2" fill="#A0724A"/>
-                <!-- Door panel -->
-                <g id="logout-door-panel">
-                    <rect x="12" y="10" width="56" height="62" rx="2" fill="#E8C99A" stroke="#B8824E" stroke-width="1.5"/>
-                    <!-- Panel details -->
-                    <rect x="17" y="15" width="22" height="25" rx="2" fill="none" stroke="#C8A070" stroke-width="1.2"/>
-                    <rect x="17" y="44" width="22" height="22" rx="2" fill="none" stroke="#C8A070" stroke-width="1.2"/>
-                    <rect x="43" y="15" width="22" height="25" rx="2" fill="none" stroke="#C8A070" stroke-width="1.2"/>
-                    <rect x="43" y="44" width="22" height="22" rx="2" fill="none" stroke="#C8A070" stroke-width="1.2"/>
-                    <!-- Doorknob -->
-                    <circle cx="58" cy="42" r="3.5" fill="#C0952A" stroke="#A07820" stroke-width="1"/>
-                </g>
-            </svg>
+        {# ── 3D Door — pure HTML/CSS, starts closed ── #}
+        <div class="door-scene">
+            <div class="door-frame">
+                <div class="door-frame-inner"></div>
+            </div>
+            <div class="door-floor"></div>
+            <div class="door-perspective">
+                <div class="door-panel">
+                    <div class="door-inset top-l"></div>
+                    <div class="door-inset top-r"></div>
+                    <div class="door-inset bottom-l"></div>
+                    <div class="door-inset bottom-r"></div>
+                    <div class="door-knob"></div>
+                </div>
+            </div>
         </div>
 
         <h3 style="font-size:20px;font-weight:700;color:#2C3E50;margin-bottom:8px;">
@@ -110,26 +189,27 @@
 <script>
     const logoutUrl = "{{ path('app_logout') }}";
     const logoutModal = document.getElementById('logoutModal');
+    const logoutModalBox = document.getElementById('logoutModalBox');
 
     function openLogoutModal() {
-        logoutModal.classList.remove('door-open');
+        // Reset: door closed, modal hidden
+        logoutModal.classList.remove('door-open', 'modal-visible');
         logoutModal.style.display = 'flex';
+        // Trigger entrance animation on next frame
         requestAnimationFrame(() => requestAnimationFrame(() => {
-            logoutModalBox.style.opacity = '1';
-            logoutModalBox.style.transform = 'scale(1)';
+            logoutModal.classList.add('modal-visible');
         }));
     }
 
     function closeLogoutModal() {
-        logoutModal.classList.remove('door-open');
-        setTimeout(() => { logoutModal.style.display = 'none'; }, 350);
+        logoutModal.classList.remove('modal-visible', 'door-open');
+        setTimeout(() => { logoutModal.style.display = 'none'; }, 400);
     }
 
     function confirmLogout() {
-        // Swing door open, then redirect once animation finishes
-        document.getElementById('logout-door-panel').style.transition = 'transform 0.75s cubic-bezier(0.22,1,0.36,1)';
+        // Swing the door open, wait for the animation, then redirect
         logoutModal.classList.add('door-open');
-        setTimeout(() => { window.location.href = logoutUrl; }, 850);
+        setTimeout(() => { window.location.href = logoutUrl; }, 900);
     }
 
     document.querySelectorAll('a[href="' + logoutUrl + '"]:not([data-logout-confirm])').forEach(link => {

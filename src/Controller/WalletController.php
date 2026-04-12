@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Entity\Wallet;
+use App\Repository\TransactionRepository;
 use App\Repository\WalletRepository;
 use App\Service\WalletService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -67,10 +68,29 @@ class WalletController extends AbstractController
 
     #[Route('/admin/wallets', name: 'app_admin_wallets')]
     #[IsGranted('ROLE_ADMIN')]
-    public function adminIndex(WalletRepository $walletRepository): Response
+    public function adminIndex(
+        WalletRepository $walletRepository,
+        TransactionRepository $transactionRepository,
+        Request $request
+    ): Response
     {
+        $wallets = $walletRepository->findAll();
+        $selectedWalletId = $request->query->getInt('wallet');
+        $selectedWallet = null;
+        $selectedTransactions = [];
+
+        if ($selectedWalletId > 0) {
+            $selectedWallet = $walletRepository->find($selectedWalletId);
+        }
+
+        if ($selectedWallet instanceof Wallet && $selectedWallet->getUser() !== null) {
+            $selectedTransactions = $transactionRepository->findByUserOrdered($selectedWallet->getUser()->getId());
+        }
+
         return $this->render('admin/wallets/index.html.twig', [
-            'wallets' => $walletRepository->findAll(),
+            'wallets' => $wallets,
+            'selectedWallet' => $selectedWallet,
+            'selectedTransactions' => $selectedTransactions,
         ]);
     }
 
@@ -81,15 +101,23 @@ class WalletController extends AbstractController
         Request $request,
         EntityManagerInterface $em
     ): Response {
+        $selectedWalletId = (int) $request->request->get('selected_wallet_id', 0);
+
         if (!$this->isCsrfTokenValid('toggle-wallet-' . $wallet->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF invalide.');
-            return $this->redirectToRoute('app_admin_wallets');
+            return $this->redirectToRoute(
+                'app_admin_wallets',
+                $selectedWalletId > 0 ? ['wallet' => $selectedWalletId] : []
+            );
         }
 
         $wallet->toggleStatus();
         $em->flush();
 
         $this->addFlash('success', 'Statut du wallet mis à jour.');
-        return $this->redirectToRoute('app_admin_wallets');
+        return $this->redirectToRoute(
+            'app_admin_wallets',
+            $selectedWalletId > 0 ? ['wallet' => $selectedWalletId] : []
+        );
     }
 }

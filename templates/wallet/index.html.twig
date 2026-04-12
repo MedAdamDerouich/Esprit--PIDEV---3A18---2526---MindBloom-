@@ -146,21 +146,49 @@
         {# Transaction History #}
         <div class="col-md-7">
             <div class="mb-card" style="height:100%;">
+
+                {# Header + count #}
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 style="font-weight:700;margin:0;">
                         <i class="bi bi-clock-history" style="margin-right:7px;color:var(--teal-mid);"></i>Historique des transactions
                     </h6>
-                    <span class="mb-badge mb-badge-gray">{{ transactions|length }} opération(s)</span>
+                    <span class="mb-badge mb-badge-gray" id="txCount">{{ transactions|length }} opération(s)</span>
                 </div>
 
+                {# ── Search + filter bar ── #}
+                {% if transactions is not empty %}
+                <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+                    {# Text search #}
+                    <div style="flex:1;min-width:160px;position:relative;">
+                        <i class="bi bi-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-mid);font-size:13px;pointer-events:none;"></i>
+                        <input type="text" id="txSearch" placeholder="Rechercher..."
+                               style="width:100%;padding:8px 10px 8px 32px;border:1.5px solid var(--border-soft);border-radius:8px;font-size:13px;outline:none;background:var(--bg-warm);"
+                               oninput="filterTx()">
+                    </div>
+                    {# Type filter #}
+                    <select id="txType" onchange="filterTx()"
+                            style="padding:8px 12px;border:1.5px solid var(--border-soft);border-radius:8px;font-size:13px;background:var(--bg-warm);cursor:pointer;outline:none;">
+                        <option value="">Tous les types</option>
+                        <option value="RECHARGE">Rechargements</option>
+                        <option value="PAYMENT">Paiements</option>
+                        <option value="WITHDRAWAL">Retraits</option>
+                    </select>
+                </div>
+                {% endif %}
+
+                {# Transaction list #}
                 {% if transactions is empty %}
                     <div style="text-align:center;padding:40px;color:var(--text-mid);">
                         <i class="bi bi-inbox" style="font-size:48px;display:block;margin-bottom:12px;opacity:0.4;"></i>
                         <p>Aucune transaction pour le moment</p>
                     </div>
                 {% else %}
+                    <div id="txList">
                     {% for tx in transactions %}
-                    <div class="transaction-row">
+                    <div class="transaction-row tx-item"
+                         data-type="{{ tx.type }}"
+                         data-desc="{{ (tx.description ?? tx.type)|lower }}"
+                         data-date="{{ tx.transactionDate|date('d/m/Y') }}">
                         <div class="transaction-icon {{ tx.type == 'RECHARGE' ? 'credit' : 'debit' }}">
                             {% if tx.type == 'RECHARGE' %}
                                 <i class="bi bi-arrow-down-circle-fill"></i>
@@ -170,19 +198,55 @@
                                 <i class="bi bi-arrow-up-circle-fill"></i>
                             {% endif %}
                         </div>
-                        <div class="flex-fill">
-                            <div class="tx-desc">{{ tx.description ?? tx.type }}</div>
-                            <div class="tx-date">
+                        <div class="flex-fill" style="min-width:0;">
+                            {% set desc = tx.description ?? tx.type %}
+                            {% if tx.type == 'PAYMENT' and '|' in desc %}
+                                {# ── Detailed order breakdown ── #}
+                                {% set parts = desc|split(' | ') %}
+                                {# First part: "Commande N article(s)" #}
+                                <div class="tx-desc" style="font-weight:700;margin-bottom:4px;">
+                                    <i class="bi bi-bag-check" style="margin-right:5px;color:#008c91;"></i>{{ parts[0] }}
+                                </div>
+                                {# Product lines (everything between first and last 3 parts) #}
+                                {% set totalParts = parts|length %}
+                                {% for i in 1..(totalParts - 4) %}
+                                    {% set line = parts[i] %}
+                                    <div style="font-size:12px;color:var(--text-mid);padding:2px 0 2px 18px;border-left:2px solid #e0e7ef;margin-left:4px;margin-bottom:1px;">
+                                        <i class="bi bi-dot" style="font-size:14px;vertical-align:middle;"></i>{{ line }}
+                                    </div>
+                                {% endfor %}
+                                {# TVA + shipping + total #}
+                                <div style="display:flex;gap:10px;margin-top:5px;padding-top:5px;border-top:1px dashed #e0e7ef;flex-wrap:wrap;">
+                                    <span style="font-size:11px;color:var(--text-mid);">
+                                        <i class="bi bi-percent" style="margin-right:2px;"></i>{{ parts[totalParts - 3] }}
+                                    </span>
+                                    <span style="font-size:11px;color:var(--text-mid);">
+                                        <i class="bi bi-truck" style="margin-right:2px;"></i>{{ parts[totalParts - 2] }}
+                                    </span>
+                                    <span style="font-size:11px;font-weight:700;color:#1B3A6B;">
+                                        <i class="bi bi-receipt" style="margin-right:2px;"></i>{{ parts[totalParts - 1] }}
+                                    </span>
+                                </div>
+                            {% else %}
+                                <div class="tx-desc">{{ desc }}</div>
+                            {% endif %}
+                            <div class="tx-date" style="margin-top:4px;">
                                 <i class="bi bi-clock" style="margin-right:3px;font-size:10px;"></i>
                                 {{ tx.transactionDate|date('d/m/Y à H:i') }}
                             </div>
                         </div>
-                        <div class="tx-amount {{ tx.type == 'RECHARGE' ? 'credit' : 'debit' }}">
+                        <div class="tx-amount {{ tx.type == 'RECHARGE' ? 'credit' : 'debit' }}" style="white-space:nowrap;align-self:flex-start;">
                             {{ tx.type == 'RECHARGE' ? '+' : '-' }}{{ tx.amount|number_format(2, '.', ' ') }} DT
                         </div>
                     </div>
                     {% endfor %}
+                    </div>
+                    <div id="txEmpty" style="display:none;text-align:center;padding:30px;color:var(--text-mid);">
+                        <i class="bi bi-funnel" style="font-size:32px;display:block;margin-bottom:8px;opacity:0.4;"></i>
+                        <p style="font-size:14px;">Aucun résultat pour ce filtre</p>
+                    </div>
                 {% endif %}
+
             </div>
         </div>
 
@@ -197,6 +261,30 @@
 .mb-input.is-valid   { border-color: #27ae60 !important; }
 </style>
 <script>
+/* ── Transaction search/filter ── */
+function filterTx() {
+    const search = (document.getElementById('txSearch')?.value || '').toLowerCase();
+    const type   = document.getElementById('txType')?.value || '';
+    const items  = document.querySelectorAll('.tx-item');
+    let visible  = 0;
+
+    items.forEach(function(row) {
+        const matchType = !type || row.dataset.type === type;
+        const matchText = !search ||
+            row.dataset.desc.includes(search) ||
+            row.dataset.date.includes(search);
+        const show = matchType && matchText;
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+
+    const emptyEl = document.getElementById('txEmpty');
+    if (emptyEl) emptyEl.style.display = visible === 0 ? 'block' : 'none';
+
+    const countEl = document.getElementById('txCount');
+    if (countEl) countEl.textContent = visible + ' opération(s)';
+}
+
 /* ── Quick amount buttons ── */
 function setAmount(val) {
     document.getElementById('amountInput').value = val;

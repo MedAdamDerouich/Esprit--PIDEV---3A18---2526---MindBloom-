@@ -47,6 +47,16 @@ class WalletController extends AbstractController
             return $this->redirectToRoute('app_wallet');
         }
 
+        // ── #2: Wallet status guard — check BEFORE any other processing ──
+        /** @var User $user */
+        $user   = $this->getUser();
+        $wallet = $walletService->getWallet($user);
+
+        if (!$wallet || !$wallet->isActive()) {
+            $this->addFlash('error', 'Votre wallet est suspendu. Contactez l\'administrateur.');
+            return $this->redirectToRoute('app_wallet');
+        }
+
         $amount = (float) $request->request->get('amount', 0);
         if ($amount <= 0 || $amount > 10000) {
             $this->addFlash('error', 'Montant invalide. Entrez une valeur entre 1 et 10 000 DT.');
@@ -77,9 +87,6 @@ class WalletController extends AbstractController
         }
 
         try {
-            /** @var User $user */
-            $user = $this->getUser();
-
             // Stripe charge first — wallet untouched if payment fails (same as Java)
             $stripeService->charge(
                 $amount,

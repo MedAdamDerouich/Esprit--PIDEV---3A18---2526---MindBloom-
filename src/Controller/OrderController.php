@@ -38,13 +38,39 @@ class OrderController extends AbstractController
 
             // ── Wallet payment ──────────────────────────────────────────
             if ($paiement === 'WALLET') {
-                $success = $walletService->deduct(
-                    $user,
-                    $total,
-                    'Commande produits MindBloom'
+                // Build detailed description: one line per product + totals
+                $lines = [];
+                foreach ($cartItems as $item) {
+                    $nom   = $item->getProduit()?->getNom() ?? '?';
+                    $prix  = $item->getProduit()?->getPrix() ?? 0;
+                    $qty   = $item->getQuantite();
+                    $lines[] = sprintf('%dx %s (%.2f DT/u) = %.2f DT', $qty, $nom, $prix, $item->getTotal());
+                }
+                $itemCount   = count($cartItems);
+                $tvaLine     = sprintf('TVA 7%%: +%.2f DT', $tva);
+                $shippingLine = sprintf('Livraison: +%.2f DT', $shipping);
+                $totalLine   = sprintf('TOTAL: %.2f DT', $total);
+                $txDescription = sprintf(
+                    'Commande %d article%s | %s | %s | %s | %s',
+                    $itemCount,
+                    $itemCount > 1 ? 's' : '',
+                    implode(' | ', $lines),
+                    $tvaLine,
+                    $shippingLine,
+                    $totalLine
                 );
 
-                if (!$success) {
+                $error = $walletService->deduct(
+                    $user,
+                    $total,
+                    $txDescription
+                );
+
+                if ($error === 'suspended') {
+                    $this->addFlash('error', 'Votre wallet est suspendu. Vous ne pouvez pas effectuer de paiement. Contactez l\'administrateur.');
+                    return $this->redirectToRoute('app_order_checkout');
+                }
+                if ($error === 'insufficient') {
                     $this->addFlash('error', sprintf(
                         'Solde insuffisant. Votre wallet contient %.2f DT et le total est %.2f DT.',
                         $walletService->getBalance($user),
@@ -73,6 +99,7 @@ class OrderController extends AbstractController
             return $this->redirectToRoute('app_order_history');
         }
 
+        $wallet = $walletService->getWallet($user);
         return $this->render('order/checkout.html.twig', [
             'items'          => $cartItems,
             'subtotal'       => $subtotal,
@@ -80,6 +107,7 @@ class OrderController extends AbstractController
             'shipping'       => $shipping,
             'total'          => $total,
             'walletBalance'  => $walletService->getBalance($user),
+            'walletActive'   => $wallet && $wallet->isActive(),
         ]);
     }
 

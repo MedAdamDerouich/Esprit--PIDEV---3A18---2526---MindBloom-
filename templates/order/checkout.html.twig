@@ -3,6 +3,10 @@
 {% block title %}Finaliser ma commande - MindBloom{% endblock %}
 
 {% block body %}
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-10">
@@ -16,10 +20,12 @@
                 <div class="col-md-7">
                     <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4">
                         <h4 class="fw-bold mb-4">Informations de livraison</h4>
-                        <form action="{{ path('app_order_checkout') }}" method="POST">
-                            <div class="mb-4">
-                                <label class="form-label fw-bold small text-uppercase">Adresse de livraison</label>
-                                <textarea name="adresse" class="form-control rounded-3 border-0 bg-light py-3 shadow-none" rows="3" required placeholder="Votre adresse complète..."></textarea>
+                        <form action="{{ path('app_order_checkout') }}" method="POST" id="checkoutForm" onsubmit="return validateCheckout();">
+                             <div class="mb-4">
+                                <label class="form-label fw-bold small text-uppercase">Point de livraison</label>
+                                <p class="small text-muted mb-2"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Cliquez sur la carte pour choisir votre adresse exacte</p>
+                                <div id="map" style="height: 250px; width: 100%; border-radius: 12px; margin-bottom: 10px; z-index: 1;"></div>
+                                <textarea name="adresse" id="checkoutAdresse" class="form-control rounded-3 border-0 bg-light py-3 shadow-none mt-2" rows="2" required placeholder="L'adresse sélectionnée s'affichera ici (min 10 caractères)..." minlength="10"></textarea>
                             </div>
                             
                             <div class="mb-5">
@@ -125,4 +131,69 @@
         </div>
     </div>
 </div>
+
+<script>
+function validateCheckout() {
+    const addr = document.getElementById('checkoutAdresse').value.trim();
+    
+    if (addr.length < 10) {
+        alert("Contrôle de Saisie : Veuillez entrer une adresse complète, d'au moins 10 caractères.");
+        return false;
+    }
+    
+    const radios = document.getElementsByName('paiement');
+    let paymentSelected = false;
+    for (const radio of radios) {
+        if (radio.checked) { paymentSelected = true; break; }
+    }
+    
+    if (!paymentSelected) {
+        alert("Contrôle de Saisie : Veuillez sélectionner un mode de paiement valide.");
+        return false;
+    }
+    
+    return true;
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Check if map container exists
+    var mapContainer = document.getElementById('map');
+    if (!mapContainer) return;
+
+    // Default to Tunis center
+    var map = L.map('map').setView([36.8065, 10.1815], 13);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    var marker = L.marker([36.8065, 10.1815], {draggable: true}).addTo(map);
+
+    function updateAddress(lat, lng) {
+        document.getElementById('checkoutAdresse').value = 'Recherche de l\'adresse en cours...';
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data && data.display_name) {
+                    document.getElementById('checkoutAdresse').value = data.display_name;
+                } else {
+                    document.getElementById('checkoutAdresse').value = `${lat}, ${lng}`;
+                }
+            })
+            .catch(() => {
+                document.getElementById('checkoutAdresse').value = `${lat}, ${lng}`;
+            });
+    }
+
+    map.on('click', function(e) {
+        marker.setLatLng(e.latlng);
+        updateAddress(e.latlng.lat, e.latlng.lng);
+    });
+
+    marker.on('dragend', function(e) {
+        var pos = marker.getLatLng();
+        updateAddress(pos.lat, pos.lng);
+    });
+});
+</script>
 {% endblock %}

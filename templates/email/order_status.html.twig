@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+        body {
+            font-family: 'Outfit', 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 0;
+            color: #2d3748;
+        }
+        .wrapper {
+            width: 100%;
+            table-layout: fixed;
+            background-color: #f0f4f8;
+            padding-bottom: 60px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
+        }
+        .header {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            padding: 50px 40px;
+            text-align: center;
+        }
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            margin: 10px 0 0;
+            font-size: 16px;
+        }
+        .user-intro {
+            padding: 40px 40px 20px;
+            text-align: center;
+            position: relative;
+        }
+        .profile-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 4px solid #ffffff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-top: -80px;
+            background-color: #eee;
+            object-fit: cover;
+        }
+        .content {
+            padding: 0 40px 40px;
+        }
+        .content h2 {
+            color: #2d3748;
+            font-size: 22px;
+            font-weight: 700;
+            margin-top: 0;
+            text-align: center;
+        }
+        .order-summary {
+            background-color: #ffffff;
+            border: 1px solid #edf2f7;
+            border-radius: 16px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+        .order-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .status-pill {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .pill-sent { background-color: #ebfbee; color: #2f855a; }
+        .pill-cancelled { background-color: #fff5f5; color: #c53030; }
+        
+        .product-list { width: 100%; border-collapse: collapse; }
+        .product-row td { padding: 15px 0; border-bottom: 1px solid #f7fafc; }
+        .product-row:last-child td { border-bottom: none; }
+        .product-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background: #f7fafc; margin-right: 15px; }
+        .product-info { font-weight: 600; color: #2d3748; }
+        .product-price { text-align: right; font-weight: 600; color: #4A90E2; }
+        
+        .total-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #edf2f7;
+        }
+        .total-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+        .total-final { display: flex; justify-content: space-between; margin-top: 15px; font-size: 18px; font-weight: 700; color: #2d3748; }
+
+        .footer {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            text-align: center;
+            font-size: 13px;
+            color: #718096;
+            border-top: 1px solid #edf2f7;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="container">
+            <div class="header">
+                <h1>MindBloom</h1>
+                <p>Merci pour votre confiance</p>
+            </div>
+            
+            <div class="user-intro">
+                {% if user_image_exists %}
+                    <img src="cid:user_profile" class="profile-image">
+                {% else %}
+                    <div class="profile-image" style="display:inline-block; line-height:80px; color:#cbd5e0; font-weight:700;">{{ facture.user ? facture.user.fullName|first|upper : '?' }}</div>
+                {% endif %}
+                <h3 style="margin: 15px 0 5px;">Bonjour {{ facture.user ? facture.user.fullName|split(' ')|first : 'Client' }},</h3>
+                <p style="margin: 0; color:#718096;">Nous avons du nouveau concernant votre commande.</p>
+            </div>
+
+            <div class="content">
+                <div class="order-summary">
+                    <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                        <div>
+                            <span style="font-size: 12px; color: #a0aec0; text-transform: uppercase; font-weight: 700;">Commande</span><br>
+                            <span style="font-weight: 700; font-size: 18px;">#{{ facture.id }}</span>
+                        </div>
+                        <div>
+                            {% if status == 'ENVOYE' %}
+                                <span class="status-pill pill-sent">Expédiée</span>
+                            {% else %}
+                                <span class="status-pill pill-cancelled">Annulée</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if status == 'ENVOYE' %}
+                        <p style="font-size: 14px; line-height: 1.6; margin-bottom: 25px;">Excellente nouvelle ! Votre commande vient d'être remise à notre transporteur. Vous trouverez ci-dessous le récapitulatif ainsi que votre facture PDF en pièce jointe.</p>
+                        
+                        <table class="product-list">
+                            {% for cmd in facture.commandes %}
+                                <tr class="product-row">
+                                    <td style="width: 65px;">
+                                        {% if product_images[cmd.produit.id] is defined %}
+                                            <img src="cid:product_{{ cmd.produit.id }}" class="product-img">
+                                        {% else %}
+                                            <div class="product-img"></div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="product-info">{{ cmd.produit.nom }}</div>
+                                        <div style="font-size: 12px; color: #a0aec0;">Quantité: {{ cmd.quantite }}</div>
+                                    </td>
+                                    <td class="product-price">
+                                        {{ (cmd.produit.prix * cmd.quantite)|number_format(2, ',', ' ') }} DT
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+
+                        <div class="total-section">
+                            <div class="total-final">
+                                <span>Total TTC</span>
+                                <span>{{ facture.montantTotal|number_format(2, ',', ' ') }} DT</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p style="font-size: 14px; line-height: 1.6; color: #e53e3e;">Nous avons le regret de vous informer que votre commande a été annulée. Si un paiement a été effectué, il vous sera remboursé dans les plus brefs délais.</p>
+                    {% endif %}
+                </div>
+                
+                <p style="text-align: center; color: #718096; font-size: 14px;">Besoin d'aide ? Répondez simplement à cet email.</p>
+            </div>
+
+            <div class="footer">
+                <p style="font-weight: 700; color: #2d3748; margin-bottom: 10px;">MindBloom — Votre bien-être au naturel</p>
+                <p style="margin: 0;">Avenue de l'indépendance, Tunis</p>
+                <p style="margin: 5px 0 0;">&copy; {{ 'now'|date('Y') }} MindBloom Platform</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

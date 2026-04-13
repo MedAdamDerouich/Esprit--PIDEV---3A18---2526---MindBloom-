@@ -95,6 +95,14 @@ class Feedback
 
     public function getUser(): ?User
     {
+        if ($this->user) {
+            try {
+                // Force Initialization of proxy to verify the user physically exists in DB
+                $this->user->getEmail();
+            } catch (\Doctrine\ORM\EntityNotFoundException $e) {
+                return null; // The user was deleted, but feedback still exists.
+            }
+        }
         return $this->user;
     }
 

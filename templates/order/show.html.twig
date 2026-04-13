@@ -6,7 +6,8 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-8">
-            <div class="mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
                 {% if is_granted('ROLE_ADMIN') %}
                     <a href="{{ path('app_admin_order_index') }}" class="btn btn-link text-muted p-0 text-decoration-none">
                         <i class="bi bi-arrow-left me-1"></i> Retour à la gestion admin
@@ -16,45 +17,65 @@
                         <i class="bi bi-arrow-left me-1"></i> Retour à mes commandes
                     </a>
                 {% endif %}
+                </div>
+                <div>
+                    <a href="{{ path('app_order_pdf', {'id': facture.id}) }}" class="btn btn-primary rounded-pill shadow-sm px-4">
+                        <i class="bi bi-file-earmark-pdf-fill me-2"></i> Télécharger PDF
+                    </a>
+                </div>
             </div>
 
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
                 <div class="card-body p-4 p-md-5">
-                    <div class="row mb-5">
+                    <div class="row mb-5 align-items-center">
                         <div class="col-sm-6">
-                            <h2 class="h4 fw-bold mb-3">MindBloom Boutique</h2>
-                            <p class="text-muted small mb-0">
-                                Avenue de l'indépendance<br>
-                                Tunis, Tunisie<br>
-                                contact@mindbloom.tn
-                            </p>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom" style="height: 60px; object-fit: contain;" onerror="this.style.display='none';">
+                                <h1 class="h3 fw-bold mb-0 ms-3" style="color: #4A90E2;">MindBloom</h1>
+                            </div>
                         </div>
                         <div class="col-sm-6 text-sm-end mt-4 mt-sm-0">
-                            <h1 class="h3 fw-bold mb-1">FACTURE</h1>
-                            <p class="text-muted small mb-0">Réf: #{{ facture.id }}</p>
-                            <p class="text-muted small mb-0">Date: {{ facture.dateFacture|date('d/m/Y') }}</p>
+                            <h1 class="h2 fw-bold mb-2">FACTURE</h1>
+                            <p class="text-muted mb-0">Réf: #{{ facture.id|default('0000') }}</p>
+                            <p class="text-muted mb-0">Date: {{ facture.dateFacture|date('d/m/Y') }}</p>
                         </div>
                     </div>
 
-                    <div class="row mb-5 py-4 border-top border-bottom">
+                    <div class="row mb-5">
                         <div class="col-sm-6">
-                            <h6 class="fw-bold mb-3 small text-uppercase text-muted">Destinataire</h6>
-                            {% if facture.user %}
-                                <p class="fw-bold mb-1">{{ facture.user.fullName }}</p>
-                                <p class="text-muted small mb-0">{{ facture.user.email }}</p>
-                            {% else %}
-                                <p class="fw-bold mb-1 text-muted">Utilisateur supprimé</p>
-                            {% endif %}
+                            <div class="bg-light p-4 rounded-4 h-100 position-relative">
+                                <h6 class="fw-bold mb-3 small text-uppercase" style="color: #adb5bd; letter-spacing: 1px;">Informations de Facturation</h6>
+                                <p class="mb-2"><strong>Statut:</strong> <span class="text-success">{{ facture.statutLivraison|default('En attente') }}</span></p>
+                                <p class="mb-3"><strong>Paiement:</strong> {{ facture.typePaiement|default('') }}</p>
+                                <p class="text-muted small mb-0 lh-lg">
+                                    <strong>MindBloom Boutique</strong><br>
+                                    Avenue de l'indépendance<br>
+                                    Tunis, Tunisie<br>
+                                    contact@mindbloom.tn - +216 71 000 000
+                                </p>
+                            </div>
                         </div>
-                        <div class="col-sm-6 text-sm-end mt-4 mt-sm-0">
-                            <h6 class="fw-bold mb-3 small text-uppercase text-muted">Adresse de livraison</h6>
-                            <p class="text-muted mb-0 small lh-lg">{{ facture.adresseLivraison|nl2br }}</p>
+                        <div class="col-sm-6 mt-4 mt-sm-0">
+                            <div class="border p-4 rounded-4 h-100 position-relative">
+                                {% if facture.user and facture.user.profileImage %}
+                                    <img src="{{ asset('uploads/profiles/' ~ facture.user.profileImage) }}" class="rounded-circle border position-absolute bg-white" style="width: 55px; height: 55px; object-fit: cover; top: 1.5rem; right: 1.5rem;" alt="Profil">
+                                {% endif %}
+                                <h6 class="fw-bold mb-3 small text-uppercase" style="color: #adb5bd; letter-spacing: 1px;">Client & Livraison</h6>
+                                {% if facture.user %}
+                                    <p class="fw-bold mb-1 fs-5">{{ facture.user.fullName }}</p>
+                                    <p class="text-muted mb-3">{{ facture.user.email }}</p>
+                                {% else %}
+                                    <p class="fw-bold mb-3 text-muted">Utilisateur supprimé</p>
+                                {% endif %}
+                                <p class="fw-bold mb-1 small">Adresse de Livraison :</p>
+                                <p class="text-muted mb-0 lh-lg">{{ facture.adresseLivraison|nl2br }}</p>
+                            </div>
                         </div>
                     </div>
 
                     <div class="table-responsive mb-5">
-                        <table class="table table-hover align-middle">
-                            <thead class="bg-light">
+                        <table class="table align-middle">
+                            <thead style="background-color: #4A90E2; color: white;">
                                 <tr>
                                     <th class="ps-3 py-3 border-0">Produit</th>
                                     <th class="py-3 border-0 text-center" style="width: 100px;">Qté</th>

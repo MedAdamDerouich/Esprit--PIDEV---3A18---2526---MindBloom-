@@ -29,6 +29,71 @@
 
 {% block body %}{% endblock %}
 
+<style>
+/* Premium Search and Sort Interfaces */
+.search-sort-wrapper {
+    background: #ffffff;
+    padding: 8px 12px;
+    border-radius: 50px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    border: 1px solid #f0f2f5;
+    transition: all 0.3s ease;
+}
+.search-sort-wrapper:hover, .search-sort-wrapper:focus-within {
+    box-shadow: 0 8px 25px rgba(74, 144, 226, 0.15);
+    border-color: #a3c7ef;
+}
+.premium-select {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    cursor: pointer;
+    font-weight: 600;
+    color: #495057;
+    border-right: 2px solid #f0f2f5 !important;
+    border-radius: 0 !important;
+    padding-right: 35px;
+    max-width: 220px;
+}
+.premium-select:focus {
+    box-shadow: none !important;
+}
+.premium-input {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    padding-left: 15px !important;
+}
+.premium-input:focus {
+    box-shadow: none !important;
+}
+.premium-icon-btn {
+    background: #4A90E2;
+    color: white;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+}
+.premium-icon-btn:hover {
+    transform: scale(1.05);
+    background: #357ABD;
+    box-shadow: 0 6px 15px rgba(74, 144, 226, 0.4);
+}
+.premium-icon-btn i { font-size: 16px; margin: 0; padding: 0; }
+</style>
+
 {# ── Logout confirmation modal ── #}
 <style>
 /* Modal box entrance */

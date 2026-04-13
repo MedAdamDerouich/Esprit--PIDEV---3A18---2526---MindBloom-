@@ -86,12 +86,18 @@ class OrderController extends AbstractController
     #[Route('/historique', name: 'app_order_history', methods: ['GET'])]
     public function history(FactureRepository $factureRepository, Request $request): Response
     {
-        $query = $request->query->get('q');
-        if ($query) {
-            $factures = $factureRepository->searchByUser($query, $this->getUser());
-        } else {
-            $factures = $factureRepository->findBy(['user' => $this->getUser()], ['dateFacture' => 'DESC']);
+        $tri = $request->query->get('tri', 'date_desc');
+        
+        $orderBy = ['dateFacture' => 'DESC'];
+        if ($tri === 'date_asc') {
+            $orderBy = ['dateFacture' => 'ASC'];
+        } elseif ($tri === 'prix_desc') {
+            $orderBy = ['montantTotal' => 'DESC'];
+        } elseif ($tri === 'prix_asc') {
+            $orderBy = ['montantTotal' => 'ASC'];
         }
+
+        $factures = $factureRepository->findBy(['user' => $this->getUser()], $orderBy);
         
         // Ensure commands with missing products don't crash the list rendering
         foreach ($factures as $facture) {
@@ -110,7 +116,7 @@ class OrderController extends AbstractController
 
         return $this->render('order/history.html.twig', [
             'factures' => $factures,
-            'searchTerm' => $query,
+            'tri' => $tri,
         ]);
     }
 
@@ -149,5 +155,24 @@ class OrderController extends AbstractController
             'tva' => $tva,
             'shipping' => $shipping
         ]);
+    }
+
+    #[Route('/pdf/{id}', name: 'app_order_pdf', methods: ['GET'])]
+    public function downloadPdf(Facture $facture, \App\Service\PdfService $pdfService): Response
+    {
+        if ($facture->getUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $pdfContent = $pdfService->generateInvoicePdf($facture);
+
+        return new Response(
+            $pdfContent,
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="facture-%s.pdf"', $facture->getId())
+            ]
+        );
     }
 }

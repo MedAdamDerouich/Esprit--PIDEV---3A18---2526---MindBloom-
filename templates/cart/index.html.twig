@@ -43,8 +43,8 @@
                                             {{ item.produit.prix|number_format(2, ',', ' ') }} DT
                                         </td>
                                         <td class="py-4 border-0">
-                                            <form action="{{ path('app_cart_update_quantity', {id: item.id}) }}" method="POST" class="d-flex justify-content-center">
-                                                <input type="number" name="quantite" value="{{ item.quantite }}" min="1" class="form-control form-control-sm text-center shadow-none" style="width: 70px;" onchange="this.form.submit()">
+                                            <form action="{{ path('app_cart_update_quantity', {id: item.id}) }}" method="POST" class="d-flex justify-content-center flex-column align-items-center" onsubmit="return validateCartUpdate(this, {{ item.produit.quantite }});">
+                                                <input type="number" name="quantite" value="{{ item.quantite }}" min="1" max="{{ item.produit.quantite }}" class="form-control form-control-sm text-center shadow-none" style="width: 70px;" onchange="this.form.submit()" required>
                                             </form>
                                         </td>
                                         <td class="py-4 border-0 fw-bold">
@@ -109,4 +109,21 @@
         </div>
     </div>
 </div>
+
+<script>
+function validateCartUpdate(form, maxStock) {
+    const qtyStr = form.quantite.value;
+    const qty = parseInt(qtyStr, 10);
+    
+    if (!qtyStr || isNaN(qty) || qty <= 0) {
+        alert("Contrôle de Saisie : La quantité doit être supérieure à 0.");
+        return false;
+    }
+    if (qty > maxStock) {
+        alert("Contrôle de Saisie : Impossible de dépasser " + maxStock + " unités.");
+        return false;
+    }
+    return true;
+}
+</script>
 {% endblock %}

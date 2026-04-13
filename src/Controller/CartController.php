@@ -110,4 +110,18 @@ class CartController extends AbstractController
 
         return $this->redirectToRoute('app_cart_index');
     }
+
+    public function cartCount(CommandeRepository $commandeRepository): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return new Response('0');
+        }
+        $cartItems = $commandeRepository->findCartByUser($user);
+        $count = 0;
+        foreach ($cartItems as $item) {
+            $count += $item->getQuantite();
+        }
+        return new Response((string)$count);
+    }
 }

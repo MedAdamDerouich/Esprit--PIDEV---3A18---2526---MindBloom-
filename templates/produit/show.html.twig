@@ -54,12 +54,29 @@
                 </div>
                 
                 <div class="d-grid gap-2">
-                    <form action="{{ path('app_cart_add', {id: produit.id}) }}" method="POST" class="d-flex gap-2">
-                        <input type="number" name="quantite" value="1" min="1" max="{{ produit.quantite }}" class="form-control rounded-pill px-4 shadow-none" style="width: 100px;" {{ produit.quantite == 0 ? 'disabled' : '' }}>
+                    <form action="{{ path('app_cart_add', {id: produit.id}) }}" method="POST" class="d-flex gap-2" onsubmit="return validateAddToCart(this, {{ produit.quantite }});">
+                        <input type="number" name="quantite" id="addQuantite" value="1" min="1" max="{{ produit.quantite }}" class="form-control rounded-pill px-4 shadow-none" style="width: 100px;" {{ produit.quantite == 0 ? 'disabled' : '' }} required>
                         <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm flex-grow-1" {{ produit.quantite == 0 ? 'disabled' : '' }}>
                             <i class="bi bi-cart-plus me-2"></i> Ajouter au panier
                         </button>
                     </form>
+                    
+                    <script>
+                    function validateAddToCart(form, maxStock) {
+                        const qtyStr = form.quantite.value;
+                        const qty = parseInt(qtyStr, 10);
+                        
+                        if (!qtyStr || isNaN(qty) || qty <= 0) {
+                            alert("Contrôle de Saisie : Veuillez entrer une quantité valide supérieure à 0.");
+                            return false;
+                        }
+                        if (qty > maxStock) {
+                            alert("Contrôle de Saisie : La quantité demandée (" + qty + ") dépasse le stock disponible (" + maxStock + ").");
+                            return false;
+                        }
+                        return true;
+                    }
+                    </script>
                     <a href="{{ path('app_produit_feedback_new', {'id': produit.id}) }}" class="btn btn-outline-dark btn-lg rounded-pill px-5 shadow-sm mt-2">
                         <i class="bi bi-pencil-square me-2"></i> Laisser un avis
                     </a>

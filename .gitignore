@@ -9,4 +9,4 @@
 /vendor/
 /.env
 /.claude
-###< symfony/framework-bundle ###
+/.vscode##< symfony/framework-bundle ###

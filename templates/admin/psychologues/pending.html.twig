@@ -27,6 +27,7 @@
     font-weight: 700;
     gap: 5px;
 }
+.pending-badge i { font-size: 11px; }
 
 /* Cards grid */
 .psycho-grid {
@@ -124,6 +125,10 @@
 .empty-state .empty-icon {
     font-size: 56px; margin-bottom: 16px; opacity: 0.6;
 }
+.empty-state .empty-icon i {
+    font-size: 52px;
+    color: #c1c7d5;
+}
 .empty-state h3 { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
 .empty-state p  { font-size: 13px; color: #aaa; }
 
@@ -151,19 +156,19 @@
 
         {# Flash messages #}
         {% for msg in app.flashes('success') %}
-            <div class="flash-success">✅ {{ msg }}</div>
+            <div class="flash-success"><i class="bi bi-check-circle-fill me-1"></i>{{ msg }}</div>
         {% endfor %}
         {% for msg in app.flashes('error') %}
-            <div class="flash-error">❌ {{ msg }}</div>
+            <div class="flash-error"><i class="bi bi-exclamation-octagon-fill me-1"></i>{{ msg }}</div>
         {% endfor %}
 
         {# Header #}
         <div class="page-header-bar">
             <div>
                 <h1>
-                    Validation des Psychologues
+                    <i class="bi bi-shield-check" style="color:#4A90E2;margin-right:8px;"></i>Validation des Psychologues
                     {% if pendingUsers|length > 0 %}
-                        <span class="pending-badge ms-2">⏳ {{ pendingUsers|length }} en attente</span>
+                        <span class="pending-badge ms-2"><i class="bi bi-hourglass-split"></i> {{ pendingUsers|length }} en attente</span>
                     {% endif %}
                 </h1>
                 <p>Approuvez ou rejetez les demandes d'inscription des psychologues</p>
@@ -174,7 +179,7 @@
         <div class="psycho-grid">
             {% if pendingUsers is empty %}
                 <div class="empty-state">
-                    <div class="empty-icon">🎉</div>
+                    <div class="empty-icon"><i class="bi bi-inbox"></i></div>
                     <h3>Aucune demande en attente</h3>
                     <p>Tous les comptes psychologues ont été traités.</p>
                 </div>
@@ -234,12 +239,12 @@
                     <div class="card-actions">
                         <form method="post" action="{{ path('app_admin_approve_psychologue', {id: user.id}) }}" style="flex:1;">
                             <input type="hidden" name="_token" value="{{ csrf_token('approve-psycho-' ~ user.id) }}">
-                            <button type="submit" class="btn-approve w-100">✅ Approuver</button>
+                            <button type="submit" class="btn-approve w-100"><i class="bi bi-check-circle me-1"></i>Approuver</button>
                         </form>
                         <form method="post" action="{{ path('app_admin_reject_psychologue', {id: user.id}) }}" style="flex:1;"
                               onsubmit="return confirm('Rejeter le compte de {{ user.fullName }} ?');">
                             <input type="hidden" name="_token" value="{{ csrf_token('reject-psycho-' ~ user.id) }}">
-                            <button type="submit" class="btn-reject w-100">❌ Rejeter</button>
+                            <button type="submit" class="btn-reject w-100"><i class="bi bi-x-circle me-1"></i>Rejeter</button>
                         </form>
                     </div>
 

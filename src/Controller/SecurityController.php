@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
+use App\Form\RegistrationFormType;
 use App\Repository\UserRepository;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,24 +21,35 @@ class SecurityController extends AbstractController
     #[Route('/login', name: 'app_login')]
     public function login(
         AuthenticationUtils $authenticationUtils,
+        Request $request,
         #[Autowire('%env(RECAPTCHA_SITE_KEY)%')] string $recaptchaSiteKey,
     ): Response {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_dashboard');
         }
 
+        $registerForm = $this->createForm(RegistrationFormType::class, new User());
+
         return $this->render('security/login.html.twig', [
             'last_username'      => $authenticationUtils->getLastUsername(),
             'error'              => $authenticationUtils->getLastAuthenticationError(),
             'recaptcha_site_key' => $recaptchaSiteKey,
+            'registrationForm'   => $registerForm->createView(),
+            'mode'               => $request->query->get('mode', 'login'),
         ]);
     }
 
     #[Route('/connect/google', name: 'connect_google_start')]
     public function connectGoogle(
         ClientRegistry $clientRegistry,
-        #[Autowire('%env(GOOGLE_REDIRECT_URI)%')] string $redirectUri,
+        UrlGeneratorInterface $urlGenerator,
     ): Response {
+        $redirectUri = $urlGenerator->generate(
+            'connect_google_check',
+            [],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
         return $clientRegistry
             ->getClient('google')
             ->redirect(['email', 'profile', 'openid'], ['redirect_uri' => $redirectUri]);

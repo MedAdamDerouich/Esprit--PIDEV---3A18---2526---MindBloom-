@@ -13,6 +13,7 @@ use League\OAuth2\Client\Provider\GoogleUser;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
@@ -27,7 +28,6 @@ class GoogleAuthenticator extends OAuth2Authenticator
         private EntityManagerInterface $em,
         private RouterInterface $router,
         private UserRepository $userRepository,
-        private string $googleRedirectUri,
     ) {}
 
     public function supports(Request $request): ?bool
@@ -43,7 +43,13 @@ class GoogleAuthenticator extends OAuth2Authenticator
         $provider = $client->getOAuth2Provider();
         $provider->setHttpClient(new GuzzleClient(['verify' => false]));
 
-        $accessToken = $this->fetchAccessToken($client, ['redirect_uri' => $this->googleRedirectUri]);
+        $redirectUri = $this->router->generate(
+            'connect_google_check',
+            [],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
+
+        $accessToken = $this->fetchAccessToken($client, ['redirect_uri' => $redirectUri]);
 
         return new SelfValidatingPassport(
             new UserBadge($accessToken->getToken(), function () use ($accessToken, $client) {

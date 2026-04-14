@@ -3,10 +3,21 @@
 {% block title %}Mes Résultats de Tests — MindBloom{% endblock %}
 
 {% block body %}
-<div style="background:#FAFAF8; min-height: calc(100vh - 85px); padding: 50px;">
+<style>
+    @keyframes fadeUpPage {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-entry {
+        opacity: 0;
+        animation: fadeUpPage 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+</style>
+
+<div class="animate-entry" style="background:#FAFAF8; min-height: calc(100vh - 85px); padding: 50px; animation-delay: 0s;">
     <div style="max-width: 1000px; margin: 0 auto;">
         
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+        <div class="animate-entry" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; animation-delay: 0.1s;">
             <div>
                 <span style="display:inline-block;background:#E8F1FC;color:#4A90E2;border-radius:20px;padding:6px 15px;font-size:13px;margin-bottom:10px;font-weight:600;">
                     📊 Historique
@@ -28,12 +39,12 @@
 
         <div style="display: flex; flex-direction: column; gap: 20px;">
             {% for resultat in resultat_tests %}
-                <div style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; border-left: 6px solid {% if resultat.score > 80 %}#27AE60{% elseif resultat.score > 50 %}#F39C12{% else %}#E74C3C{% endif %};">
+                <div class="animate-entry" style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; border-left: 6px solid {% if resultat.score > 80 %}#27AE60{% elseif resultat.score > 50 %}#F39C12{% else %}#E74C3C{% endif %}; animation-delay: {{ 0.2 + (loop.index0 * 0.1) }}s;">
                     
                     <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <h3 style="font-size: 20px; font-weight: 800; color: #34495E; margin: 0;">{{ resultat.test.nomTest }}</h3>
+                        <h3 style="font-size: 20px; font-weight: 800; color: #34495E; margin: 0;">{{ resultat.test ? resultat.test.nomTest : 'Test supprimé' }}</h3>
                         <div style="display: flex; gap: 15px; font-size: 13px; color: #7F8C8D;">
-                            <span>Catégorie: <b>{{ resultat.test.categorie }}</b></span>
+                            <span>Catégorie: <b>{{ resultat.test ? resultat.test.categorie : 'N/A' }}</b></span>
                         </div>
                     </div>
                     

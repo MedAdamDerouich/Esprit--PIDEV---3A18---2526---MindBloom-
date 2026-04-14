@@ -13,6 +13,32 @@
         opacity: 0;
         animation: fadeUpPage 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+    .btn-interactive {
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    .btn-interactive::after {
+        content: '';
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 0; height: 0;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.4s ease-out, height 0.4s ease-out;
+    }
+    .btn-interactive:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 20px rgba(74, 144, 226, 0.3);
+    }
+    .btn-interactive:hover::after {
+        width: 150%; height: 150%;
+        opacity: 0;
+    }
+    .btn-interactive:active {
+        transform: translateY(1px) scale(0.95);
+    }
 </style>
 
 {# ── MAIN CONTENT ── #}
@@ -107,8 +133,8 @@
                                 {{ include('test/_delete_form.html.twig', {'test': test}) }}
                             {% endif %}
                             
-                            <a href="{{ path('app_test_show', {'id': test.id}) }}" style="background: #4A90E2; color: white; border-radius: 12px; padding: 10px 20px; font-size: 14px; font-weight: 700; text-decoration: none; transition: background 0.2s;" onmouseover="this.style.background='#357ABD'" onmouseout="this.style.background='#4A90E2'">
-                                {{ is_granted('ROLE_PSYCHOLOGUE') ? '👁️ Voir le test' : 'Passer le test' }}
+                            <a href="{{ path('app_test_show', {'id': test.id}) }}" class="btn-interactive" style="background: #4A90E2; color: white; border-radius: 12px; padding: 10px 20px; font-size: 14px; font-weight: 700; text-decoration: none; display: inline-block;">
+                                {{ is_granted('ROLE_PSYCHOLOGUE') ? '👁️ Voir le test' : '🚀 Passer le test' }}
                             </a>
                         </div>
                     </div>

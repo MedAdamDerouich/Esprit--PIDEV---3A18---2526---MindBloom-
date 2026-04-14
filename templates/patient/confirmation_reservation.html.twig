@@ -107,6 +107,16 @@
                     if (reserveUI) {
                         modalContent.appendChild(reserveUI);
                         
+                        // Ré-attacher l'événement pour fermer la modal
+                        const closeBtn = reserveUI.querySelector('a[title="Fermer"]');
+                        if(closeBtn) {
+                            closeBtn.addEventListener('click', function(ev) {
+                                ev.preventDefault();
+                                document.getElementById('reservationModalOverlay').style.display = 'none';
+                                modalContent.innerHTML = '';
+                            });
+                        }
+                        
                         // Ré-exécuter les scripts
                         const scripts = doc.querySelectorAll('script');
                         scripts.forEach(s => {

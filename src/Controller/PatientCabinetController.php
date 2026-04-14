@@ -10,9 +10,22 @@ use Symfony\Component\Routing\Annotation\Route;
 class PatientCabinetController extends AbstractController
 {
     #[Route('/patient/cabinets', name: 'app_patient_cabinets_index')]
-    public function index(CabinetRepository $cabinetRepository, \Symfony\Component\HttpFoundation\Request $request): Response
+    public function index(CabinetRepository $cabinetRepository, \Symfony\Component\HttpFoundation\Request $request, \App\Repository\CreneauRepository $creneauRepository): Response
     {
         $cabinets = $cabinetRepository->findAllWithPsychologue();
+
+        // Extraire les dates ayant des créneaux disponibles
+        $creneauxDispos = $creneauRepository->findBy(['disponible' => true]);
+        $availableDates = [];
+        $today = new \DateTime('today');
+        foreach($creneauxDispos as $c) {
+            $date = $c->getDateCreneau();
+            if ($date >= $today) {
+                 $availableDates[] = $date->format('Y-m-d');
+            }
+        }
+        $availableDates = array_values(array_unique($availableDates));
+
 
         // Pagination setup
         $page = $request->query->getInt('page', 1);
@@ -32,6 +45,7 @@ class PatientCabinetController extends AbstractController
             'cabinets' => $paginatedCabinets,
             'currentPage' => $page,
             'totalPages' => $totalPages,
+            'availableDates' => $availableDates,
         ]);
     }
 

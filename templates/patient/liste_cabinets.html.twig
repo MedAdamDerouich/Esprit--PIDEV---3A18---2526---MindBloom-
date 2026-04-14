@@ -2,7 +2,18 @@
 {% block title %}Cabinets disponibles — MindBloom{% endblock %}
 
 {% block body %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/fr.js"></script>
 
+<style>
+.has-creneaux {
+    background-color: rgba(74, 144, 226, 0.15) !important;
+    border-color: rgba(74, 144, 226, 0.3) !important;
+    font-weight: bold;
+    color: #4A90E2 !important;
+}
+</style>
 
 
 <div style="background:#F5F3EF; min-height:calc(100vh - 80px); padding:40px; display:flex; flex-direction:column; align-items:center;">
@@ -29,6 +40,10 @@
                 <span id="dateLabel" style="font-size:15px; font-weight:600; color:#4A5568;">Filtrer par date</span>
                 <input type="date" id="dateInput" style="position:absolute; opacity:0; pointer-events:none; width:1px; height:1px;" />
             </div>
+
+            <button id="clearDateBtn" style="display:none; background:none; border:none; color:#A0AEC0; cursor:pointer; font-size:20px; transition: color 0.2s; line-height: 1; padding: 0 5px;" onmouseover="this.style.color='#718096'" onmouseout="this.style.color='#A0AEC0'" title="Réinitialiser">
+                ✕
+            </button>
         </div>
     </div>
 
@@ -188,52 +203,79 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // --- LOGIQUE FILTRE PAR DATE ---
+    // --- LOGIQUE FILTRE PAR DATE (FLATPICKR) ---
     const dateFilterPill = document.getElementById('dateFilterPill');
     const dateInput = document.getElementById('dateInput');
     const dateLabel = document.getElementById('dateLabel');
+    const availableDates = {{ availableDates|default([])|json_encode|raw }};
 
     if (dateFilterPill && dateInput) {
-        dateFilterPill.addEventListener('click', () => {
-            dateInput.showPicker(); // Ouvre le sélecteur natif
+        
+        flatpickr.localize(flatpickr.l10ns.fr);
+        const fp = flatpickr(dateInput, {
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            onDayCreate: function(dObj, dStr, fp, dayElem) {
+                // dayElem is the DOM node for the day
+                // Formater la date en "Y-m-d" pour comparer a availableDates
+                const dateParts = [
+                    dayElem.dateObj.getFullYear(),
+                    String(dayElem.dateObj.getMonth() + 1).padStart(2, '0'),
+                    String(dayElem.dateObj.getDate()).padStart(2, '0')
+                ];
+                const dateStrFormatted = dateParts.join('-');
+
+                if (availableDates.includes(dateStrFormatted)) {
+                    dayElem.classList.add('has-creneaux');
+                }
+            },
+            onChange: function(selectedDates, dateStr, instance) {
+                if (!dateStr) return;
+
+                // Mettre à jour le label avec la date en français
+                const dateObj = selectedDates[0];
+                const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+                dateLabel.textContent = dateObj.toLocaleDateString('fr-FR', options);
+                document.getElementById('clearDateBtn').style.display = 'block';
+
+                // Afficher le chargement
+                overlay.style.display = 'flex';
+                spinner.style.display = 'block';
+                content.innerHTML = '';
+
+                const url = "/patient/availability/" + dateStr;
+
+                fetch(url)
+                    .then(r => r.text())
+                    .then(html => {
+                        content.innerHTML = html;
+                        
+                        // Exécuter les scripts de la modal chargée
+                        const scripts = content.querySelectorAll('script');
+                        scripts.forEach(s => {
+                            const newScript = document.createElement('script');
+                            newScript.text = s.text;
+                            document.body.appendChild(newScript);
+                        });
+                    })
+                    .catch(err => {
+                        console.error("Erreur de chargement disponibilités:", err);
+                        overlay.style.display = 'none';
+                    })
+                    .finally(() => {
+                        spinner.style.display = 'none';
+                    });
+            }
         });
 
-        dateInput.addEventListener('change', function() {
-            const dateValue = this.value;
-            if (!dateValue) return;
+        dateFilterPill.addEventListener('click', () => {
+            fp.open();
+        });
 
-            // Mettre à jour le label avec la date en français
-            const dateObj = new Date(dateValue);
-            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-            dateLabel.textContent = dateObj.toLocaleDateString('fr-FR', options);
-
-            // Afficher le chargement
-            overlay.style.display = 'flex';
-            spinner.style.display = 'block';
-            content.innerHTML = '';
-
-            const url = "/patient/availability/" + dateValue;
-
-            fetch(url)
-                .then(r => r.text())
-                .then(html => {
-                    content.innerHTML = html;
-                    
-                    // Exécuter les scripts de la modal chargée
-                    const scripts = content.querySelectorAll('script');
-                    scripts.forEach(s => {
-                        const newScript = document.createElement('script');
-                        newScript.text = s.text;
-                        document.body.appendChild(newScript);
-                    });
-                })
-                .catch(err => {
-                    console.error("Erreur de chargement disponibilités:", err);
-                    overlay.style.display = 'none';
-                })
-                .finally(() => {
-                    spinner.style.display = 'none';
-                });
+        document.getElementById('clearDateBtn').addEventListener('click', () => {
+            fp.clear();
+            dateLabel.textContent = 'Filtrer par date';
+            document.getElementById('clearDateBtn').style.display = 'none';
         });
     }
 

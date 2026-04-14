@@ -24,35 +24,30 @@
                 {% set cabinet = g.cabinet %}
                 {% set psychologue = cabinet.psychologue %}
                 
-                <div style="background:white; border-radius:20px; padding:20px; box-shadow:0 4px 6px rgba(0,0,0,0.02); border:1px solid #EDF2F7; display:flex; flex-direction:column; gap:15px;">
+                <div style="background:white; border-radius:15px; padding:15px; box-shadow:0 2px 4px rgba(0,0,0,0.02); border:1px solid #EDF2F7; display:flex; flex-direction:column; gap:10px;">
                     
-                    <div style="display:flex; align-items:center; gap:15px;">
-                        <div style="width:60px; height:60px; border-radius:50%; overflow:hidden; background:#E2E8F0;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="width:45px; height:45px; border-radius:50%; overflow:hidden; background:#E2E8F0;">
                             {% if psychologue and psychologue.profileImage %}
                                 <img src="{{ asset('uploads/profiles/' ~ psychologue.profileImage) }}" style="width:100%; height:100%; object-fit:cover;" />
                             {% else %}
-                                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:30px;">👤</div>
+                                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:22px;">👤</div>
                             {% endif %}
                         </div>
                         <div style="display:flex; flex-direction:column;">
-                            <span style="font-size:17px; font-weight:bold; color:#2C3E50;">Dr. {{ psychologue ? psychologue.fullName : 'Inconnu' }}</span>
-                            <span style="font-size:14px; color:#718096;">{{ cabinet.specialite }}</span>
+                            <span style="font-size:15px; font-weight:bold; color:#2C3E50;">Dr. {{ psychologue ? psychologue.fullName : 'Inconnu' }}</span>
+                            <span style="font-size:13px; color:#718096;">{{ cabinet.specialite }}</span>
                         </div>
                         
                         <div style="flex:1;"></div>
-
-                        {# Badge Cabinet direct #}
-                        <div style="background:#E6F4EA; color:#2E7D32; font-size:11px; font-weight:bold; padding:4px 10px; border-radius:8px; display:flex; align-items:center; gap:5px;">
-                            🏠 Cabinet
-                        </div>
                     </div>
 
-                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; padding-top:10px; border-top:1px dashed #E2E8F0;">
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; padding-top:10px; border-top:1px dashed #E2E8F0;">
                         {% for slot in g.slots %}
-                            <a href="{{ path('app_patient_reserver_confirm_page', {id: slot.id}) }}" style="border:1.5px solid #F3F0E9; background:white; color:#2D3748; padding:10px 5px; border-radius:12px; transition: all 0.2s; text-decoration:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;" onmouseover="this.style.background='#F8FAFC'; this.style.borderColor='#4A90E2'" onmouseout="this.style.background='white'; this.style.borderColor='#F3F0E9'">
-                                <span style="font-weight:bold; font-size:14px; color:#2D3748;">{{ slot.heureDebut|date('H:i') }}</span>
-                                <span style="font-size:8px; font-weight:bold; color:#5FBF9F; text-transform:uppercase;">Disponible</span>
-                                <span style="font-size:9px; color:#A0AEC0; font-weight:500;">{{ slot.dureeMinutes }} min</span>
+                            <a href="{{ path('app_patient_reserver_confirm_page', {id: slot.id}) }}" style="border:1px solid #F3F0E9; background:white; color:#2D3748; padding:6px 4px; border-radius:10px; transition: all 0.2s; text-decoration:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;" onmouseover="this.style.background='#F8FAFC'; this.style.borderColor='#4A90E2'" onmouseout="this.style.background='white'; this.style.borderColor='#F3F0E9'">
+                                <span style="font-weight:bold; font-size:13px; color:#2D3748;">{{ slot.heureDebut|date('H:i') }}</span>
+                                <span style="font-size:7px; font-weight:bold; color:#5FBF9F; text-transform:uppercase;">Disponible</span>
+                                <span style="font-size:8px; color:#A0AEC0; font-weight:500;">{{ slot.dureeMinutes }} min</span>
                             </a>
                         {% endfor %}
                     </div>
@@ -70,6 +65,9 @@
             e.preventDefault();
             document.getElementById('reservationModalOverlay').style.display = 'none';
             document.getElementById('modalContentWrapper').innerHTML = '';
+        });
+    }
+
     // Logique AJAX pour charger la confirmation
     document.querySelectorAll('a[href*="confirmer-page"]').forEach(link => {
         link.addEventListener('click', function(e) {

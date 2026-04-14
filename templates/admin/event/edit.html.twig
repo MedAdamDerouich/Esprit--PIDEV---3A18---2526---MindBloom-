@@ -52,6 +52,18 @@
                         {{ form_label(form.description) }}
                         {{ form_widget(form.description) }}
                         {{ form_errors(form.description) }}
+                        <div class="mt-2 d-flex gap-2 align-items-center">
+                            <button type="button" id="aiSuggestBtn" class="btn btn-sm btn-outline-primary">✨ Suggérer par IA</button>
+                            <small id="aiSuggestStatus" class="text-muted"></small>
+                        </div>
+                        <div id="aiSuggestionBox" class="mt-2" style="display:none; border:1px solid #dfe6e9; border-radius:8px; padding:10px; background:#fafcfe;">
+                            <label class="form-label" style="font-weight:600;">Suggestion IA</label>
+                            <textarea id="aiSuggestionText" class="form-control" rows="4" readonly></textarea>
+                            <div class="mt-2 d-flex gap-2">
+                                <button type="button" id="aiAcceptBtn" class="btn btn-sm btn-success">Accepter</button>
+                                <button type="button" id="aiRejectBtn" class="btn btn-sm btn-outline-secondary">Refuser</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -157,5 +169,74 @@ function previewImage(event) {
         reader.readAsDataURL(file);
     }
 }
+
+(function () {
+    const suggestBtn = document.getElementById('aiSuggestBtn');
+    const status = document.getElementById('aiSuggestStatus');
+    const box = document.getElementById('aiSuggestionBox');
+    const suggestionText = document.getElementById('aiSuggestionText');
+    const acceptBtn = document.getElementById('aiAcceptBtn');
+    const rejectBtn = document.getElementById('aiRejectBtn');
+
+    const titre = document.getElementById('{{ form.titre.vars.id }}');
+    const lieu = document.getElementById('{{ form.lieu.vars.id }}');
+    const organisateur = document.getElementById('{{ form.organisateur.vars.id }}');
+    const description = document.getElementById('{{ form.description.vars.id }}');
+
+    if (!suggestBtn || !description) {
+        return;
+    }
+
+    suggestBtn.addEventListener('click', async function () {
+        suggestBtn.disabled = true;
+        status.textContent = 'Generation en cours...';
+        box.style.display = 'block';
+        suggestionText.value = '';
+
+        try {
+            const response = await fetch('{{ path('app_admin_event_ai_suggest_description') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    titre: titre ? titre.value : '',
+                    lieu: lieu ? lieu.value : '',
+                    organisateur: organisateur ? organisateur.value : '',
+                    description: description.value || '',
+                    _token: '{{ csrf_token('ai_event_description') }}'
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'Erreur IA');
+            }
+
+            suggestionText.value = data.suggestion || '';
+            status.textContent = 'Suggestion prete';
+        } catch (e) {
+            suggestionText.value = 'Erreur: ' + e.message;
+            status.textContent = 'Echec de generation';
+        } finally {
+            suggestBtn.disabled = false;
+        }
+    });
+
+    acceptBtn.addEventListener('click', function () {
+        if (suggestionText.value && !suggestionText.value.startsWith('Erreur:')) {
+            description.value = suggestionText.value;
+        }
+        box.style.display = 'none';
+        status.textContent = 'Suggestion appliquee';
+    });
+
+    rejectBtn.addEventListener('click', function () {
+        box.style.display = 'none';
+        suggestionText.value = '';
+        status.textContent = 'Suggestion ignoree';
+    });
+})();
 </script>
 {% endblock %}

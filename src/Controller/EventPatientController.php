@@ -115,6 +115,36 @@ class EventPatientController extends AbstractController
         ]);
     }
 
+    #[Route('/mes-participations/{id}/ticket', name: 'app_patient_event_ticket', methods: ['GET'])]
+    public function downloadTicket(
+        Participation $participation,
+        \App\Service\PdfTicketService $pdfTicketService
+    ): Response {
+        // Sécurité : Vérifier que le billet appartient bien à l'utilisateur connecté
+        if ($participation->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Ce billet ne vous appartient pas.');
+        }
+
+        try {
+            $pdfBytes = $pdfTicketService->generateTicketPdf($participation);
+        } catch (\Throwable $e) {
+            $this->addFlash('error', '❌ Impossible de générer le billet PDF pour le moment.' . ($this->getParameter('kernel.environment') === 'dev' ? ' Détail: ' . $e->getMessage() : ''));
+            return $this->redirectToRoute('app_patient_event_my_participations');
+        }
+
+        if (!$pdfBytes) {
+            $this->addFlash('error', '❌ Impossible de générer le billet PDF pour le moment.');
+            return $this->redirectToRoute('app_patient_event_my_participations');
+        }
+
+        $filename = 'Billet_' . preg_replace('/[^a-zA-Z0-9_]/', '_', $participation->getEvenement()->getTitre()) . '.pdf';
+
+        return new Response($pdfBytes, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
     #[Route('/{id}/annuler', name: 'app_patient_event_cancel', methods: ['POST'])]
     public function cancel(
         Request $request,

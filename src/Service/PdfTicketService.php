@@ -5,21 +5,17 @@ namespace App\Service;
 use App\Entity\Event;
 use App\Entity\Participation;
 use App\Entity\User;
+use Nucleos\DompdfBundle\Factory\DompdfFactoryInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
- * Génération de billets PDF via l'API externe apdf.io.
- * Même clé API et même endpoint que le projet JavaFX.
+ * Génération de billets PDF via le bundle Symfony Nucleos Dompdf.
  */
 class PdfTicketService
 {
-    private const APDF_URL = 'https://apdf.io/api/pdf/file/create';
-
     public function __construct(
-        private readonly HttpClientInterface $httpClient,
+        private readonly DompdfFactoryInterface $dompdfFactory,
         private readonly LoggerInterface $logger,
-        private readonly string $apdfApiKey,
         private readonly QrCodeService $qrCodeService,
     ) {}
 
@@ -29,62 +25,43 @@ class PdfTicketService
      */
     public function generateTicketPdf(Participation $participation): ?string
     {
-        $qrDataUri = $this->qrCodeService->generateQrCodeDataUri($participation);
+        $qrDataUri = null;
+        try {
+            $qrDataUri = $this->qrCodeService->generateQrCodeDataUri($participation);
+        } catch (\Throwable $e) {
+            // On ne bloque pas la génération du billet si le QR code échoue.
+            $this->logger->warning('QR code indisponible, génération du PDF sans QR: ' . $e->getMessage());
+        }
+
         $html = $this->buildTicketHtml($participation, $qrDataUri);
         return $this->generatePdfFromHtml($html);
     }
 
     /**
-     * Génère un PDF depuis du contenu HTML via apdf.io.
+     * Génère un PDF depuis du contenu HTML via Dompdf.
      */
     public function generatePdfFromHtml(string $htmlContent): ?string
     {
         try {
-            // 1. Envoyer le HTML à apdf.io
-            $response = $this->httpClient->request('POST', self::APDF_URL, [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $this->apdfApiKey,
-                    'Content-Type'  => 'application/json',
-                    'Accept'        => 'application/json',
-                ],
-                'json' => ['html' => $htmlContent],
-                'timeout' => 30,
-                'verify_peer' => false,
-                'verify_host' => false,
-            ]);
+            $dompdf = $this->dompdfFactory->create();
+            $dompdf->loadHtml($htmlContent, 'UTF-8');
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
 
-            $statusCode = $response->getStatusCode();
-            if ($statusCode !== 200 && $statusCode !== 201) {
-                $this->logger->error("apdf.io HTTP {$statusCode} : " . $response->getContent(false));
+            $pdfBytes = $dompdf->output();
+
+            if (!is_string($pdfBytes) || $pdfBytes === '') {
+                $this->logger->error('Erreur PDF Dompdf : contenu PDF vide retourné par Dompdf.');
                 return null;
             }
 
-            $data = $response->toArray();
-            if (!isset($data['file'])) {
-                $this->logger->error('apdf.io pas de champ "file" : ' . $response->getContent(false));
-                return null;
-            }
-
-            // 2. Télécharger le PDF depuis le lien retourné
-            $downloadUrl = $data['file'];
-            $downloadResponse = $this->httpClient->request('GET', $downloadUrl, [
-                'timeout' => 30,
-                'verify_peer' => false,
-                'verify_host' => false,
-            ]);
-
-            if ($downloadResponse->getStatusCode() !== 200) {
-                $this->logger->error('Erreur download PDF apdf.io HTTP ' . $downloadResponse->getStatusCode());
-                return null;
-            }
-
-            $pdfBytes = $downloadResponse->getContent();
-            $this->logger->info('PDF généré via apdf.io (' . strlen($pdfBytes) . ' bytes)');
+            $this->logger->info('PDF généré via Nucleos Dompdf (' . strlen($pdfBytes) . ' bytes)');
             return $pdfBytes;
 
         } catch (\Throwable $e) {
-            $this->logger->error('Erreur PDF apdf.io : ' . $e->getMessage());
-            return null;
+            $this->logger->error('Erreur PDF Dompdf : ' . $e->getMessage());
+            error_log('Erreur PDF Dompdf : ' . $e->getMessage());
+            throw new \RuntimeException('Erreur Dompdf: ' . $e->getMessage(), 0, $e);
         }
     }
 
@@ -123,8 +100,9 @@ class PdfTicketService
         return <<<HTML
 <!DOCTYPE html><html lang='fr'><head><meta charset='UTF-8'>
 <style>
-body{font-family:Arial,sans-serif;background:#f0f4f8;margin:0;padding:20px;color:#2c3e50;}
-.ticket{max-width:680px;margin:0 auto;background:#fff;border-radius:14px;box-shadow:0 4px 20px rgba(0,0,0,.12);overflow:hidden;}
+@page{margin:0;}
+body{font-family:Arial,sans-serif;background:#fff;margin:0;padding:0;color:#2c3e50;}
+.ticket{width:100%;margin:0;background:#fff;border-radius:0;box-shadow:none;overflow:hidden;}
 .hdr{background:linear-gradient(135deg,#4A90E2,#2C3E50);padding:28px 36px;text-align:center;}
 .hdr h1{color:#fff;margin:0;font-size:24px;font-weight:900;}
 .hdr p{color:rgba(255,255,255,.8);margin:5px 0 0;font-size:12px;}

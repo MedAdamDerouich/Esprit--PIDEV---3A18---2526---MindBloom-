@@ -32,9 +32,9 @@ services:
         arguments:
             $secretKey: '%env(RECAPTCHA_SECRET_KEY)%'
 
-    App\Service\PdfTicketService:
+    App\Service\EvenementAiService:
         arguments:
-            $apdfApiKey: '%env(APDF_API_KEY)%'
+            $geminiApiKey: '%env(default::GEMINI_API_KEY)%'
 
     Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator:
         alias: security.authenticator.form_login.main

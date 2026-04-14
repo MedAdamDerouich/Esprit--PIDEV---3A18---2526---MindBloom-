@@ -16,20 +16,19 @@ class CabinetType extends AbstractType
     {
         $builder
             ->add('nomCabinet', TextType::class, [
-                'constraints' => [
-                    new NotBlank(['message' => 'Le nom du cabinet est obligatoire.'])
-                ]
+                'label' => 'Nom du Cabinet',
             ])
             ->add('adresse', TextType::class, [
-                'required' => false,
+                'label' => 'Adresse',
             ])
             ->add('specialite', TextType::class, [
-                'required' => false,
+                'label' => 'Spécialité',
             ])
             ->add('telephone', TextType::class, [
-                'required' => false,
+                'label' => 'Téléphone',
             ])
             ->add('description', TextareaType::class, [
+                'label' => 'Description',
                 'required' => false,
             ])
         ;

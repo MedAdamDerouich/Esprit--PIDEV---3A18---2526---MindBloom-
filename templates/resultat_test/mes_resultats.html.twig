@@ -14,9 +14,16 @@
                 <h1 style="font-size:36px;font-weight:900;color:#2C3E50;">Mes Résultats de Tests</h1>
             </div>
             
-            <a href="{{ path('app_test_index') }}" style="background: white; color: #4A90E2; padding: 12px 25px; border-radius: 12px; font-weight: 700; text-decoration: none; border: 2px solid #4A90E2; transition: all 0.2s;" onmouseover="this.style.background='#4A90E2'; this.style.color='white'" onmouseout="this.style.background='white'; this.style.color='#4A90E2'">
-                Passer un nouveau test
-            </a>
+            <div style="display: flex; gap: 15px;">
+                {% if resultat_tests|length > 0 %}
+                <a href="{{ path('app_resultat_test_generer_rapport') }}" style="background: linear-gradient(135deg, #8E2DE2, #4A00E0); color: white; padding: 12px 25px; border-radius: 12px; font-weight: 700; text-decoration: none; border: none; transition: all 0.2s; box-shadow: 0 4px 15px rgba(74, 0, 224, 0.3);" onmouseover="this.style.opacity='0.9'; this.style.transform='translateY(-2px)'" onmouseout="this.style.opacity='1'; this.style.transform='translateY(0)'">
+                    ✨ Générer Rapport Analytique
+                </a>
+                {% endif %}
+                <a href="{{ path('app_test_index') }}" style="background: white; color: #4A90E2; padding: 12px 25px; border-radius: 12px; font-weight: 700; text-decoration: none; border: 2px solid #4A90E2; transition: all 0.2s;" onmouseover="this.style.background='#4A90E2'; this.style.color='white'" onmouseout="this.style.background='white'; this.style.color='#4A90E2'">
+                    Passer un nouveau test
+                </a>
+            </div>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 20px;">

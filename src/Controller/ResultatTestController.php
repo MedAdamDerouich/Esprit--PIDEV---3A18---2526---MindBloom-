@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Service\GeminiReportService;
 
 #[Route('/resultat_test')]
 class ResultatTestController extends AbstractController
@@ -90,5 +91,49 @@ class ResultatTestController extends AbstractController
         }
 
         return $this->redirectToRoute('app_resultat_test_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    #[Route('/rapport/generer', name: 'app_resultat_test_generer_rapport', methods: ['GET'])]
+    public function genererRapport(ResultatTestRepository $repository, GeminiReportService $geminiService): Response
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            throw $this->createAccessDeniedException('Vous devez être connecté pour générer un rapport.');
+        }
+
+        $results = $repository->findBy(['patient' => $user], ['id' => 'DESC']);
+
+        if (empty($results)) {
+            $this->addFlash('warning', 'Aucun résultat de test trouvé. Veuillez d\'abord passer un test.');
+            return $this->redirectToRoute('app_resultat_test_mes_resultats');
+        }
+
+        $todayDate = (new \DateTime())->format('d/MM/yyyy');
+        $patientName = $user->getFullName(); // Assuming user has got getFullName, if not we will use something else
+
+        $prompt = "Tu es un expert en santé mentale. Analyse les résultats des tests suivants du patient et génère un rapport analytique clair et détaillé sur son état mental et émotionnel. Fournis des recommandations basées sur les scores.\n\n";
+        $prompt .= "Date du rapport: " . $todayDate . "\n";
+        $prompt .= "Patient: " . $patientName . "\n";
+        $prompt .= "Résultats des tests:\n";
+
+        foreach ($results as $r) {
+            if ($r->getTest()) {
+                $prompt .= "- " . $r->getTest()->getNomTest() . ": score = " . $r->getScore() . "%";
+                if ($r->getEtat()) {
+                    $prompt .= ", état = " . $r->getEtat();
+                }
+                if ($r->getCommentaire()) {
+                    $prompt .= ", commentaire = " . $r->getCommentaire();
+                }
+                $prompt .= "\n";
+            }
+        }
+
+        $rapport = $geminiService->genererRapport($prompt);
+
+        return $this->render('resultat_test/rapport.html.twig', [
+            'rapport' => $rapport,
+            'patient' => $user,
+        ]);
     }
 }

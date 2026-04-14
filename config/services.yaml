@@ -36,6 +36,10 @@ services:
         arguments:
             $apdfApiKey: '%env(APDF_API_KEY)%'
 
+    App\Service\GeminiReportService:
+        arguments:
+            $apiKey: '%env(GEMINI_API_KEY_3)%'
+
     Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator:
         alias: security.authenticator.form_login.main
         public: true

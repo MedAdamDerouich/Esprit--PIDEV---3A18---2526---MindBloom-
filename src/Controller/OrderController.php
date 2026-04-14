@@ -38,13 +38,39 @@ class OrderController extends AbstractController
 
             // ── Wallet payment ──────────────────────────────────────────
             if ($paiement === 'WALLET') {
-                $success = $walletService->deduct(
-                    $user,
-                    $total,
-                    'Commande produits MindBloom'
+                // Build detailed description: one line per product + totals
+                $lines = [];
+                foreach ($cartItems as $item) {
+                    $nom   = $item->getProduit()?->getNom() ?? '?';
+                    $prix  = $item->getProduit()?->getPrix() ?? 0;
+                    $qty   = $item->getQuantite();
+                    $lines[] = sprintf('%dx %s (%.2f DT/u) = %.2f DT', $qty, $nom, $prix, $item->getTotal());
+                }
+                $itemCount   = count($cartItems);
+                $tvaLine     = sprintf('TVA 7%%: +%.2f DT', $tva);
+                $shippingLine = sprintf('Livraison: +%.2f DT', $shipping);
+                $totalLine   = sprintf('TOTAL: %.2f DT', $total);
+                $txDescription = sprintf(
+                    'Commande %d article%s | %s | %s | %s | %s',
+                    $itemCount,
+                    $itemCount > 1 ? 's' : '',
+                    implode(' | ', $lines),
+                    $tvaLine,
+                    $shippingLine,
+                    $totalLine
                 );
 
-                if (!$success) {
+                $error = $walletService->deduct(
+                    $user,
+                    $total,
+                    $txDescription
+                );
+
+                if ($error === 'suspended') {
+                    $this->addFlash('error', 'Votre wallet est suspendu. Vous ne pouvez pas effectuer de paiement. Contactez l\'administrateur.');
+                    return $this->redirectToRoute('app_order_checkout');
+                }
+                if ($error === 'insufficient') {
                     $this->addFlash('error', sprintf(
                         'Solde insuffisant. Votre wallet contient %.2f DT et le total est %.2f DT.',
                         $walletService->getBalance($user),
@@ -73,6 +99,7 @@ class OrderController extends AbstractController
             return $this->redirectToRoute('app_order_history');
         }
 
+        $wallet = $walletService->getWallet($user);
         return $this->render('order/checkout.html.twig', [
             'items'          => $cartItems,
             'subtotal'       => $subtotal,
@@ -80,18 +107,25 @@ class OrderController extends AbstractController
             'shipping'       => $shipping,
             'total'          => $total,
             'walletBalance'  => $walletService->getBalance($user),
+            'walletActive'   => $wallet && $wallet->isActive(),
         ]);
     }
 
     #[Route('/historique', name: 'app_order_history', methods: ['GET'])]
     public function history(FactureRepository $factureRepository, Request $request): Response
     {
-        $query = $request->query->get('q');
-        if ($query) {
-            $factures = $factureRepository->searchByUser($query, $this->getUser());
-        } else {
-            $factures = $factureRepository->findBy(['user' => $this->getUser()], ['dateFacture' => 'DESC']);
+        $tri = $request->query->get('tri', 'date_desc');
+        
+        $orderBy = ['dateFacture' => 'DESC'];
+        if ($tri === 'date_asc') {
+            $orderBy = ['dateFacture' => 'ASC'];
+        } elseif ($tri === 'prix_desc') {
+            $orderBy = ['montantTotal' => 'DESC'];
+        } elseif ($tri === 'prix_asc') {
+            $orderBy = ['montantTotal' => 'ASC'];
         }
+
+        $factures = $factureRepository->findBy(['user' => $this->getUser()], $orderBy);
         
         // Ensure commands with missing products don't crash the list rendering
         foreach ($factures as $facture) {
@@ -110,7 +144,7 @@ class OrderController extends AbstractController
 
         return $this->render('order/history.html.twig', [
             'factures' => $factures,
-            'searchTerm' => $query,
+            'tri' => $tri,
         ]);
     }
 
@@ -149,5 +183,24 @@ class OrderController extends AbstractController
             'tva' => $tva,
             'shipping' => $shipping
         ]);
+    }
+
+    #[Route('/pdf/{id}', name: 'app_order_pdf', methods: ['GET'])]
+    public function downloadPdf(Facture $facture, \App\Service\PdfService $pdfService): Response
+    {
+        if ($facture->getUser() !== $this->getUser() && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $pdfContent = $pdfService->generateInvoicePdf($facture);
+
+        return new Response(
+            $pdfContent,
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => sprintf('attachment; filename="facture-%s.pdf"', $facture->getId())
+            ]
+        );
     }
 }

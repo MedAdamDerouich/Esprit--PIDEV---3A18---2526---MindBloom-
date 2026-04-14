@@ -28,16 +28,18 @@ class EventType extends AbstractType
                     'placeholder' => 'Titre de l\'événement',
                     'class' => 'form-control'
                 ],
-                'required' => true
+                'required' => false,
+                'help' => 'Saisissez un titre court et descriptif (min 3 caractères).'
             ])
             ->add('description', TextareaType::class, [
-                'label' => 'Description',
+                'label' => 'Description *',
                 'attr' => [
                     'placeholder' => 'Description détaillée de l\'événement',
                     'class' => 'form-control',
                     'rows' => 4
                 ],
-                'required' => false
+                'required' => false,
+                'help' => 'Fournissez un texte expliquant les détails de l\'événement (min 10 caractères).'
             ])
             ->add('dateDebut', DateTimeType::class, [
                 'label' => 'Date de début *',
@@ -45,15 +47,17 @@ class EventType extends AbstractType
                 'attr' => [
                     'class' => 'form-control'
                 ],
-                'required' => true
+                'required' => false,
+                'help' => 'Sélectionnez une date future où l\'événement commence.'
             ])
             ->add('dateFin', DateTimeType::class, [
-                'label' => 'Date de fin',
+                'label' => 'Date de fin *',
                 'widget' => 'single_text',
                 'attr' => [
                     'class' => 'form-control'
                 ],
-                'required' => false
+                'required' => false,
+                'help' => 'Sélectionnez la date où l\'événement se termine.'
             ])
             ->add('lieu', TextType::class, [
                 'label' => 'Lieu *',
@@ -61,16 +65,18 @@ class EventType extends AbstractType
                     'placeholder' => 'Lieu de l\'événement',
                     'class' => 'form-control'
                 ],
-                'required' => false
+                'required' => false,
+                'help' => 'Indiquez l\'adresse physique ou le lien URL.'
             ])
             ->add('capaciteMax', IntegerType::class, [
-                'label' => 'Capacité maximale',
+                'label' => 'Capacité maximale *',
                 'attr' => [
                     'placeholder' => 'Ex : 50',
                     'class' => 'form-control',
                     'min' => 1
                 ],
                 'required' => false,
+                'help' => 'Nombre maximal de patients autorisés à s\'inscrire.',
                 'constraints' => [
                     new Positive(message: 'La capacité doit être un nombre positif')
                 ]
@@ -81,7 +87,8 @@ class EventType extends AbstractType
                     'placeholder' => 'Nom de l\'organisateur',
                     'class' => 'form-control'
                 ],
-                'required' => false
+                'required' => false,
+                'help' => 'Renseignez le nom du thérapeute ou du cabinet.'
             ])
             ->add('statut', ChoiceType::class, [
                 'label' => 'Statut *',
@@ -93,10 +100,11 @@ class EventType extends AbstractType
                 'attr' => [
                     'class' => 'form-select'
                 ],
-                'required' => true
+                'required' => false,
+                'help' => 'Sélectionnez le statut opérationnel de l\'événement.'
             ])
             ->add('prix', NumberType::class, [
-                'label' => 'Prix (DT)',
+                'label' => 'Prix (DT) *',
                 'attr' => [
                     'placeholder' => '0.00 (laisser vide = gratuit)',
                     'class' => 'form-control',
@@ -104,6 +112,7 @@ class EventType extends AbstractType
                     'min' => '0'
                 ],
                 'required' => false,
+                'help' => 'Indiquez un prix. Mettez 0 si l\'événement est gratuit.',
                 'scale' => 2,
                 'constraints' => [
                     new PositiveOrZero(message: 'Le prix doit être positif ou zéro')

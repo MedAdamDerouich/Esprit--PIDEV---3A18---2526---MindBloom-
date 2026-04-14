@@ -3,6 +3,10 @@
 {% block title %}Finaliser ma commande - MindBloom{% endblock %}
 
 {% block body %}
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-10">
@@ -16,10 +20,12 @@
                 <div class="col-md-7">
                     <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4">
                         <h4 class="fw-bold mb-4">Informations de livraison</h4>
-                        <form action="{{ path('app_order_checkout') }}" method="POST">
-                            <div class="mb-4">
-                                <label class="form-label fw-bold small text-uppercase">Adresse de livraison</label>
-                                <textarea name="adresse" class="form-control rounded-3 border-0 bg-light py-3 shadow-none" rows="3" required placeholder="Votre adresse complète..."></textarea>
+                        <form action="{{ path('app_order_checkout') }}" method="POST" id="checkoutForm" onsubmit="return validateCheckout();">
+                             <div class="mb-4">
+                                <label class="form-label fw-bold small text-uppercase">Point de livraison</label>
+                                <p class="small text-muted mb-2"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Cliquez sur la carte pour choisir votre adresse exacte</p>
+                                <div id="map" style="height: 250px; width: 100%; border-radius: 12px; margin-bottom: 10px; z-index: 1;"></div>
+                                <textarea name="adresse" id="checkoutAdresse" class="form-control rounded-3 border-0 bg-light py-3 shadow-none mt-2" rows="2" required placeholder="L'adresse sélectionnée s'affichera ici (min 10 caractères)..." minlength="10"></textarea>
                             </div>
                             
                             <div class="mb-5">
@@ -29,24 +35,29 @@
                                     {# ── Wallet ── #}
                                     <div class="col-sm-6">
                                         <input type="radio" class="btn-check" name="paiement" id="wallet" value="WALLET"
-                                               {{ walletBalance >= total ? 'checked' : 'disabled' }}>
-                                        <label class="btn btn-outline-secondary w-100 rounded-3 py-3 {{ walletBalance < total ? 'opacity-50' : '' }}" for="wallet">
-                                            <span style="font-size:1.5rem;display:block;margin-bottom:4px;">💳</span>
+                                               {{ (walletActive and walletBalance >= total) ? 'checked' : 'disabled' }}>
+                                        <label class="btn btn-outline-secondary w-100 rounded-3 py-3 {{ (not walletActive or walletBalance < total) ? 'opacity-50' : '' }}" for="wallet">
+                                            <i class="bi bi-wallet2" style="font-size:1.5rem;display:block;margin-bottom:4px;"></i>
                                             <span class="d-block fw-bold" style="font-size:13px;">Wallet MindBloom</span>
-                                            <span class="d-block mt-1" style="font-size:12px;
-                                                color:{{ walletBalance >= total ? '#10b981' : '#dc3545' }};">
-                                                Solde : {{ walletBalance|number_format(2, '.', ' ') }} DT
-                                                {% if walletBalance < total %}
-                                                    <br><small>(insuffisant)</small>
-                                                {% endif %}
-                                            </span>
+                                            {% if not walletActive %}
+                                                <span class="d-block mt-1" style="font-size:11px;color:#dc3545;">
+                                                    <i class="bi bi-slash-circle" style="margin-right:3px;"></i>Wallet suspendu
+                                                </span>
+                                            {% else %}
+                                                <span class="d-block mt-1" style="font-size:12px;color:{{ walletBalance >= total ? '#10b981' : '#dc3545' }};">
+                                                    Solde : {{ walletBalance|number_format(2, '.', ' ') }} DT
+                                                    {% if walletBalance < total %}
+                                                        <br><small>(insuffisant)</small>
+                                                    {% endif %}
+                                                </span>
+                                            {% endif %}
                                         </label>
                                     </div>
 
                                     {# ── Paiement à la livraison ── #}
                                     <div class="col-sm-6">
                                         <input type="radio" class="btn-check" name="paiement" id="cash" value="ESPECES"
-                                               {{ walletBalance < total ? 'checked' : '' }}>
+                                               {{ (not walletActive or walletBalance < total) ? 'checked' : '' }}>
                                         <label class="btn btn-outline-secondary w-100 rounded-3 py-3" for="cash">
                                             <i class="bi bi-cash-stack fs-4 d-block mb-1"></i>
                                             <span class="d-block fw-bold" style="font-size:13px;">Paiement à la livraison</span>
@@ -56,7 +67,7 @@
 
                                 </div>
 
-                                {% if walletBalance < total %}
+                                {% if walletBalance < total and walletActive %}
                                 <div class="alert alert-warning mt-3 py-2 px-3 rounded-3 d-flex align-items-center gap-2" style="font-size:13px;">
                                     <i class="bi bi-exclamation-triangle-fill text-warning"></i>
                                     Solde insuffisant pour payer par wallet.
@@ -125,4 +136,69 @@
         </div>
     </div>
 </div>
+
+<script>
+function validateCheckout() {
+    const addr = document.getElementById('checkoutAdresse').value.trim();
+    
+    if (addr.length < 10) {
+        alert("Contrôle de Saisie : Veuillez entrer une adresse complète, d'au moins 10 caractères.");
+        return false;
+    }
+    
+    const radios = document.getElementsByName('paiement');
+    let paymentSelected = false;
+    for (const radio of radios) {
+        if (radio.checked) { paymentSelected = true; break; }
+    }
+    
+    if (!paymentSelected) {
+        alert("Contrôle de Saisie : Veuillez sélectionner un mode de paiement valide.");
+        return false;
+    }
+    
+    return true;
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Check if map container exists
+    var mapContainer = document.getElementById('map');
+    if (!mapContainer) return;
+
+    // Default to Tunis center
+    var map = L.map('map').setView([36.8065, 10.1815], 13);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    var marker = L.marker([36.8065, 10.1815], {draggable: true}).addTo(map);
+
+    function updateAddress(lat, lng) {
+        document.getElementById('checkoutAdresse').value = 'Recherche de l\'adresse en cours...';
+        fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data && data.display_name) {
+                    document.getElementById('checkoutAdresse').value = data.display_name;
+                } else {
+                    document.getElementById('checkoutAdresse').value = `${lat}, ${lng}`;
+                }
+            })
+            .catch(() => {
+                document.getElementById('checkoutAdresse').value = `${lat}, ${lng}`;
+            });
+    }
+
+    map.on('click', function(e) {
+        marker.setLatLng(e.latlng);
+        updateAddress(e.latlng.lat, e.latlng.lng);
+    });
+
+    marker.on('dragend', function(e) {
+        var pos = marker.getLatLng();
+        updateAddress(pos.lat, pos.lng);
+    });
+});
+</script>
 {% endblock %}

@@ -34,13 +34,17 @@ class Event
     private ?string $titre = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Assert\NotBlank(message: 'La description est obligatoire')]
+    #[Assert\Length(min: 10, minMessage: 'La description doit contenir au moins {{ limit }} caractères')]
     private ?string $description = null;
 
     #[ORM\Column(name: 'date_debut', type: 'datetime')]
     #[Assert\NotBlank(message: 'La date de début est obligatoire')]
+    #[Assert\GreaterThan('today', message: 'La date de début ne peut pas être dans le passé.')]
     private ?\DateTimeInterface $dateDebut = null;
 
     #[ORM\Column(name: 'date_fin', type: 'datetime', nullable: true)]
+    #[Assert\NotBlank(message: 'La date de fin est obligatoire')]
     #[Assert\GreaterThan(
         propertyPath: 'dateDebut',
         message: 'La date de fin doit être postérieure à la date de début'
@@ -48,13 +52,16 @@ class Event
     private ?\DateTimeInterface $dateFin = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Assert\NotBlank(message: 'Le lieu est obligatoire')]
     private ?string $lieu = null;
 
     #[ORM\Column(name: 'capacite_max', type: 'integer', nullable: true)]
+    #[Assert\NotBlank(message: 'La capacité maximale est obligatoire')]
     #[Assert\Positive(message: 'La capacité maximale doit être positive')]
     private ?int $capaciteMax = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Assert\NotBlank(message: 'Le nom de l\'organisateur est obligatoire')]
     private ?string $organisateur = null;
 
     #[ORM\Column(name: 'date_creation', type: 'datetime')]
@@ -71,6 +78,7 @@ class Event
     private ?string $photo = null;
 
     #[ORM\Column(type: 'float', nullable: true)]
+    #[Assert\NotBlank(message: 'Le prix est obligatoire (Mettez 0 pour gratuit)')]
     #[Assert\PositiveOrZero(message: 'Le prix doit être positif ou zéro')]
     private ?float $prix = null;
 

@@ -1,145 +1,974 @@
 {% extends 'base.html.twig' %}
 {% block title %}Mon Espace — MindBloom{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* ── Logo palette ──────────────────────────────────────────────── */
+:root {
+    --mb-navy:    #1B3A6B;
+    --mb-cyan:    #00C2C7;
+    --mb-green:   #4ECB71;
+    --mb-yellow:  #F5C842;
+    --mb-orange:  #F47B20;
+    --mb-pink:    #E63F8C;
+    --mb-purple:  #9B59B6;
+}
+
+/* ── Patient Dashboard ─────────────────────────────────────────── */
+.ptdash-page {
+    background: linear-gradient(175deg, #F0F6FF 0%, #E8F4F8 45%, #EEF5F0 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ── Hero Section ── */
+.ptdash-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 60px;
+    padding: 70px 100px;
+    min-height: 510px;
+    overflow: hidden;
+}
+
+#hero-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: block;
+    pointer-events: none;
+    z-index: 1;
+}
+@media (prefers-reduced-motion: reduce) { #hero-canvas { display: none; } }
+
+/* Hero text content */
+.ptdash-hero-content {
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    position: relative;
+    z-index: 2;
+}
+
+.ptdash-badge {
+    display: inline-block;
+    background: rgba(0,194,199,0.12);
+    color: var(--mb-cyan);
+    border-radius: 24px;
+    padding: 6px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    width: fit-content;
+    letter-spacing: 0.3px;
+    opacity: 0;
+    transform: translateY(28px);
+}
+
+.ptdash-title {
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--mb-navy);
+    line-height: 1.08;
+    letter-spacing: -1.5px;
+    opacity: 0;
+    transform: translateY(28px);
+}
+.ptdash-title em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--mb-cyan) 0%, var(--mb-green) 50%, var(--mb-yellow) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.ptdash-desc {
+    font-size: 17px;
+    color: #8E8E8E;
+    line-height: 1.65;
+    opacity: 0;
+    transform: translateY(28px);
+}
+
+.ptdash-cta-wrap {
+    margin-top: 8px;
+    opacity: 0;
+    transform: translateY(28px);
+}
+
+.ptdash-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, var(--mb-cyan) 0%, var(--mb-green) 100%);
+    color: white;
+    padding: 16px 36px;
+    border-radius: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 15px;
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s ease;
+    box-shadow: 0 4px 18px rgba(0,194,199,0.35);
+}
+.ptdash-cta:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(0,194,199,0.45);
+    color: white;
+}
+
+/* Hero logo */
+.ptdash-logo-wrap {
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+    perspective: 900px;
+}
+.ptdash-logo {
+    width: 360px;
+    height: 360px;
+    object-fit: contain;
+    animation: ptLogoFloat 5s ease-in-out infinite;
+    filter: drop-shadow(0 20px 50px rgba(0,0,0,0.07));
+    will-change: transform;
+}
+@keyframes ptLogoFloat {
+    0%   { transform: translateY(0)    rotateY(0deg); }
+    25%  { transform: translateY(-12px) rotateY(3deg); }
+    50%  { transform: translateY(-16px) rotateY(0deg); }
+    75%  { transform: translateY(-12px) rotateY(-3deg); }
+    100% { transform: translateY(0)    rotateY(0deg); }
+}
+
+/* ── Entrance animations ── */
+body.anim-ready .ptdash-badge    { animation: ptFadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s forwards; }
+body.anim-ready .ptdash-title    { animation: ptFadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.22s forwards; }
+body.anim-ready .ptdash-desc     { animation: ptFadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.36s forwards; }
+body.anim-ready .ptdash-cta-wrap { animation: ptFadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.48s forwards; }
+
+@keyframes ptFadeUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Stats Bar ── */
+.ptdash-stats {
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid rgba(255,255,255,0.85);
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+    padding: 44px 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 80px;
+}
+
+.ptdash-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+    transform: translateY(18px);
+}
+
+.stat-counter {
+    font-size: 34px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--mb-cyan), var(--mb-navy));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+}
+
+.stat-label {
+    color: #9A9A9A;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ── Services Section ── */
+.ptdash-services {
+    padding: 80px 40px 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.ptdash-services-title {
+    font-size: 38px;
+    font-weight: 800;
+    color: var(--mb-navy);
+    letter-spacing: -0.8px;
+    opacity: 0;
+    transform: translateY(24px);
+}
+
+.ptdash-services-sub {
+    font-size: 16px;
+    color: #9A9A9A;
+    text-align: center;
+    max-width: 580px;
+    line-height: 1.65;
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.ptdash-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+    margin-top: 44px;
+    max-width: 1100px;
+    width: 100%;
+    padding: 0 20px;
+}
+
+/* ── Service Card Wrapper ── */
+.ptdash-card-wrap {
+    perspective: 800px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    opacity: 0;
+    transform: translateY(44px) scale(0.95);
+}
+
+/* ── Service Card ── */
+.ptdash-card {
+    background: rgba(255,255,255,0.82);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.9);
+    border-radius: 22px;
+    padding: 28px 22px;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transform: rotateX(0deg) rotateY(0deg) translateZ(0);
+    transition: transform 0.12s ease-out, box-shadow 0.2s ease;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03);
+    will-change: transform;
+}
+
+/* Shine overlay */
+.ptdash-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 55%);
+    border-radius: 22px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    z-index: 1;
+}
+.ptdash-card-wrap:hover .ptdash-card::before { opacity: 1; }
+
+/* Decorative corner glow */
+.ptdash-card::after {
+    content: '';
+    position: absolute;
+    bottom: -35px;
+    right: -35px;
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    pointer-events: none;
+    transition: transform 0.45s ease, opacity 0.45s ease;
+    opacity: 0.35;
+}
+.ptdash-card-wrap:hover .ptdash-card::after {
+    transform: scale(1.7);
+    opacity: 0.8;
+}
+
+/* Hover shadow lift */
+.ptdash-card-wrap:hover .ptdash-card {
+    box-shadow:
+        0 24px 48px rgba(0,0,0,0.1),
+        0 8px 18px rgba(0,0,0,0.06);
+}
+
+/* ── Color variants — mapped to MindBloom logo palette ── */
+/* blue  → navy  #1B3A6B */
+/* teal  → cyan  #00C2C7 */
+/* purple→ pink  #E63F8C */
+/* amber → orange #F47B20 */
+/* rose  → green #4ECB71 */
+.ptdash-card--blue::after   { background: radial-gradient(circle, rgba(27,58,107,0.14) 0%, transparent 70%); }
+.ptdash-card--teal::after   { background: radial-gradient(circle, rgba(0,194,199,0.15) 0%, transparent 70%); }
+.ptdash-card--purple::after { background: radial-gradient(circle, rgba(230,63,140,0.14) 0%, transparent 70%); }
+.ptdash-card--amber::after  { background: radial-gradient(circle, rgba(244,123,32,0.15) 0%, transparent 70%); }
+.ptdash-card--rose::after   { background: radial-gradient(circle, rgba(78,203,113,0.15) 0%, transparent 70%); }
+
+/* ── Icon box ── */
+.ptdash-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transform: translateZ(20px);
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), background 0.2s ease;
+    position: relative;
+    z-index: 2;
+    color: #2c3e50;
+    overflow: hidden;
+}
+.ptdash-card-wrap:hover .ptdash-icon {
+    transform: translateZ(38px) scale(1.15) rotate(-4deg);
+}
+
+.ptdash-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.ptdash-icon--blue   { background: rgba(27,58,107,0.10);  color: var(--mb-navy); }
+.ptdash-icon--teal   { background: rgba(0,194,199,0.12);  color: #008c91; }
+.ptdash-icon--purple { background: rgba(230,63,140,0.11); color: #c22274; }
+.ptdash-icon--amber  { background: rgba(244,123,32,0.12); color: #c55e0c; }
+.ptdash-icon--rose   { background: rgba(78,203,113,0.12); color: #2ea255; }
+
+/* ── Card title ── */
+.ptdash-card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--mb-navy);
+    transform: translateZ(12px);
+    transition: transform 0.15s ease, color 0.15s ease;
+    position: relative;
+    z-index: 2;
+}
+.ptdash-card-wrap:hover .ptdash-card-title {
+    transform: translateZ(24px);
+    color: var(--mb-navy);
+}
+
+/* ── Card description ── */
+.ptdash-card-desc {
+    color: #9A9A9A;
+    font-size: 14px;
+    line-height: 1.55;
+    transform: translateZ(6px);
+    transition: transform 0.15s ease;
+    position: relative;
+    z-index: 2;
+}
+.ptdash-card-wrap:hover .ptdash-card-desc {
+    transform: translateZ(14px);
+}
+
+/* ── Card link / arrow ── */
+.ptdash-card-link {
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: auto;
+    transform: translateZ(8px);
+    transition: transform 0.15s ease;
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.ptdash-card-link svg {
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.ptdash-card-wrap:hover .ptdash-card-link {
+    transform: translateZ(18px);
+}
+.ptdash-card-wrap:hover .ptdash-card-link svg {
+    transform: translateX(4px);
+}
+
+.ptdash-card-link--blue   { color: var(--mb-navy); }
+.ptdash-card-link--teal   { color: #008c91; }
+.ptdash-card-link--purple { color: #c22274; }
+.ptdash-card-link--amber  { color: #c55e0c; }
+.ptdash-card-link--rose   { color: #2ea255; }
+
+/* ── Responsive ── */
+@media (max-width: 1100px) {
+    .ptdash-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+    .ptdash-hero { flex-direction: column; padding: 50px 30px; gap: 30px; }
+    .ptdash-logo { width: 240px; height: 240px; }
+    .ptdash-title { font-size: 36px; }
+    .ptdash-grid { grid-template-columns: repeat(2, 1fr); }
+    .ptdash-stats { flex-wrap: wrap; gap: 40px; padding: 30px 20px; }
+}
+@media (max-width: 600px) {
+    .ptdash-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+    .ptdash-badge, .ptdash-title, .ptdash-desc, .ptdash-cta-wrap,
+    .ptdash-services-title, .ptdash-services-sub {
+        opacity: 1 !important; transform: none !important; animation: none !important;
+    }
+    .ptdash-logo { animation: none !important; }
+    .ptdash-card, .ptdash-icon { transition: none !important; }
+    .ptdash-card-wrap, .ptdash-stat { opacity: 1 !important; transform: none !important; }
+}
+</style>
+{% endblock %}
+
 {% block body %}
+<div class="ptdash-page">
 
+    {# ── Upcoming Event Notification (10 seconds) ── #}
+    {% if next_event %}
+        <div id="mb-event-reminder" class="mb-event-reminder">
+            <div class="mb-er-content">
+                <span class="mb-er-icon">📅</span>
+                <div class="mb-er-text">
+                    <strong>Rappel :</strong> Votre prochain événement <em>"{{ next_event.titre }}"</em> 
+                    est prévu pour le {{ next_event.dateDebut|date('d/m/Y à H:i') }} 
+                    (dans {{ next_event_jours_restants }} jour{{ next_event_jours_restants > 1 ? 's' : '' }}).
+                </div>
+            </div>
+            <button class="mb-er-close" onclick="document.getElementById('mb-event-reminder').style.display='none'">&times;</button>
+        </div>
+        <style>
+            .mb-event-reminder {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #FFB75E, #ED8F03);
+                color: #fff;
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 14px 20px;
+                box-shadow: 0 4px 15px rgba(237, 143, 3, 0.3);
+                animation: slideDown 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
+                transform: translateY(-100%);
+            }
+            .mb-er-content {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                max-width: 800px;
+                width: 100%;
+                font-size: 14px;
+            }
+            .mb-er-icon { font-size: 20px; }
+            .mb-er-text strong { font-weight: 800; letter-spacing: 0.5px; }
+            .mb-er-close {
+                background: none;
+                border: none;
+                color: #fff;
+                font-size: 24px;
+                cursor: pointer;
+                opacity: 0.8;
+                transition: opacity 0.2s;
+                margin-left: 20px;
+            }
+            .mb-er-close:hover { opacity: 1; }
+            @keyframes slideDown { to { transform: translateY(0); } }
+            @keyframes slideUpFade { to { transform: translateY(-100%); opacity: 0; visibility: hidden; } }
+            .mb-event-reminder.hiding {
+                animation: slideUpFade 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
+            }
+        </style>
+        <script>
+            // Disparition automatique après 10 secondes
+            setTimeout(function() {
+                var el = document.getElementById('mb-event-reminder');
+                if(el) { el.classList.add('hiding'); }
+            }, 10000);
+        </script>
+    {% endif %}
 
+    {# ── Hero Section ── #}
+    <div class="ptdash-hero">
+        <canvas id="hero-canvas"></canvas>
 
-
-{# ── MAIN CONTENT ── #}
-<div style="background:#FAFAF8;">
-
-    {# Hero Section #}
-    <div style="display:flex;align-items:center;justify-content:center;gap:60px;
-                padding:60px 100px;min-height:500px;">
-
-        <div style="max-width:600px;display:flex;flex-direction:column;gap:25px;">
-            <span style="display:inline-block;background:#E8F1FC;color:#4A90E2;
-                         border-radius:20px;padding:5px 15px;font-size:13px;width:fit-content;">
-                ✨ Votre bien-être mental compte
+        <div class="ptdash-hero-content">
+            <span class="ptdash-badge">✨ Votre bien-être mental compte</span>
+            <span class="ptdash-title">
+                Cultivez votre bien-être mental avec <em>MindBloom</em>
             </span>
-            <span style="font-size:46px;font-weight:900;color:#2C3E50;line-height:1.1;">
-                Cultivez votre bien-être mental avec MindBloom
-            </span>
-            <span style="font-size:17px;color:#7F8C8D;line-height:1.6;">
+            <span class="ptdash-desc">
                 Accédez à des psychologues certifiés, des ressources personnalisées
                 et une communauté bienveillante pour vous accompagner.
             </span>
-            <div style="margin-top:10px;">
-                <a href="{{ path('app_test_index') }}"
-                   style="display:inline-block;background:#4A90E2;color:white;padding:0 0;
-                          border-radius:10px;font-weight:700;text-decoration:none;font-size:14px;
-                          width:250px;height:50px;line-height:50px;text-align:center;">
-                    Faire un test gratuit →
+            <div class="ptdash-cta-wrap">
+                <a href="{{ path('app_test_index') }}" class="ptdash-cta">
+                    Faire un test gratuit
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                    </svg>
                 </a>
             </div>
         </div>
 
-        <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom"
-             style="width:380px;height:380px;object-fit:contain;flex-shrink:0;">
-    </div>
-
-    {# Stats Bar #}
-    <div style="background:white;border-top:1px solid #F0F0F0;border-bottom:1px solid #F0F0F0;
-                height:140px;display:flex;align-items:center;justify-content:center;gap:80px;">
-
-        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
-            <span style="font-size:30px;font-weight:700;color:#4A90E2;">50+</span>
-            <span style="color:#7F8C8D;">Psychologues</span>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
-            <span style="font-size:30px;font-weight:700;color:#4A90E2;">10k+</span>
-            <span style="color:#7F8C8D;">Patients accompagnés</span>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
-            <span style="font-size:30px;font-weight:700;color:#4A90E2;">4.9/5</span>
-            <span style="color:#7F8C8D;">Satisfaction</span>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:5px;">
-            <span style="font-size:30px;font-weight:700;color:#4A90E2;">24/7</span>
-            <span style="color:#7F8C8D;">Support disponible</span>
+        <div class="ptdash-logo-wrap">
+            <img class="ptdash-logo" src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom">
         </div>
     </div>
 
-    {# Services Section #}
-    <div style="background:#FAFAF8;padding:80px 40px 100px;display:flex;flex-direction:column;
-                align-items:center;gap:20px;">
+    {# ── Stats Bar ── #}
+    <div class="ptdash-stats" id="stats-bar">
+        <div class="ptdash-stat">
+            <span class="stat-counter" data-target="50" data-format="N+">50+</span>
+            <span class="stat-label">Psychologues</span>
+        </div>
+        <div class="ptdash-stat">
+            <span class="stat-counter" data-target="10" data-format="Nk+">10k+</span>
+            <span class="stat-label">Patients accompagnés</span>
+        </div>
+        <div class="ptdash-stat">
+            <span class="stat-counter" data-target="49" data-format="N.X/5">4.9/5</span>
+            <span class="stat-label">Satisfaction</span>
+        </div>
+        <div class="ptdash-stat">
+            <span class="stat-counter" data-target="24" data-format="N/7">24/7</span>
+            <span class="stat-label">Support disponible</span>
+        </div>
+    </div>
 
-        <span style="font-size:36px;font-weight:700;color:#2C3E50;">Nos services pour vous</span>
-        <span style="font-size:15px;color:#7F8C8D;text-align:center;max-width:650px;line-height:1.6;">
+    {# ── Services Section ── #}
+    <div class="ptdash-services">
+        <span class="ptdash-services-title">Nos services pour vous</span>
+        <span class="ptdash-services-sub">
             Découvrez tous les outils et ressources à votre disposition pour prendre soin de votre santé mentale
         </span>
 
-        <div style="display:flex;gap:20px;margin-top:40px;justify-content:center;">
+        <div class="ptdash-grid">
 
             {# Rendez-vous #}
-            <div style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
-                        box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;">
-                <div style="width:45px;height:45px;background:#E8F1FC;border-radius:10px;
-                             display:flex;align-items:center;justify-content:center;font-size:22px;">📅</div>
-                <span style="font-size:20px;font-weight:700;color:#2C3E50;">Rendez-vous</span>
-                <span style="color:#95A5A6;font-size:14px;line-height:1.5;">
-                    Consultez nos psychologues certifiés en ligne ou en présentiel
-                </span>
-                <a href="{{ path('app_patient_cabinets_index') }}" style="color:#4A90E2;text-decoration:none;font-size:14px;
-                                   background:transparent;margin-top:auto;">Découvrir →</a>
-            </div>
+            <a href="{{ path('app_patient_cabinets_index') }}" class="ptdash-card-wrap">
+                <div class="ptdash-card ptdash-card--blue" data-tilt>
+                    <div class="ptdash-icon ptdash-icon--blue" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <rect x="3" y="4" width="18" height="18" rx="3"></rect>
+                            <line x1="16" y1="2.5" x2="16" y2="6"></line>
+                            <line x1="8" y1="2.5" x2="8" y2="6"></line>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <path d="M9 14.5l2 2 4-4"></path>
+                        </svg>
+                    </div>
+                    <span class="ptdash-card-title">Rendez-vous</span>
+                    <span class="ptdash-card-desc">
+                        Consultez nos psychologues certifiés en ligne ou en présentiel
+                    </span>
+                    <span class="ptdash-card-link ptdash-card-link--blue">
+                        Découvrir
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </div>
+            </a>
 
             {# Tests #}
-            <div style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
-                        box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;">
-                <div style="width:45px;height:45px;background:#EDF9F5;border-radius:10px;
-                             display:flex;align-items:center;justify-content:center;font-size:22px;">🧠</div>
-                <span style="font-size:20px;font-weight:700;color:#2C3E50;">Tests</span>
-                <span style="color:#95A5A6;font-size:14px;line-height:1.5;">
-                    Évaluez votre bien-être mental avec nos tests validés scientifiquement
-                </span>
-                <a href="{{ path('app_test_index') }}" style="color:#5FBF9F;text-decoration:none;font-size:14px;
-                                   background:transparent;margin-top:auto;">Découvrir →</a>
-            </div>
-
-            {# Gérer Tests Autoévaluation #}
-            <div onclick="window.location.href='{{ path('app_test_manage') }}';" style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
-                        box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;cursor:pointer;">
-                <div style="width:45px;height:45px;background:#E8F1FC;border-radius:10px;
-                             display:flex;align-items:center;justify-content:center;font-size:22px;">📝</div>
-                <span style="font-size:20px;font-weight:700;color:#2C3E50;">Gérer test autoevaluations</span>
-                <span style="color:#95A5A6;font-size:14px;line-height:1.5;">
-                    Gérer et voir les tests que j'ai déjà créés
-                </span>
-                <a href="{{ path('app_test_manage') }}" style="color:#4A90E2;text-decoration:none;font-size:14px;
-                                   background:transparent;margin-top:auto;">Gérer →</a>
-            </div>
+            <a href="{{ path('app_test_index') }}" class="ptdash-card-wrap">
+                <div class="ptdash-card ptdash-card--teal" data-tilt>
+                    <div class="ptdash-icon ptdash-icon--teal" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <rect x="5" y="3" width="14" height="18" rx="2.5"></rect>
+                            <path d="M9 8h6"></path>
+                            <path d="M9 12h6"></path>
+                            <path d="M9 16h4"></path>
+                            <path d="M15.5 3v3"></path>
+                            <path d="M8.5 3v3"></path>
+                        </svg>
+                    </div>
+                    <span class="ptdash-card-title">Tests</span>
+                    <span class="ptdash-card-desc">
+                        Évaluez votre bien-être mental avec nos tests validés scientifiquement
+                    </span>
+                    <span class="ptdash-card-link ptdash-card-link--teal">
+                        Découvrir
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </div>
+            </a>
 
             {# Événements #}
-            <div style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
-                        box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;">
-                <div style="width:45px;height:45px;background:#E8F1FC;border-radius:10px;
-                             display:flex;align-items:center;justify-content:center;font-size:22px;">👥</div>
-                <span style="font-size:20px;font-weight:700;color:#2C3E50;">Événements</span>
-                <span style="color:#95A5A6;font-size:14px;line-height:1.5;">
-                    Participez à nos ateliers et groupes de parole
-                </span>
-                <a href="{{ path('app_patient_event_index') }}" style="color:#4A90E2;text-decoration:none;font-size:14px;
-                                   background:transparent;margin-top:auto;">Découvrir →</a>
-            </div>
+            <a href="{{ path('app_patient_event_index') }}" class="ptdash-card-wrap">
+                <div class="ptdash-card ptdash-card--amber" data-tilt>
+                    <div class="ptdash-icon ptdash-icon--amber" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="9" cy="8" r="2.5"></circle>
+                            <circle cx="16" cy="9" r="2.5"></circle>
+                            <path d="M4.5 17a4.5 4.5 0 0 1 9 0"></path>
+                            <path d="M12 17.5a4 4 0 0 1 8 0"></path>
+                        </svg>
+                    </div>
+                    <span class="ptdash-card-title">Événements</span>
+                    <span class="ptdash-card-desc">
+                        Participez à nos ateliers et groupes de parole
+                    </span>
+                    <span class="ptdash-card-link ptdash-card-link--amber">
+                        Découvrir
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </div>
+            </a>
 
             {# Produits #}
-            <div style="width:250px;min-height:280px;background:white;border-radius:20px;padding:25px;
-                        box-shadow:0 10px 15px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:15px;">
-                <div style="width:45px;height:45px;background:#EDF9F5;border-radius:10px;
-                             display:flex;align-items:center;justify-content:center;font-size:22px;">💚</div>
-                <span style="font-size:20px;font-weight:700;color:#2C3E50;">Produits</span>
-                <span style="color:#95A5A6;font-size:14px;line-height:1.5;">
-                    Découvrez nos ressources pour votre bien-être quotidien
-                </span>
-                <a href="{{ path('app_produit_index') }}" style="color:#5FBF9F;text-decoration:none;font-size:14px;
-                                   background:transparent;margin-top:auto;">Découvrir →</a>
-            </div>
+            <a href="{{ path('app_produit_index') }}" class="ptdash-card-wrap">
+                <div class="ptdash-card ptdash-card--rose" data-tilt>
+                    <div class="ptdash-icon ptdash-icon--rose" aria-hidden="true">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 4c1.9-2.6 6-2.1 7.3.8 1.2 2.6.1 5.6-2.2 7.7L12 18l-5.1-5.5C4.6 10.4 3.5 7.4 4.7 4.8 6 1.9 10.1 1.4 12 4z"></path>
+                        </svg>
+                    </div>
+                    <span class="ptdash-card-title">Produits</span>
+                    <span class="ptdash-card-desc">
+                        Découvrez nos ressources pour votre bien-être quotidien
+                    </span>
+                    <span class="ptdash-card-link ptdash-card-link--rose">
+                        Découvrir
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                        </svg>
+                    </span>
+                </div>
+            </a>
 
         </div>
     </div>
 
 </div>
+{% endblock %}
 
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script>
+(function () {
+    'use strict';
+
+    if (typeof THREE === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var canvas  = document.getElementById('hero-canvas');
+    var section = document.querySelector('.ptdash-hero');
+    if (!canvas || !section) return;
+
+    /* ── Renderer ── */
+    var renderer = new THREE.WebGLRenderer({
+        canvas: canvas, alpha: true, antialias: true, powerPreference: 'low-power'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    var scene  = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
+    camera.position.set(0, 0, 8);
+
+    /* ── Particles — logo palette ── */
+    var COUNT = 140;
+    var COLORS = [
+        new THREE.Color(0x00C2C7), // cyan
+        new THREE.Color(0x4ECB71), // green
+        new THREE.Color(0xF5C842), // yellow
+        new THREE.Color(0xF47B20), // orange
+        new THREE.Color(0xE63F8C), // pink
+        new THREE.Color(0x9B59B6), // purple
+        new THREE.Color(0x1B3A6B), // navy
+    ];
+    var FW = 16, FH = 10, FD = 6;
+
+    var geo = new THREE.BufferGeometry();
+    var pos = new Float32Array(COUNT * 3);
+    var col = new Float32Array(COUNT * 3);
+    var spd = new Float32Array(COUNT);
+    var pha = new Float32Array(COUNT);
+    var amp = new Float32Array(COUNT);
+    var bx  = new Float32Array(COUNT);
+
+    for (var i = 0; i < COUNT; i++) {
+        var x = (Math.random() - 0.5) * FW;
+        var y = (Math.random() - 0.5) * FH;
+        var z = (Math.random() - 0.5) * FD;
+        pos[i*3] = x; pos[i*3+1] = y; pos[i*3+2] = z;
+        bx[i]  = x;
+        spd[i] = 0.004 + Math.random() * 0.008;
+        pha[i] = Math.random() * Math.PI * 2;
+        amp[i] = 0.15 + Math.random() * 0.35;
+        var c = COLORS[Math.floor(Math.random() * COLORS.length)];
+        col[i*3] = c.r; col[i*3+1] = c.g; col[i*3+2] = c.b;
+    }
+
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('color',    new THREE.BufferAttribute(col, 3));
+
+    /* Sprite */
+    var sc = document.createElement('canvas');
+    sc.width = sc.height = 64;
+    var ctx = sc.getContext('2d');
+    var grd = ctx.createRadialGradient(32,32,0,32,32,32);
+    grd.addColorStop(0,   'rgba(255,255,255,1)');
+    grd.addColorStop(0.35,'rgba(255,255,255,0.7)');
+    grd.addColorStop(1,   'rgba(255,255,255,0)');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0,0,64,64);
+    var sprite = new THREE.CanvasTexture(sc);
+
+    var mat = new THREE.PointsMaterial({
+        size: 0.18, map: sprite, vertexColors: true,
+        transparent: true, opacity: 0.72,
+        depthWrite: false, blending: THREE.AdditiveBlending
+    });
+    scene.add(new THREE.Points(geo, mat));
+
+    /* ── Mouse parallax ── */
+    var pTarget = {x:0,y:0}, pCurr = {x:0,y:0};
+    section.addEventListener('mousemove', function(e) {
+        var r = section.getBoundingClientRect();
+        pTarget.x =  (((e.clientX-r.left)/r.width)*2-1) * 0.6;
+        pTarget.y = -(((e.clientY-r.top)/r.height)*2-1) * 0.6;
+    });
+    section.addEventListener('mouseleave', function() { pTarget.x=0; pTarget.y=0; });
+
+    /* ── Resize ── */
+    function onResize() {
+        var w = section.clientWidth, h = section.clientHeight;
+        renderer.setSize(w,h,false);
+        camera.aspect = w/h;
+        camera.updateProjectionMatrix();
+    }
+    onResize();
+    var ro = new ResizeObserver(onResize);
+    ro.observe(section);
+
+    /* ── Animate ── */
+    var clock = new THREE.Clock();
+    var rafId = null;
+
+    function animate() {
+        rafId = requestAnimationFrame(animate);
+        var t = clock.getElapsedTime();
+        pCurr.x += (pTarget.x - pCurr.x) * 0.04;
+        pCurr.y += (pTarget.y - pCurr.y) * 0.04;
+        camera.position.x = pCurr.x;
+        camera.position.y = pCurr.y;
+
+        var p = geo.attributes.position;
+        for (var i = 0; i < COUNT; i++) {
+            p.array[i*3+1] += spd[i];
+            p.array[i*3]    = bx[i] + Math.sin(t*0.5 + pha[i]) * amp[i];
+            if (p.array[i*3+1] > FH/2+0.5) {
+                p.array[i*3+1] = -FH/2-0.5;
+                var nx = (Math.random()-0.5)*FW;
+                p.array[i*3] = nx; bx[i] = nx;
+            }
+        }
+        p.needsUpdate = true;
+        renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('pagehide', function() {
+        if (rafId) cancelAnimationFrame(rafId);
+        ro.disconnect(); renderer.dispose(); geo.dispose(); mat.dispose(); sprite.dispose();
+    });
+})();
+</script>
+
+<script>
+(function () {
+    'use strict';
+
+    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.body.classList.add('anim-ready');
+
+    if (reducedMotion) {
+        document.querySelectorAll('.ptdash-badge,.ptdash-title,.ptdash-desc,.ptdash-cta-wrap,' +
+            '.ptdash-services-title,.ptdash-services-sub').forEach(function(el) {
+            el.style.opacity = '1'; el.style.transform = 'none';
+        });
+        document.querySelectorAll('.ptdash-card-wrap,.ptdash-stat').forEach(function(el) {
+            el.style.opacity = '1'; el.style.transform = 'none';
+        });
+        return;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       Stats — animated counters with staggered entrance
+    ════════════════════════════════════════════════════════════════ */
+    function easeOutCubic(t) { return 1 - Math.pow(1-t, 3); }
+
+    function formatCounter(value, fmt) {
+        var n = Math.floor(value);
+        switch (fmt) {
+            case 'N+':    return n + '+';
+            case 'Nk+':   return n + 'k+';
+            case 'N/7':   return n + '/7';
+            case 'N.X/5':
+                var tenths = Math.floor(value);
+                return Math.floor(tenths/10) + '.' + (tenths%10) + '/5';
+            default: return String(n);
+        }
+    }
+
+    function animateCounter(el) {
+        var target = parseFloat(el.getAttribute('data-target')) || 0;
+        var fmt    = el.getAttribute('data-format') || 'N';
+        var dur    = 1500, start = null;
+        function step(ts) {
+            if (!start) start = ts;
+            var p = Math.min((ts-start)/dur, 1);
+            el.textContent = formatCounter(easeOutCubic(p) * target, fmt);
+            if (p < 1) requestAnimationFrame(step);
+            else el.textContent = formatCounter(target, fmt);
+        }
+        requestAnimationFrame(step);
+    }
+
+    /* Stats entrance + counter trigger */
+    var statsBar = document.getElementById('stats-bar');
+    var statItems = document.querySelectorAll('.ptdash-stat');
+
+    if (statsBar && 'IntersectionObserver' in window) {
+        var statsObs = new IntersectionObserver(function(entries, obs) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    obs.unobserve(entry.target);
+                    statItems.forEach(function(el, i) {
+                        setTimeout(function() {
+                            el.style.transition = 'opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1)';
+                            el.style.opacity = '1';
+                            el.style.transform = 'translateY(0)';
+                        }, i * 120);
+                    });
+                    document.querySelectorAll('.stat-counter').forEach(animateCounter);
+                }
+            });
+        }, { threshold: 0.4 });
+        statsObs.observe(statsBar);
+    } else {
+        statItems.forEach(function(el) { el.style.opacity='1'; el.style.transform='none'; });
+        document.querySelectorAll('.stat-counter').forEach(function(el) {
+            el.textContent = formatCounter(parseFloat(el.getAttribute('data-target'))||0, el.getAttribute('data-format')||'N');
+        });
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       Services section title entrance
+    ════════════════════════════════════════════════════════════════ */
+    var svcTitle = document.querySelector('.ptdash-services-title');
+    var svcSub   = document.querySelector('.ptdash-services-sub');
+
+    if (svcTitle && 'IntersectionObserver' in window) {
+        var titleObs = new IntersectionObserver(function(entries, obs) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    obs.unobserve(entry.target);
+                    svcTitle.style.transition = 'opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1)';
+                    svcTitle.style.opacity = '1';
+                    svcTitle.style.transform = 'translateY(0)';
+                    setTimeout(function() {
+                        if (svcSub) {
+                            svcSub.style.transition = 'opacity 0.7s cubic-bezier(0.22,1,0.36,1), transform 0.7s cubic-bezier(0.22,1,0.36,1)';
+                            svcSub.style.opacity = '1';
+                            svcSub.style.transform = 'translateY(0)';
+                        }
+                    }, 120);
+                }
+            });
+        }, { threshold: 0.3 });
+        titleObs.observe(svcTitle);
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       Service cards — 3D tilt + staggered entrance
+    ════════════════════════════════════════════════════════════════ */
+    var MAX_TILT = 14;
+    var MAX_LIFT = 18;
+    var cards = document.querySelectorAll('[data-tilt]');
+
+    cards.forEach(function(card) {
+        var wrap = card.closest('.ptdash-card-wrap');
+        if (!wrap) return;
+
+        wrap.addEventListener('mousemove', function(e) {
+            var r  = card.getBoundingClientRect();
+            var dx = ((e.clientX - r.left) / r.width)  * 2 - 1;
+            var dy = ((e.clientY - r.top)  / r.height) * 2 - 1;
+            var rx = -dy * MAX_TILT;
+            var ry =  dx * MAX_TILT;
+            card.style.transition = 'transform 0.08s ease-out, box-shadow 0.15s ease';
+            card.style.transform  =
+                'perspective(800px) rotateX(' + rx + 'deg) rotateY(' + ry + 'deg) translateZ(' + MAX_LIFT + 'px)';
+        });
+
+        wrap.addEventListener('mouseleave', function() {
+            card.style.transition = 'transform 0.55s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease';
+            card.style.transform  = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(0)';
+        });
+
+        /* Press feedback */
+        wrap.addEventListener('mousedown', function() {
+            card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(4px) scale(0.97)';
+        });
+        wrap.addEventListener('mouseup', function() {
+            card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(' + MAX_LIFT + 'px)';
+        });
+    });
+
+    /* Staggered entrance via IntersectionObserver */
+    var cardWraps = document.querySelectorAll('.ptdash-card-wrap');
+
+    if ('IntersectionObserver' in window) {
+        var cardObs = new IntersectionObserver(function(entries, obs) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    var el = entry.target;
+                    var idx = Array.prototype.indexOf.call(cardWraps, el);
+                    obs.unobserve(el);
+                    setTimeout(function() {
+                        el.style.transition =
+                            'opacity 0.6s cubic-bezier(0.22,1,0.36,1), ' +
+                            'transform 0.6s cubic-bezier(0.22,1,0.36,1)';
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0) scale(1)';
+                    }, idx * 100);
+                }
+            });
+        }, { threshold: 0.15 });
+        cardWraps.forEach(function(el) { cardObs.observe(el); });
+    } else {
+        cardWraps.forEach(function(el) { el.style.opacity='1'; el.style.transform='none'; });
+    }
+
+})();
+</script>
 {% endblock %}

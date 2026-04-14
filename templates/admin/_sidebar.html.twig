@@ -8,17 +8,17 @@
     <nav class="sidebar-nav">
         <a href="{{ path('app_admin_dashboard') }}"
            class="{{ app.request.attributes.get('_route') == 'app_admin_dashboard' ? 'active' : '' }}">
-            <span class="nav-icon">📊</span> Dashboard
+            <span class="nav-icon"><i class="bi bi-speedometer2"></i></span> Dashboard
         </a>
         <a href="{{ path('app_admin_users') }}"
            class="{{ app.request.attributes.get('_route') starts with 'app_admin_user' ? 'active' : '' }}">
-            <span class="nav-icon">👥</span> Utilisateurs
+            <span class="nav-icon"><i class="bi bi-people"></i></span> Utilisateurs
         </a>
         {% set _pendingCount = pending_psychologues_count() %}
         <a href="{{ path('app_admin_pending_psychologues') }}"
-           class="{{ app.request.attributes.get('_route') starts with 'app_admin_pending_psycho' or app.request.attributes.get('_route') starts with 'app_admin_approve' or app.request.attributes.get('_route') starts with 'app_admin_reject' ? 'active' : '' }}"
+            class="{{ app.request.attributes.get('_route') starts with 'app_admin_pending_psycho' or app.request.attributes.get('_route') starts with 'app_admin_approve' or app.request.attributes.get('_route') starts with 'app_admin_reject' ? 'active' : '' }}"
            style="display:flex; align-items:center; justify-content:space-between;">
-            <span><span class="nav-icon">🩺</span> Validations</span>
+            <span><span class="nav-icon"><i class="bi bi-shield-check"></i></span> Validations</span>
             {% if _pendingCount > 0 %}
                 <span style="background:#ffc107; color:#333; font-size:11px; font-weight:800;
                              border-radius:10px; padding:2px 8px; min-width:20px; text-align:center;">
@@ -28,33 +28,33 @@
         </a>
         <a href="{{ path('app_admin_wallets') }}"
            class="{{ app.request.attributes.get('_route') starts with 'app_admin_wallet' ? 'active' : '' }}">
-            <span class="nav-icon">💰</span> Wallets
+            <span class="nav-icon"><i class="bi bi-wallet2"></i></span> Wallets
         </a>
         <a href="{{ path('app_admin_event_index') }}"
            class="{{ app.request.attributes.get('_route') starts with 'app_admin_event' ? 'active' : '' }}">
-            <span class="nav-icon">📅</span> Évènements
+            <span class="nav-icon"><i class="bi bi-calendar-event"></i></span> Évènements
         </a>
         <a href="{{ path('app_admin_produit_index') }}"
            class="{{ app.request.attributes.get('_route') starts with 'app_admin_produit' ? 'active' : '' }}">
-            <span class="nav-icon">🛍️</span> Produits
+            <span class="nav-icon"><i class="bi bi-bag"></i></span> Produits
         </a>
         <a href="{{ path('app_admin_cabinets') }}"
            class="{{ app.request.attributes.get('_route') == 'app_admin_cabinets' ? 'active' : '' }}">
-            <span class="nav-icon">🏥</span> Cabinets
+            <span class="nav-icon"><i class="bi bi-hospital"></i></span> Cabinets
         </a>
         <a href="{{ path('app_admin_order_index') }}"
            class="{{ app.request.attributes.get('_route') starts with 'app_admin_order' ? 'active' : '' }}">
-            <span class="nav-icon">📦</span> Commandes
+            <span class="nav-icon"><i class="bi bi-box-seam"></i></span> Commandes
         </a>
         <a href="{{ path('app_admin_test_index') }}"
            class="{{ app.request.attributes.get('_route') starts with 'app_admin_test' ? 'active' : '' }}">
-            <span class="nav-icon">📋</span> Tests
+            <span class="nav-icon"><i class="bi bi-clipboard-data"></i></span> Tests
         </a>
 
         <hr class="mb-divider">
 
         <a href="{{ path('app_logout') }}" class="nav-logout">
-            <span class="nav-icon">🚪</span> Déconnexion
+            <span class="nav-icon"><i class="bi bi-box-arrow-right"></i></span> Déconnexion
         </a>
     </nav>
 </aside>

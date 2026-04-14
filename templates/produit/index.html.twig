@@ -10,89 +10,288 @@
         <span style="font-size:32px; font-weight:bold; color:#4A90E2;">MindBloom</span>
         <span style="color:#718096; font-size:16px; margin-top:10px; max-width:700px; text-align:center;">Une sélection de produits naturels et d'articles de bien-être pour vous accompagner sereinement.</span>
         
-        <!-- Search Bar -->
-        <div class="mt-4 w-100" style="max-width: 500px;">
-            <form action="{{ path('app_produit_index') }}" method="GET" class="position-relative">
-                <input type="text" name="q" class="form-control rounded-pill ps-4 pe-5 py-2 shadow-sm border-0" placeholder="Rechercher un produit..." value="{{ searchTerm ?? '' }}">
-                <button type="submit" class="btn btn-primary rounded-circle position-absolute end-0 top-0 mt-1 me-1 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                    <i class="bi bi-search" style="font-size: 14px;"></i>
+        <!-- Search & Sort Bar -->
+        <div class="mt-4 w-100" style="max-width: 700px;">
+            <div class="search-sort-wrapper">
+                <select id="liveSortSelect" class="premium-select form-select">
+                    <option value="default">Trier par défaut</option>
+                    <option value="prix_asc">Prix : Croissant</option>
+                    <option value="prix_desc">Prix : Décroissant</option>
+                </select>
+                
+                <input type="text" id="liveSearchInput" class="premium-input form-control" placeholder="Rechercher un article, un produit de bien-être...">
+                
+                <button type="button" class="premium-icon-btn">
+                    <i class="bi bi-search"></i>
                 </button>
-            </form>
-            {% if searchTerm %}
-                <div class="text-center mt-2">
-                    <small class="text-muted">Résultats pour "{{ searchTerm }}" - <a href="{{ path('app_produit_index') }}" class="text-decoration-none">Effacer</a></small>
-                </div>
-            {% endif %}
+            </div>
+            
+            <div id="searchValidationMessage" class="text-danger mt-2 small fw-bold" style="display: none; text-align: center;"></div>
+            <div id="searchNoResults" class="text-muted mt-2 small" style="display: none; text-align: center;">Aucun produit trouvé pour cette recherche.</div>
         </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="productGrid">
         {% for produit in produits %}
-            <div class="col">
-                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden product-card transition-hover">
-                    <div class="position-absolute top-0 end-0 m-3 z-3">
-                         <span class="badge bg-white text-dark shadow-sm rounded-pill px-3 py-2">
-                             {{ produit.prix|number_format(2, ',', ' ') }} DT
-                         </span>
-                    </div>
-                    
-                    <div class="product-image-container" style="height: 250px; overflow: hidden;">
+            <div class="col product-item" data-price="{{ produit.prix }}">
+                <div class="android-cardview h-100">
+                    <div class="image-wrapper">
                         {% if produit.image %}
-                            <img src="{{ asset('uploads/produits/' ~ produit.image) }}" class="card-img-top h-100 w-100" alt="{{ produit.nom }}" style="object-fit: cover;">
+                            <img src="{{ asset('uploads/produits/' ~ produit.image) }}" class="product-image" alt="{{ produit.nom }}">
                         {% else %}
-                            <div class="bg-light d-flex align-items-center justify-content-center h-100">
-                                <i class="bi bi-box text-muted display-1 opacity-25"></i>
+                            <div class="image-placeholder">
+                                <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
                             </div>
                         {% endif %}
+                        <div class="price-chip">
+                             {{ produit.prix|number_format(2, ',', ' ') }} DT
+                        </div>
                     </div>
 
-                    <div class="card-body p-4">
-                        <h5 class="card-title fw-bold mb-2">{{ produit.nom }}</h5>
-                        <p class="card-text text-muted small mb-3">
-                            {{ produit.description|slice(0, 100) }}...
-                        </p>
+                    <div class="card-content">
+                        <h2 class="product-title">{{ produit.nom }}</h2>
                         
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="text-warning me-2">
+                        <div class="rating-bar">
+                            <div class="stars">
                                 {% set avg = produit.averageRating %}
                                 {% for i in 1..5 %}
                                     <i class="bi bi-star{{ i <= avg ? '-fill' : (i - 0.5 <= avg ? '-half' : '') }}"></i>
                                 {% endfor %}
                             </div>
-                            <span class="small text-muted">({{ produit.feedbacks|length }} avis)</span>
+                            <span class="review-count">({{ produit.feedbacks|length }})</span>
                         </div>
+                        
+                        <p class="product-description">
+                            {{ produit.description|slice(0, 80) }}...
+                        </p>
                     </div>
                     
-                    <div class="card-footer bg-transparent border-0 p-4 pt-0">
-                        <div class="d-grid gap-2">
-                            <a href="{{ path('app_produit_show', {'id': produit.id}) }}" class="btn btn-outline-primary rounded-pill shadow-sm py-2">
-                                <i class="bi bi-info-circle me-1"></i> Détails
-                            </a>
-                            <a href="{{ path('app_produit_feedback_new', {'id': produit.id}) }}" class="btn btn-primary rounded-pill shadow-sm py-2">
-                                <i class="bi bi-pencil-square me-1"></i> Ajouter un avis
-                            </a>
-                        </div>
+                    <div class="card-actions">
+                        <a href="{{ path('app_produit_show', {'id': produit.id}) }}" class="btn-android-flat">DÉTAILS</a>
+                        <a href="{{ path('app_produit_feedback_new', {'id': produit.id}) }}" class="btn-android-raised">AVIS</a>
                     </div>
                 </div>
             </div>
         {% else %}
             <div class="col-12 text-center py-5">
-                <p class="text-muted">Aucun produit n'est disponible pour le moment. Revenez bientôt !</p>
+                <p class="text-muted">Aucun produit n'est disponible pour le moment.</p>
             </div>
         {% endfor %}
     </div>
 </div>
 
 <style>
-.product-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+/* Android XML CardView Style Simulation */
+.android-cardview {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 2px 1px -1px rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.14), 0 1px 3px 0 rgba(0,0,0,.12);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
 }
-.product-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 1rem 3rem rgba(0,0,0,0.1)!important;
+
+.android-cardview:hover {
+    box-shadow: 0 8px 10px -5px rgba(0,0,0,.2), 0 16px 24px 2px rgba(0,0,0,.14), 0 6px 30px 5px rgba(0,0,0,.12);
+    transform: translateY(-2px);
 }
-.transition-hover {
-    transition: all 0.3s ease-in-out;
+
+.image-wrapper {
+    position: relative;
+    height: 200px;
+    background-color: #f5f5f5;
+    overflow: hidden;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.price-chip {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+}
+
+.card-content {
+    padding: 16px;
+    flex-grow: 1;
+}
+
+.product-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #212121;
+    margin: 0 0 8px 0;
+    line-height: 1.2;
+}
+
+.rating-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.stars {
+    color: #FFB300;
+    font-size: 14px;
+    margin-right: 6px;
+}
+
+.review-count {
+    font-size: 12px;
+    color: #757575;
+}
+
+.product-description {
+    font-size: 14px;
+    color: #757575;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.card-actions {
+    padding: 8px 16px 16px 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.btn-android-flat {
+    background: transparent;
+    color: #4A90E2;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.btn-android-flat:hover {
+    background-color: rgba(74, 144, 226, 0.1);
+    color: #4A90E2;
+}
+
+.btn-android-raised {
+    background-color: #4A90E2;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    border-radius: 4px;
+    text-decoration: none;
+    box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.btn-android-raised:hover {
+    background-color: #357ABD;
+    color: white;
+    box-shadow: 0 2px 4px -1px rgba(0,0,0,.2), 0 4px 5px 0 rgba(0,0,0,.14), 0 1px 10px 0 rgba(0,0,0,.12);
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('liveSearchInput');
+    const sortSelect = document.getElementById('liveSortSelect');
+    const productGrid = document.getElementById('productGrid');
+    const validationMessage = document.getElementById('searchValidationMessage');
+    const noResultsMessage = document.getElementById('searchNoResults');
+    const emptyStateFallback = productGrid.querySelector('.col-12.text-center'); 
+    
+    // Store original order
+    let originalItems = Array.from(productGrid.querySelectorAll('.col.product-item'));
+
+    function applyFilters() {
+        let rawValue = searchInput ? searchInput.value : '';
+        const forbiddenChars = /[<>{}]/;
+        let hasError = false;
+
+        if (forbiddenChars.test(rawValue)) {
+            validationMessage.textContent = "Les caractères spéciaux <, >, {, } ne sont pas autorisés.";
+            validationMessage.style.display = 'block';
+            hasError = true;
+        } else if (rawValue.length > 50) {
+            validationMessage.textContent = "La recherche ne doit pas dépasser 50 caractères.";
+            validationMessage.style.display = 'block';
+            hasError = true;
+        } else {
+            validationMessage.style.display = 'none';
+        }
+
+        if (hasError) return;
+
+        let searchQuery = rawValue.toLowerCase().trim();
+        let sortValue = sortSelect ? sortSelect.value : 'default';
+        let visibleCount = 0;
+        let hasRealItems = originalItems.length > 0;
+
+        // Apply sort
+        let sortedItems = [...originalItems];
+        if (sortValue === 'prix_asc') {
+            sortedItems.sort((a, b) => parseFloat(a.dataset.price) - parseFloat(b.dataset.price));
+        } else if (sortValue === 'prix_desc') {
+            sortedItems.sort((a, b) => parseFloat(b.dataset.price) - parseFloat(a.dataset.price));
+        }
+
+        // Apply filter and re-append
+        sortedItems.forEach(col => {
+            const titleEl = col.querySelector('.product-title');
+            const descEl = col.querySelector('.product-description');
+            
+            let titleText = titleEl ? titleEl.textContent.toLowerCase() : '';
+            let descText = descEl ? descEl.textContent.toLowerCase() : '';
+
+            if (titleText.includes(searchQuery) || descText.includes(searchQuery)) {
+                col.style.display = 'block';
+                visibleCount++;
+            } else {
+                col.style.display = 'none';
+            }
+            productGrid.appendChild(col);
+        });
+
+        // Add empty fallback to end if needed
+        if (emptyStateFallback) productGrid.appendChild(emptyStateFallback);
+
+        if (hasRealItems && visibleCount === 0 && searchQuery !== '') {
+            noResultsMessage.style.display = 'block';
+            if (emptyStateFallback) emptyStateFallback.style.display = 'none';
+        } else {
+            noResultsMessage.style.display = 'none';
+            if (emptyStateFallback && !hasRealItems) {
+                emptyStateFallback.style.display = 'block';
+            }
+        }
+    }
+
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
+    if (sortSelect) sortSelect.addEventListener('change', applyFilters);
+});
+</script>
 {% endblock %}

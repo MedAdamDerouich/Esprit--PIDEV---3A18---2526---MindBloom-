@@ -29,12 +29,292 @@
 
 {% block body %}{% endblock %}
 
+<style>
+/* Premium Search and Sort Interfaces */
+.search-sort-wrapper {
+    background: #ffffff;
+    padding: 8px 12px;
+    border-radius: 50px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    border: 1px solid #f0f2f5;
+    transition: all 0.3s ease;
+}
+.search-sort-wrapper:hover, .search-sort-wrapper:focus-within {
+    box-shadow: 0 8px 25px rgba(74, 144, 226, 0.15);
+    border-color: #a3c7ef;
+}
+.premium-select {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    cursor: pointer;
+    font-weight: 600;
+    color: #495057;
+    border-right: 2px solid #f0f2f5 !important;
+    border-radius: 0 !important;
+    padding-right: 35px;
+    max-width: 220px;
+}
+.premium-select:focus {
+    box-shadow: none !important;
+}
+.premium-input {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    padding-left: 15px !important;
+}
+.premium-input:focus {
+    box-shadow: none !important;
+}
+.premium-icon-btn {
+    background: #4A90E2;
+    color: white;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+}
+.premium-icon-btn:hover {
+    transform: scale(1.05);
+    background: #357ABD;
+    box-shadow: 0 6px 15px rgba(74, 144, 226, 0.4);
+}
+.premium-icon-btn i { font-size: 16px; margin: 0; padding: 0; }
+</style>
+
 {# ── Logout confirmation modal ── #}
+<style>
+/* Modal box entrance */
+#logoutModalBox {
+    transform: scale(0.92) translateY(14px);
+    opacity: 0;
+    transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), opacity 0.18s ease;
+}
+#logoutModal.modal-visible #logoutModalBox {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+/* ── Pro SVG Door ── */
+.door-scene {
+    width: 80px;
+    height: 92px;
+    margin: 0 auto 18px;
+    perspective: 600px;
+    perspective-origin: 50% 50%;
+}
+.door-scene svg {
+    overflow: visible;
+    filter: drop-shadow(0 8px 24px rgba(27,58,107,0.18));
+}
+
+/* Panel swings on confirm */
+#doorPanel {
+    transform-origin: 22px 55px;
+    transition: transform 0.52s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#logoutModal.door-open #doorPanel {
+    transform: rotateY(-68deg);
+}
+
+/* Idle knob glow */
+@keyframes knobGlow {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.6; }
+}
+#doorKnobGlow { animation: knobGlow 2.4s ease-in-out infinite; }
+</style>
+
 <div id="logoutModal" style="display:none;position:fixed;inset:0;z-index:99999;
      background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
-    <div style="background:white;border-radius:16px;padding:36px 32px;width:380px;
+    <div id="logoutModalBox" style="background:white;border-radius:16px;padding:36px 32px;width:380px;
                 box-shadow:0 20px 60px rgba(0,0,0,0.2);text-align:center;">
-        <div style="font-size:48px;margin-bottom:16px;">🚪</div>
+
+        {# ── Pro SVG Door ── #}
+        <div class="door-scene">
+        <svg viewBox="0 0 130 148" width="80" height="92" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <!-- Wall gradient: soft warm off-white -->
+                <linearGradient id="wallGrad" x1="0" y1="0" x2="0.3" y2="1">
+                    <stop offset="0%" stop-color="#eef1f7"/>
+                    <stop offset="100%" stop-color="#d8dde8"/>
+                </linearGradient>
+                <!-- Floor gradient -->
+                <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#c8cdd8"/>
+                    <stop offset="100%" stop-color="#b0b8c8"/>
+                </linearGradient>
+                <!-- Frame: dark navy from logo -->
+                <linearGradient id="frameGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#2a4a80"/>
+                    <stop offset="100%" stop-color="#1B3A6B"/>
+                </linearGradient>
+                <!-- Door panel: clean white with subtle warm tint -->
+                <linearGradient id="doorGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="100%" stop-color="#edf0f7"/>
+                </linearGradient>
+                <!-- Interior: deep dark blue room -->
+                <radialGradient id="interiorGrad" cx="50%" cy="60%" r="55%">
+                    <stop offset="0%" stop-color="#1e3a5f"/>
+                    <stop offset="100%" stop-color="#0a1828"/>
+                </radialGradient>
+                <!-- Interior teal glow (logo cyan) -->
+                <radialGradient id="glowGrad" cx="50%" cy="80%" r="60%">
+                    <stop offset="0%" stop-color="#00C2C7" stop-opacity="0.18"/>
+                    <stop offset="100%" stop-color="#00C2C7" stop-opacity="0"/>
+                </radialGradient>
+                <!-- Gold knob gradient -->
+                <radialGradient id="knobGrad" cx="35%" cy="35%" r="65%">
+                    <stop offset="0%" stop-color="#ffe87a"/>
+                    <stop offset="40%" stop-color="#f5c842"/>
+                    <stop offset="100%" stop-color="#9a6e0a"/>
+                </radialGradient>
+                <!-- Knob rim -->
+                <linearGradient id="rimGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#e0c040"/>
+                    <stop offset="100%" stop-color="#8a5e08"/>
+                </linearGradient>
+                <!-- Inset panel bevel top -->
+                <linearGradient id="insetTopGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="rgba(255,255,255,0.7)"/>
+                    <stop offset="100%" stop-color="rgba(180,190,210,0.3)"/>
+                </linearGradient>
+                <!-- Hinge metal -->
+                <linearGradient id="hingeGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#c8d0e0"/>
+                    <stop offset="50%" stop-color="#f0f3f8"/>
+                    <stop offset="100%" stop-color="#9aa3b8"/>
+                </linearGradient>
+                <!-- Panel cast shadow when open -->
+                <filter id="panelShadow" x="-10%" y="-5%" width="140%" height="120%">
+                    <feDropShadow dx="4" dy="2" stdDeviation="5" flood-color="#00000035"/>
+                </filter>
+                <!-- Frame glow filter -->
+                <filter id="frameGlow" x="-5%" y="-5%" width="110%" height="110%">
+                    <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+                <!-- Light beam from interior -->
+                <linearGradient id="lightBeamGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#00C2C7" stop-opacity="0.12"/>
+                    <stop offset="100%" stop-color="#00C2C7" stop-opacity="0"/>
+                </linearGradient>
+            </defs>
+
+            <!-- ░░ Wall ░░ -->
+            <rect x="2" y="6" width="126" height="134" rx="8" fill="url(#wallGrad)" stroke="#c4cad6" stroke-width="1"/>
+            <!-- Wall texture: subtle horizontal lines -->
+            <line x1="2" y1="30" x2="128" y2="30" stroke="#d0d5e0" stroke-width="0.5" opacity="0.5"/>
+            <line x1="2" y1="54" x2="128" y2="54" stroke="#d0d5e0" stroke-width="0.5" opacity="0.5"/>
+            <line x1="2" y1="78" x2="128" y2="78" stroke="#d0d5e0" stroke-width="0.5" opacity="0.5"/>
+            <line x1="2" y1="102" x2="128" y2="102" stroke="#d0d5e0" stroke-width="0.5" opacity="0.5"/>
+
+            <!-- ░░ Floor ░░ -->
+            <rect x="2" y="132" width="126" height="8" rx="0" fill="url(#floorGrad)"/>
+            <rect x="2" y="138" width="126" height="2" fill="#9aa3b5"/>
+            <!-- Floor grout line -->
+            <line x1="34" y1="132" x2="34" y2="140" stroke="#b8bfcc" stroke-width="0.8"/>
+            <line x1="66" y1="132" x2="66" y2="140" stroke="#b8bfcc" stroke-width="0.8"/>
+            <line x1="98" y1="132" x2="98" y2="140" stroke="#b8bfcc" stroke-width="0.8"/>
+
+            <!-- ░░ Door Frame (navy) ░░ -->
+            <!-- Outer frame border -->
+            <rect x="22" y="10" width="86" height="122" rx="4" fill="url(#frameGrad)" filter="url(#frameGlow)"/>
+            <!-- Frame inner reveal (3D bevel) -->
+            <rect x="25" y="13" width="80" height="116" rx="2" fill="#1a3460"/>
+            <!-- Frame highlight edge top -->
+            <rect x="22" y="10" width="86" height="3" rx="2" fill="#3a5fa0" opacity="0.6"/>
+            <!-- Frame highlight edge left -->
+            <rect x="22" y="10" width="3" height="122" rx="2" fill="#3a5fa0" opacity="0.4"/>
+
+            <!-- ░░ Dark Interior ░░ -->
+            <rect x="27" y="15" width="76" height="112" rx="2" fill="url(#interiorGrad)"/>
+            <!-- Teal ambient glow on floor of room -->
+            <ellipse cx="65" cy="127" rx="30" ry="8" fill="url(#glowGrad)"/>
+            <!-- Light beam from inside -->
+            <polygon points="27,127 103,127 85,15 45,15" fill="url(#lightBeamGrad)"/>
+            <!-- Interior top light strip (logo cyan) -->
+            <rect x="35" y="15" width="60" height="2" rx="1" fill="#00C2C7" opacity="0.25"/>
+
+            <!-- ░░ Door Panel (swings) ░░ -->
+            <g id="doorPanel" filter="url(#panelShadow)">
+                <!-- Main panel body -->
+                <rect x="27" y="15" width="76" height="112" rx="2" fill="url(#doorGrad)" stroke="#c8cdd8" stroke-width="0.5"/>
+
+                <!-- Left edge shadow (gives depth) -->
+                <rect x="27" y="15" width="4" height="112" rx="0" fill="rgba(0,0,0,0.04)"/>
+
+                <!-- ── Top arch inset panel ── -->
+                <!-- Outer border -->
+                <rect x="35" y="22" width="60" height="44" rx="5" fill="none" stroke="#d0d5e2" stroke-width="1.5"/>
+                <!-- Inner fill with gloss -->
+                <rect x="37" y="24" width="56" height="40" rx="4" fill="url(#insetTopGrad)"/>
+                <!-- Inset inner shadow bottom -->
+                <rect x="37" y="58" width="56" height="6" rx="0" fill="rgba(160,170,190,0.12)"/>
+                <!-- Decorative inner line top -->
+                <rect x="40" y="27" width="50" height="1" rx="0.5" fill="rgba(180,195,220,0.6)"/>
+                <rect x="40" y="28" width="50" height="1" rx="0.5" fill="rgba(255,255,255,0.8)"/>
+
+                <!-- ── Bottom inset panel ── -->
+                <rect x="35" y="72" width="60" height="46" rx="5" fill="none" stroke="#d0d5e2" stroke-width="1.5"/>
+                <rect x="37" y="74" width="56" height="42" rx="4" fill="url(#insetTopGrad)"/>
+                <rect x="37" y="110" width="56" height="6" rx="0" fill="rgba(160,170,190,0.12)"/>
+                <rect x="40" y="77" width="50" height="1" rx="0.5" fill="rgba(180,195,220,0.6)"/>
+                <rect x="40" y="78" width="50" height="1" rx="0.5" fill="rgba(255,255,255,0.8)"/>
+
+                <!-- Divider line between panels -->
+                <line x1="35" y1="68" x2="95" y2="68" stroke="#dde2ed" stroke-width="1"/>
+
+                <!-- ── Knob assembly ── -->
+                <!-- Backplate -->
+                <rect x="88" y="59" width="10" height="22" rx="5" fill="#e2e6ef" stroke="#c8cdd8" stroke-width="0.8"/>
+                <!-- Knob rim -->
+                <circle cx="93" cy="70" r="6.5" fill="url(#rimGrad)"/>
+                <!-- Knob face -->
+                <circle id="doorKnobGlow" cx="93" cy="70" r="5" fill="url(#knobGrad)"/>
+                <!-- Knob specular highlight -->
+                <ellipse cx="91" cy="68" rx="1.8" ry="1.2" fill="rgba(255,255,255,0.75)" transform="rotate(-30,91,68)"/>
+                <!-- Keyhole -->
+                <ellipse cx="93" cy="72" rx="1.2" ry="1.6" fill="rgba(100,80,10,0.35)"/>
+
+                <!-- ── Hinges ── -->
+                <!-- Top hinge -->
+                <rect x="27" y="24" width="6" height="14" rx="3" fill="url(#hingeGrad)" stroke="#b8c0d0" stroke-width="0.5"/>
+                <circle cx="30" cy="27" r="1.8" fill="#d8e0f0"/>
+                <circle cx="30" cy="35" r="1.8" fill="#d8e0f0"/>
+                <circle cx="30" cy="31" r="0.8" fill="#9aa3b8"/>
+
+                <!-- Middle hinge -->
+                <rect x="27" y="60" width="6" height="14" rx="3" fill="url(#hingeGrad)" stroke="#b8c0d0" stroke-width="0.5"/>
+                <circle cx="30" cy="63" r="1.8" fill="#d8e0f0"/>
+                <circle cx="30" cy="71" r="1.8" fill="#d8e0f0"/>
+                <circle cx="30" cy="67" r="0.8" fill="#9aa3b8"/>
+
+                <!-- Bottom hinge -->
+                <rect x="27" y="96" width="6" height="14" rx="3" fill="url(#hingeGrad)" stroke="#b8c0d0" stroke-width="0.5"/>
+                <circle cx="30" cy="99" r="1.8" fill="#d8e0f0"/>
+                <circle cx="30" cy="107" r="1.8" fill="#d8e0f0"/>
+                <circle cx="30" cy="103" r="0.8" fill="#9aa3b8"/>
+
+                <!-- Panel top gloss sheen -->
+                <rect x="27" y="15" width="76" height="18" rx="2" fill="rgba(255,255,255,0.28)"/>
+            </g>
+        </svg>
+        </div>
+
         <h3 style="font-size:20px;font-weight:700;color:#2C3E50;margin-bottom:8px;">
             Déconnexion
         </h3>
@@ -42,17 +322,16 @@
             Êtes-vous sûr de vouloir vous déconnecter de votre espace MindBloom ?
         </p>
         <div style="display:flex;gap:12px;justify-content:center;">
-            <button onclick="document.getElementById('logoutModal').style.display='none'"
+            <button onclick="closeLogoutModal()"
                     style="flex:1;padding:12px;border:1.5px solid #E0E0E0;border-radius:10px;
                            background:white;color:#2C3E50;font-size:14px;font-weight:600;cursor:pointer;">
                 Annuler
             </button>
-            <a id="logoutConfirmBtn" data-logout-confirm href="{{ path('app_logout') }}"
-               style="flex:1;padding:12px;background:#e74c3c;border-radius:10px;
-                      color:white;font-size:14px;font-weight:600;text-decoration:none;
-                      display:flex;align-items:center;justify-content:center;">
+            <button onclick="confirmLogout()"
+                    style="flex:1;padding:12px;background:#e74c3c;border:none;border-radius:10px;
+                           color:white;font-size:14px;font-weight:600;cursor:pointer;">
                 Se déconnecter
-            </a>
+            </button>
         </div>
     </div>
 </div>
@@ -60,17 +339,39 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 {% block javascripts %}{% endblock %}
 <script>
-    // Logout modal
     const logoutUrl = "{{ path('app_logout') }}";
     const logoutModal = document.getElementById('logoutModal');
+    const logoutModalBox = document.getElementById('logoutModalBox');
+
+    function openLogoutModal() {
+        // Reset: door closed, modal hidden
+        logoutModal.classList.remove('modal-visible', 'door-open');
+        logoutModal.style.display = 'flex';
+        // Trigger entrance animation on next frame
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            logoutModal.classList.add('modal-visible');
+        }));
+    }
+
+    function closeLogoutModal() {
+        logoutModal.classList.remove('modal-visible');
+        setTimeout(() => { logoutModal.style.display = 'none'; }, 220);
+    }
+
+    function confirmLogout() {
+        logoutModal.classList.add('door-open');
+        setTimeout(() => { window.location.href = logoutUrl; }, 580);
+    }
+
     document.querySelectorAll('a[href="' + logoutUrl + '"]:not([data-logout-confirm])').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            logoutModal.style.display = 'flex';
+            openLogoutModal();
         });
     });
+
     logoutModal.addEventListener('click', function(e) {
-        if (e.target === logoutModal) logoutModal.style.display = 'none';
+        if (e.target === logoutModal) closeLogoutModal();
     });
 
     // Flash auto-hide

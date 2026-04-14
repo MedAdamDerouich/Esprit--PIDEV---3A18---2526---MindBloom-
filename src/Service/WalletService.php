@@ -48,14 +48,20 @@ class WalletService
         $this->em->flush();
     }
 
-    public function deduct(User $user, float $amount, string $description = 'Paiement'): bool
+    /**
+     * Deduct amount from wallet.
+     * Returns null on success, or an error string on failure:
+     *   'suspended'   — wallet is INACTIVE
+     *   'insufficient'— not enough balance
+     */
+    public function deduct(User $user, float $amount, string $description = 'Paiement'): ?string
     {
         $wallet = $this->getWallet($user);
         if (!$wallet || !$wallet->isActive()) {
-            return false;
+            return 'suspended';
         }
         if ($wallet->getBalance() < $amount) {
-            return false;
+            return 'insufficient';
         }
 
         $wallet->setBalance($wallet->getBalance() - $amount);
@@ -69,7 +75,7 @@ class WalletService
         $this->em->persist($tx);
         $this->em->flush();
 
-        return true;
+        return null;
     }
 
     public function getTransactions(User $user): array

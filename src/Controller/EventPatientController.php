@@ -47,7 +47,9 @@ class EventPatientController extends AbstractController
         Request $request,
         Event $event,
         ParticipationRepository $participationRepo,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        \App\Service\ParticipationEmailService $emailService,
+        \App\Service\WalletService $walletService
     ): Response {
         $user = $this->getUser();
 
@@ -69,18 +71,34 @@ class EventPatientController extends AbstractController
             return $this->redirectToRoute('app_patient_event_show', ['id' => $event->getId()]);
         }
 
+        // Déduire le solde du Wallet si l'événement est payant
+        $prix = $event->getPrix() ?? 0.0;
+        if ($prix > 0) {
+            $deductError = $walletService->deduct($user, $prix, 'Paiement événement : ' . $event->getTitre());
+            if ($deductError === 'suspended') {
+                $this->addFlash('error', '❌ Votre portefeuille MindBloom est suspendu.');
+                return $this->redirectToRoute('app_patient_event_show', ['id' => $event->getId()]);
+            } elseif ($deductError === 'insufficient') {
+                $this->addFlash('error', '❌ Solde insuffisant pour participer à cet événement (' . number_format($prix, 2) . ' DT nécessaires).');
+                return $this->redirectToRoute('app_patient_event_show', ['id' => $event->getId()]);
+            }
+        }
+
         // Créer la participation
         $participation = new Participation();
         $participation->setEvenement($event);
         $participation->setUser($user);
         $participation->setStatut(Participation::STATUT_INSCRIT);
 
-        // QR Code désactivé (colonne non présente dans la base)
-        // $qrCode = 'QR-' . strtoupper(substr(md5(uniqid()), 0, 10));
-        // $participation->setQrCode($qrCode);
-
         $em->persist($participation);
         $em->flush();
+
+        // Envoi de l'email de confirmation (avec PDF)
+        try {
+            $emailService->sendParticipationConfirmation($participation);
+        } catch (\Throwable $e) {
+            $this->addFlash('warning', '⚠️ L\'inscription est confirmée mais l\'email n\'a pas pu être envoyé.');
+        }
 
         $this->addFlash('success', '🎉 Inscription confirmée! Vous participez à "' . $event->getTitre() . '"');
         return $this->redirectToRoute('app_patient_event_my_participations');
@@ -102,7 +120,8 @@ class EventPatientController extends AbstractController
         Request $request,
         Event $event,
         ParticipationRepository $participationRepo,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        \App\Service\WalletService $walletService
     ): Response {
         $user = $this->getUser();
 
@@ -119,11 +138,26 @@ class EventPatientController extends AbstractController
             return $this->redirectToRoute('app_patient_event_my_participations');
         }
 
+        // Remboursement si l'événement n'a pas encore commencé
+        $prix = $event->getPrix() ?? 0.0;
+        $now = new \DateTime();
+        $isRefunded = false;
+        
+        if ($prix > 0 && $event->getDateDebut() > $now) {
+            $walletService->recharge($user, $prix, 'Remboursement annulation : ' . $event->getTitre());
+            $isRefunded = true;
+        }
+
         // Supprimer la participation
         $em->remove($participation);
         $em->flush();
 
-        $this->addFlash('success', '✅ Votre participation à "' . $event->getTitre() . '" a été annulée.');
+        if ($isRefunded) {
+            $this->addFlash('success', '✅ Votre participation a été annulée et ' . number_format($prix, 2) . ' DT ont été remboursés sur votre portefeuille.');
+        } else {
+            $this->addFlash('success', '✅ Votre participation à "' . $event->getTitre() . '" a été annulée.');
+        }
+        
         return $this->redirectToRoute('app_patient_event_my_participations');
     }
 }

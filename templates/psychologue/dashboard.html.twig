@@ -1,92 +1,346 @@
 {% extends 'base.html.twig' %}
 {% block title %}Espace Psychologue — MindBloom{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* ── Page ── */
+.psydash-page {
+    background: #F0EDE8;
+    min-height: calc(100vh - 70px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 20px 80px;
+    gap: 12px;
+    perspective: 1200px;
+}
+
+/* ── Header text entrance ── */
+.psydash-title {
+    font-size: 36px;
+    font-weight: 800;
+    color: #2C3E50;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: psyFadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s forwards;
+    letter-spacing: -0.5px;
+}
+.psydash-sub {
+    font-size: 16px;
+    color: #9A9A9A;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: psyFadeUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.22s forwards;
+    margin-bottom: 20px;
+}
+@keyframes psyFadeUp {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Grid ── */
+.psydash-grid {
+    display: grid;
+    grid-template-columns: 340px 340px;
+    gap: 28px;
+}
+
+/* ── Card wrapper (handles 3D tilt) ── */
+.psydash-card-wrap {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+    animation: psyCardIn 0.65s cubic-bezier(0.22,1,0.36,1) forwards;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    cursor: pointer;
+    /* 3D perspective per card */
+    perspective: 800px;
+}
+.psydash-card-wrap:nth-child(1) { animation-delay: 0.30s; }
+.psydash-card-wrap:nth-child(2) { animation-delay: 0.42s; }
+.psydash-card-wrap:nth-child(3) { animation-delay: 0.54s; }
+.psydash-card-wrap:nth-child(4) { animation-delay: 0.66s; }
+
+@keyframes psyCardIn {
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Card inner (the element that actually tilts) ── */
+.psydash-card {
+    background: white;
+    border-radius: 20px;
+    padding: 28px 24px;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transform: rotateX(0deg) rotateY(0deg) translateZ(0);
+    transition:
+        transform 0.12s ease-out,
+        box-shadow 0.2s ease;
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.07),
+        0 1px 3px rgba(0,0,0,0.05);
+    will-change: transform;
+}
+
+/* Hover lift + deeper shadow */
+.psydash-card-wrap:hover .psydash-card {
+    box-shadow:
+        0 24px 48px rgba(0,0,0,0.13),
+        0 8px 16px rgba(0,0,0,0.08),
+        0 0 0 1px rgba(111,191,155,0.12);
+}
+
+/* Shine overlay */
+.psydash-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.55) 0%,
+        rgba(255,255,255,0) 60%
+    );
+    border-radius: 20px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 1;
+}
+.psydash-card-wrap:hover .psydash-card::before {
+    opacity: 1;
+}
+
+/* Decorative corner accent */
+.psydash-card::after {
+    content: '';
+    position: absolute;
+    bottom: -30px;
+    right: -30px;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(111,191,155,0.10) 0%, transparent 70%);
+    pointer-events: none;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    opacity: 0.5;
+}
+.psydash-card-wrap:hover .psydash-card::after {
+    transform: scale(1.5);
+    opacity: 1;
+}
+
+/* ── Icon box ── */
+.psydash-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(111,191,155,0.13);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    transform: translateZ(20px);
+    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), background 0.2s ease;
+    position: relative;
+    z-index: 2;
+}
+.psydash-card-wrap:hover .psydash-icon {
+    transform: translateZ(36px) scale(1.15) rotate(-4deg);
+    background: rgba(111,191,155,0.22);
+}
+
+/* ── Card title ── */
+.psydash-card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #2C3E50;
+    transform: translateZ(12px);
+    transition: transform 0.15s ease, color 0.15s ease;
+    position: relative;
+    z-index: 2;
+}
+.psydash-card-wrap:hover .psydash-card-title {
+    transform: translateZ(24px);
+    color: #1a2e40;
+}
+
+/* ── Card description ── */
+.psydash-card-desc {
+    color: #9A9A9A;
+    font-size: 14px;
+    line-height: 1.55;
+    transform: translateZ(6px);
+    transition: transform 0.15s ease;
+    position: relative;
+    z-index: 2;
+}
+.psydash-card-wrap:hover .psydash-card-desc {
+    transform: translateZ(14px);
+}
+
+/* ── Arrow indicator ── */
+.psydash-arrow {
+    position: absolute;
+    bottom: 20px;
+    right: 22px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(111,191,155,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateZ(16px) translateX(-6px);
+    transition:
+        opacity 0.2s ease,
+        transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 2;
+}
+.psydash-arrow svg {
+    color: #6FBF9B;
+}
+.psydash-card-wrap:hover .psydash-arrow {
+    opacity: 1;
+    transform: translateZ(16px) translateX(0);
+}
+</style>
+{% endblock %}
+
 {% block body %}
+<div class="psydash-page">
 
+    <span class="psydash-title">Bienvenue sur MindBloom</span>
+    <span class="psydash-sub">Gérez votre activité de psychologue en toute sérénité.</span>
 
-
-{# ── CENTER ── #}
-<div style="background:#F5F3EF;min-height:calc(100vh - 70px);
-            display:flex;flex-direction:column;align-items:center;
-            padding-top:40px;gap:30px;">
-
-    <span style="font-size:36px;font-weight:700;color:#2C3E50;">Bienvenue sur MindBloom</span>
-
-    <span style="font-size:16px;color:#8E8E8E;">
-        Gérez votre activité de psychologue en toute sérénité.
-    </span>
-
-    {# 2×2 cards grid #}
-    <div style="display:grid;grid-template-columns:330px 330px;gap:30px;">
+    <div class="psydash-grid">
 
         {# Card 1 — Cabinet #}
-        <a href="{{ path('app_cabinet') }}" style="text-decoration:none; color:inherit; display:block;">
-            <div style="background:white;border-radius:15px;padding:20px;height:100%;min-height:150px;
-                        box-shadow:0 4px 10px rgba(0,0,0,0.08);cursor:pointer;
-                        display:flex;flex-direction:column;gap:15px;box-sizing:border-box;">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <div style="width:40px;height:40px;background:rgba(111,191,155,0.15);
-                                 border-radius:10px;display:flex;align-items:center;
-                                 justify-content:center;font-size:18px;flex-shrink:0;">🏢</div>
-                    <span style="font-size:18px;font-weight:700;color:#2C3E50;">Gérer mon Cabinet</span>
+        <a href="{{ path('app_cabinet') }}" class="psydash-card-wrap">
+            <div class="psydash-card" data-tilt>
+                <div style="display:flex;align-items:center;gap:14px;">
+                    <div class="psydash-icon">🏢</div>
+                    <span class="psydash-card-title">Gérer mon Cabinet</span>
                 </div>
-                <span style="color:#8E8E8E;font-size:14px;line-height:1.5;">
+                <span class="psydash-card-desc">
                     Ajouter ou modifier les informations de votre cabinet
                 </span>
+                <div class="psydash-arrow">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                </div>
             </div>
         </a>
 
         {# Card 2 — Créneaux #}
-        <a href="{{ path('app_creneau_index') }}" style="text-decoration:none; color:inherit; display:block;">
-            <div style="background:white;border-radius:15px;padding:20px;height:100%;min-height:150px;
-                        box-shadow:0 4px 10px rgba(0,0,0,0.08);cursor:pointer;
-                        display:flex;flex-direction:column;gap:15px;box-sizing:border-box;">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <div style="width:40px;height:40px;background:rgba(111,191,155,0.15);
-                                 border-radius:10px;display:flex;align-items:center;
-                                 justify-content:center;font-size:18px;flex-shrink:0;">📅</div>
-                    <span style="font-size:18px;font-weight:700;color:#2C3E50;">Gérer mes Créneaux</span>
+        <a href="{{ path('app_creneau_index') }}" class="psydash-card-wrap">
+            <div class="psydash-card" data-tilt>
+                <div style="display:flex;align-items:center;gap:14px;">
+                    <div class="psydash-icon">📅</div>
+                    <span class="psydash-card-title">Gérer mes Créneaux</span>
                 </div>
-                <span style="color:#8E8E8E;font-size:14px;line-height:1.5;">
+                <span class="psydash-card-desc">
                     Planifier et organiser vos disponibilités
                 </span>
+                <div class="psydash-arrow">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                </div>
             </div>
         </a>
 
         {# Card 3 — Réservations #}
-        <a href="{{ path('app_reservation_index') }}" style="text-decoration:none; color:inherit; display:block;">
-            <div style="background:white;border-radius:15px;padding:20px;height:100%;min-height:150px;
-                        box-shadow:0 4px 10px rgba(0,0,0,0.08);cursor:pointer;
-                        display:flex;flex-direction:column;gap:15px;box-sizing:border-box;">
-                <div style="display:flex;align-items:center;gap:12px;">
-                    <div style="width:40px;height:40px;background:rgba(111,191,155,0.15);
-                                 border-radius:10px;display:flex;align-items:center;
-                                 justify-content:center;font-size:18px;flex-shrink:0;">📋</div>
-                    <span style="font-size:18px;font-weight:700;color:#2C3E50;">Voir mes Réservations</span>
+        <a href="{{ path('app_reservation_index') }}" class="psydash-card-wrap">
+            <div class="psydash-card" data-tilt>
+                <div style="display:flex;align-items:center;gap:14px;">
+                    <div class="psydash-icon">📋</div>
+                    <span class="psydash-card-title">Voir mes Réservations</span>
                 </div>
-                <span style="color:#8E8E8E;font-size:14px;line-height:1.5;">
+                <span class="psydash-card-desc">
                     Consulter les rendez-vous à venir
                 </span>
+                <div class="psydash-arrow">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                </div>
             </div>
         </a>
 
         {# Card 4 — Tests #}
-        <div onclick="window.location.href='{{ path('app_test_manage') }}';"
-             style="background:white;border-radius:15px;padding:20px;min-height:150px;
-                    box-shadow:0 4px 10px rgba(0,0,0,0.08);cursor:pointer;
-                    display:flex;flex-direction:column;gap:15px;">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <div style="width:40px;height:40px;background:rgba(111,191,155,0.15);
-                             border-radius:10px;display:flex;align-items:center;
-                             justify-content:center;font-size:18px;flex-shrink:0;">📝</div>
-                <span style="font-size:18px;font-weight:700;color:#2C3E50;">Gérer Tests Autoévaluation</span>
+        <a href="{{ path('app_test_manage') }}" class="psydash-card-wrap">
+            <div class="psydash-card" data-tilt>
+                <div style="display:flex;align-items:center;gap:14px;">
+                    <div class="psydash-icon">📝</div>
+                    <span class="psydash-card-title">Gérer Tests Autoévaluation</span>
+                </div>
+                <span class="psydash-card-desc">
+                    Créer et gérer vos tests pour patients
+                </span>
+                <div class="psydash-arrow">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                </div>
             </div>
-            <span style="color:#8E8E8E;font-size:14px;line-height:1.5;">
-                Créer et gérer vos tests pour patients
-            </span>
-        </div>
+        </a>
 
     </div>
 </div>
+{% endblock %}
 
+{% block javascripts %}
+{{ parent() }}
+<script>
+(function () {
+    /* 3D tilt engine — runs on every [data-tilt] card */
+    var MAX_TILT = 12; // degrees
+    var MAX_LIFT = 18; // px translateZ
+
+    document.querySelectorAll('[data-tilt]').forEach(function (card) {
+        var wrap = card.parentElement;
+
+        wrap.addEventListener('mousemove', function (e) {
+            var r   = card.getBoundingClientRect();
+            var cx  = r.left + r.width  / 2;
+            var cy  = r.top  + r.height / 2;
+            var dx  = (e.clientX - cx) / (r.width  / 2); // -1 … +1
+            var dy  = (e.clientY - cy) / (r.height / 2); // -1 … +1
+
+            var rotX = -dy * MAX_TILT;
+            var rotY =  dx * MAX_TILT;
+
+            card.style.transition = 'transform 0.08s ease-out, box-shadow 0.15s ease';
+            card.style.transform  =
+                'perspective(800px)' +
+                ' rotateX(' + rotX + 'deg)' +
+                ' rotateY(' + rotY + 'deg)' +
+                ' translateZ(' + MAX_LIFT + 'px)';
+        });
+
+        wrap.addEventListener('mouseleave', function () {
+            card.style.transition = 'transform 0.55s cubic-bezier(0.22,1,0.36,1), box-shadow 0.4s ease';
+            card.style.transform  = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(0)';
+        });
+
+        /* Click ripple feedback */
+        wrap.addEventListener('mousedown', function () {
+            card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(4px) scale(0.97)';
+        });
+        wrap.addEventListener('mouseup', function () {
+            card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(' + MAX_LIFT + 'px)';
+        });
+    });
+})();
+</script>
 {% endblock %}

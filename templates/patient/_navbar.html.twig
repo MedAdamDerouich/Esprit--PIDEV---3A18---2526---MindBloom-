@@ -1,4 +1,193 @@
 {# ── Patient Shared Navbar — shared across all patient templates ── #}
+<style>
+/* ── Nav link animations ── */
+@keyframes pnav-ripple {
+    0%   { transform: scale(0); opacity: 0.5; }
+    100% { transform: scale(2.5); opacity: 0; }
+}
+
+.pnav-link {
+    position: relative;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none !important;
+    color: #2C3E50 !important;
+    padding: 8px 14px !important;
+    border-radius: 10px;
+    overflow: hidden;
+    display: inline-flex !important;
+    align-items: center;
+    transition: color 0.22s ease,
+                background 0.22s ease,
+                transform 0.22s cubic-bezier(0.34,1.56,0.64,1),
+                box-shadow 0.22s ease !important;
+}
+
+/* ANIMATION 1 — Solid pill background fills in */
+.pnav-link:hover {
+    color: #4A90E2 !important;
+    background: rgba(74,144,226,0.10) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 6px 18px rgba(74,144,226,0.18) !important;
+}
+
+/* ANIMATION 2 — Underline bar slides up from bottom */
+.pnav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 14px;
+    right: 14px;
+    height: 3px;
+    background: #4A90E2;
+    border-radius: 3px 3px 0 0;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.pnav-link:hover::after,
+.pnav-link.active::after {
+    transform: scaleX(1);
+}
+
+/* ANIMATION 3 — Ripple on click */
+.pnav-link::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(74,144,226,0.25);
+    transform: scale(0);
+    opacity: 0;
+    pointer-events: none;
+}
+.pnav-link:active::before {
+    animation: pnav-ripple 0.45s ease-out forwards;
+}
+
+/* Active state */
+.pnav-link.active {
+    color: #4A90E2 !important;
+    background: rgba(74,144,226,0.08) !important;
+}
+
+/* ── Right-side icon buttons ── */
+.pnav-icon-btn {
+    background: #EFEFEF;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 15px;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1),
+                background 0.2s ease,
+                box-shadow 0.2s ease;
+}
+.pnav-icon-btn:hover {
+    transform: translateY(-4px) scale(1.15);
+    background: #E0E0E0;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+/* ── Wallet badge hover ── */
+.pnav-wallet {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #EDF9F5;
+    border-radius: 20px;
+    padding: 8px 15px;
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1),
+                box-shadow 0.2s ease,
+                background 0.2s ease;
+    cursor: default;
+}
+.pnav-wallet:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(95,191,159,0.25);
+    background: #D8F5EC;
+}
+.pnav-wallet-plus {
+    background: #5FBF9F;
+    color: white;
+    border-radius: 15px;
+    padding: 5px 12px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), background 0.2s ease;
+}
+.pnav-wallet-plus:hover {
+    transform: scale(1.15);
+    background: #4AAD8C;
+}
+
+/* ── Profile pill hover ── */
+.pnav-profile-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #F8F9FA;
+    border-radius: 25px;
+    padding: 6px 15px 6px 8px;
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1),
+                box-shadow 0.2s ease,
+                background 0.2s ease;
+    cursor: default;
+}
+.pnav-profile-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(74,144,226,0.2);
+    background: #EEF4FC;
+}
+
+/* ── Mon Profil button ── */
+.pnav-btn-profile {
+    color: white;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-block;
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1),
+                box-shadow 0.2s ease,
+                filter 0.2s ease;
+}
+.pnav-btn-profile:hover {
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 8px 20px rgba(74,144,226,0.4);
+    filter: brightness(1.1);
+    color: white;
+}
+
+/* ── Logout button ── */
+.pnav-btn-logout {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1),
+                box-shadow 0.2s ease,
+                background 0.2s ease;
+}
+.pnav-btn-logout:hover {
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 8px 20px rgba(231,76,60,0.4);
+    background: #c0392b;
+}
+</style>
+
 <header style="background:white;height:80px;padding:0 50px;display:flex;align-items:center;
                gap:30px;box-shadow:0 5px 10px rgba(0,0,0,0.05);position:sticky;top:0;z-index:1000;">
 
@@ -12,49 +201,39 @@
     {# Navigation links — centered #}
     <nav style="flex:1;display:flex;justify-content:center;gap:25px;align-items:center;">
         <a href="{{ path('app_patient_dashboard') }}"
-           style="font-size:14px;text-decoration:none;font-weight:500;padding-bottom:2px;
-                  {% if active_nav == 'home' %}color:#4A90E2;border-bottom:2px solid #4A90E2;{% else %}color:#2C3E50;{% endif %}">Accueil</a>
-        
+           class="pnav-link {% if active_nav == 'home' %}active{% endif %}">Accueil</a>
+
         <a href="{{ path('app_produit_index') }}"
-           style="font-size:14px;text-decoration:none;font-weight:500;padding-bottom:2px;
-                  {% if active_nav == 'produits' %}color:#4A90E2;border-bottom:2px solid #4A90E2;{% else %}color:#2C3E50;{% endif %}">Produits</a>
-        
+           class="pnav-link {% if active_nav == 'produits' %}active{% endif %}">Produits</a>
+
         <a href="{{ path('app_patient_cabinets_index') }}"
-           style="font-size:14px;text-decoration:none;font-weight:500;padding-bottom:2px;
-                  {% if active_nav == 'rendezvous' %}color:#4A90E2;border-bottom:2px solid #4A90E2;{% else %}color:#2C3E50;{% endif %}">Rendez-vous</a>
-        
-        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Tests</a>
-        <a href="#" style="font-size:14px;color:#2C3E50;text-decoration:none;">Événements</a>
-        
+           class="pnav-link {% if active_nav == 'rendezvous' %}active{% endif %}">Rendez-vous</a>
+
+        <a href="#" class="pnav-link">Tests</a>
+        <a href="#" class="pnav-link">Événements</a>
+
         <a href="{{ path('app_patient_reservations') }}"
-           style="font-size:14px;text-decoration:none;font-weight:500;padding-bottom:2px;
-                  {% if active_nav == 'reservations' %}color:#4A90E2;border-bottom:2px solid #4A90E2;{% else %}color:#2C3E50;{% endif %}">Mes Réservations</a>
+           class="pnav-link {% if active_nav == 'reservations' %}active{% endif %}">Mes Réservations</a>
     </nav>
 
     {# Right actions #}
     <div style="display:flex;align-items:center;gap:20px;flex-shrink:0;">
 
         {# Factures #}
-        <a href="#" style="background:#E8E8E8;border:none;border-radius:10px;padding:10px 15px;
-                       font-size:20px;cursor:pointer;line-height:1;text-decoration:none;" title="Mes Factures">🧾</a>
+        <a href="#" class="pnav-icon-btn" title="Mes Factures">🧾</a>
 
         {# Cart #}
-        <a href="#" style="background:#E8E8E8;border:none;border-radius:10px;padding:10px 15px;
-                       font-size:20px;cursor:pointer;line-height:1;text-decoration:none;" title="Mon Panier">🛒</a>
+        <a href="#" class="pnav-icon-btn" title="Mon Panier">🛒</a>
 
         {# Wallet badge #}
-        <div style="display:flex;align-items:center;gap:8px;background:#EDF9F5;
-                    border-radius:20px;padding:8px 15px;">
+        <div class="pnav-wallet">
             <span style="font-size:16px;">💳</span>
             <span style="font-size:14px;font-weight:700;color:#5FBF9F;">0.00 TND</span>
-            <a href="{{ path('app_wallet') }}"
-               style="background:#5FBF9F;color:white;border-radius:15px;padding:5px 12px;
-                      text-decoration:none;font-size:12px;font-weight:700;line-height:1;">+</a>
+            <a href="{{ path('app_wallet') }}" class="pnav-wallet-plus">+</a>
         </div>
 
         {# Profile pill #}
-        <div style="display:flex;align-items:center;gap:10px;background:#F8F9FA;
-                    border-radius:25px;padding:6px 15px 6px 8px;">
+        <div class="pnav-profile-pill">
             <div style="width:40px;height:40px;border-radius:50%;border:2px solid #4A90E2;
                         background:white;display:flex;align-items:center;justify-content:center;
                         overflow:hidden;flex-shrink:0;">
@@ -71,16 +250,14 @@
             </div>
         </div>
 
-        {# Modifier button #}
+        {# Mon Profil button #}
         <a href="{{ path('app_profile') }}"
-           style="background:{% if active_nav is defined and active_nav == 'profile' %}#2563EB{% else %}#4A90E2{% endif %};
-                  color:white;border-radius:20px;padding:8px 18px;
-                  font-size:11px;font-weight:600;text-decoration:none;">Mon Profil</a>
+           class="pnav-btn-profile"
+           style="background:{% if active_nav is defined and active_nav == 'profile' %}#2563EB{% else %}#4A90E2{% endif %};">Mon Profil</a>
 
         {# Déconnexion #}
         <form method="post" action="{{ path('app_logout') }}" style="display:inline;">
-            <button type="submit" style="background:#e74c3c;color:white;border:none;border-radius:20px;padding:8px 18px;
-                      font-size:11px;font-weight:600;cursor:pointer;">Déconnexion</button>
+            <button type="submit" class="pnav-btn-logout">Déconnexion</button>
         </form>
     </div>
 </header>

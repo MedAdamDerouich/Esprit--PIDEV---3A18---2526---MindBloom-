@@ -5,6 +5,33 @@
 {% block admin_header %}Gestion des commandes{% endblock %}
 
 {% block admin_content %}
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 border-start border-success border-5">
+                <div class="card-body py-3">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success bg-opacity-10 text-success p-2 rounded-3 me-3">
+                            <i class="bi bi-currency-dollar fs-4"></i>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-0 small fw-bold text-uppercase">Chiffre d'Affaires Total</h6>
+                            <h4 class="mb-0 fw-bold">{{ totalValue|number_format(2, ',', ' ') }} <small>DT</small></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5 text-end d-flex align-items-center justify-content-end gap-2">
+            <form action="{{ path('app_admin_order_index') }}" method="GET" class="d-flex gap-2">
+                <input type="text" name="q" class="form-control rounded-pill px-3 shadow-sm" placeholder="ID, Patient ou Email..." value="{{ q }}">
+                <button type="submit" class="btn btn-outline-primary rounded-circle"><i class="bi bi-search"></i></button>
+            </form>
+            <a href="{{ path('app_admin_order_customers') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                <i class="bi bi-people-fill me-1"></i> Dépenses par Patient
+            </a>
+        </div>
+    </div>
+
     <!-- TABS Navigation -->
     <ul class="nav nav-pills mb-4 gap-2" id="orderTabs" role="tablist">
         <li class="nav-item" role="presentation">
@@ -15,6 +42,11 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill px-4 shadow-sm" id="shipped-tab" data-bs-toggle="pill" data-bs-target="#shipped" type="button" role="tab" aria-controls="shipped" aria-selected="false">
                 <i class="bi bi-truck me-1"></i> Expédiées
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4 shadow-sm" id="cancelled-tab" data-bs-toggle="pill" data-bs-target="#cancelled" type="button" role="tab" aria-controls="cancelled" aria-selected="false">
+                <i class="bi bi-x-circle me-1"></i> Annulées
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -31,6 +63,9 @@
         </div>
         <div class="tab-pane fade" id="shipped" role="tabpanel" aria-labelledby="shipped-tab">
             {{ include('admin/order/_table.html.twig', {'factures': factures|filter(f => f.statutLivraison == 'ENVOYE')}) }}
+        </div>
+        <div class="tab-pane fade" id="cancelled" role="tabpanel" aria-labelledby="cancelled-tab">
+            {{ include('admin/order/_table.html.twig', {'factures': factures|filter(f => f.statutLivraison == 'ANNULE')}) }}
         </div>
         <div class="tab-pane fade" id="all" role="tabpanel" aria-labelledby="all-tab">
             {{ include('admin/order/_table.html.twig', {'factures': factures}) }}

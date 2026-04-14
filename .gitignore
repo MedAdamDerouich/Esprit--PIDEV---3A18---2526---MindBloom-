@@ -8,4 +8,5 @@
 /var/
 /vendor/
 /.env
-###< symfony/framework-bundle ###
+/.claude
+/.vscode##< symfony/framework-bundle ###

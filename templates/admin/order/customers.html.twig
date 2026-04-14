@@ -1,0 +1,101 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Dépenses des Patients - MindBloom Admin{% endblock %}
+
+{% block admin_header %}Statistiques par Patient{% endblock %}
+
+{% block admin_content %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <p class="text-muted mb-0">Analysez les dépenses et l'engagement de chaque patient.</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="{{ path('app_admin_order_index') }}" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-arrow-left me-1"></i> Retour aux commandes
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body">
+                    <h6 class="text-muted small fw-bold text-uppercase mb-2">Patients Actifs</h6>
+                    <h4 class="mb-0 fw-bold">{{ customers|length }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white py-3 border-0">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <form action="{{ path('app_admin_order_customers') }}" method="GET" id="searchCustomersForm">
+                        <div class="input-group search-sort-wrapper w-100 shadow-none border rounded-pill overflow-hidden">
+                            <span class="input-group-text bg-white border-0"><i class="bi bi-search"></i></span>
+                            <input type="text" name="q" class="form-control border-0 px-2" placeholder="Nom ou email..." value="{{ q }}">
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-8 text-end">
+                    <form action="{{ path('app_admin_order_customers') }}" method="GET" id="sortCustomersForm" class="d-inline-block">
+                        <input type="hidden" name="q" value="{{ q }}">
+                        <select name="tri" class="form-select rounded-pill shadow-none" onchange="this.form.submit()">
+                            <option value="total_desc" {{ tri == 'total_desc' ? 'selected' }}>Total dépensé (Max)</option>
+                            <option value="total_asc" {{ tri == 'total_asc' ? 'selected' }}>Total dépensé (Min)</option>
+                            <option value="orders_desc" {{ tri == 'orders_desc' ? 'selected' }}>Nombre de commandes</option>
+                        </select>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-uppercase small font-weight-bold text-muted">
+                        <tr>
+                            <th class="ps-4 py-3 border-0">Patient</th>
+                            <th class="py-3 border-0">Commandes</th>
+                            <th class="py-3 border-0">Total Dépensé</th>
+                            <th class="py-3 border-0 text-center">Accès aux Commandes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in customers %}
+                        <tr>
+                            <td class="ps-4 py-4 border-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px; font-weight: bold;">
+                                        {{ item.user.fullName|first|upper }}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">{{ item.user.fullName }}</h6>
+                                        <small class="text-muted">{{ item.user.email }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="border-0">
+                                <span class="badge bg-light text-dark rounded-pill px-3">{{ item.orderCount }}</span>
+                            </td>
+                            <td class="border-0 fw-bold text-primary">
+                                {{ item.totalSpent|number_format(2, ',', ' ') }} DT
+                            </td>
+                            <td class="text-center border-0">
+                                <a href="{{ path('app_admin_order_index') }}?q={{ item.user.fullName }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    <i class="bi bi-eye me-1"></i> Voir commandes
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="py-5 text-center text-muted border-0">Aucun patient trouvé.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

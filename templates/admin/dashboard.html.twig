@@ -195,6 +195,8 @@
 }
 .rw-table tbody tr:last-child td { border-bottom: none; }
 .rw-table tbody tr:hover td { background: #FAFCFF; }
+.rw-table tbody tr.clickable-row { cursor: pointer; }
+.rw-table tbody tr.clickable-row:focus td { background: #FAFCFF; }
 
 .u-name { font-weight: 600; color: #1a1a2e; font-size: 13px; }
 .u-username { font-size: 11px; color: #bbb; }
@@ -280,7 +282,7 @@
         <div class="module-grid">
 
             <a href="{{ path('app_admin_produit_index') }}" class="mod-card">
-                <div class="mod-icon" style="background:#FFF3E0;">🛍️</div>
+                <div class="mod-icon" style="background:#FFF3E0;"><i class="bi bi-bag"></i></div>
                 <div class="mod-body">
                     <div class="mod-count" style="color:#E67E22;">{{ stats.produits }}</div>
                     <div class="mod-label">Produits</div>
@@ -288,7 +290,7 @@
             </a>
 
             <a href="#" class="mod-card">
-                <div class="mod-icon" style="background:#E8F5E9;">📅</div>
+                <div class="mod-icon" style="background:#E8F5E9;"><i class="bi bi-calendar-event"></i></div>
                 <div class="mod-body">
                     <div class="mod-count" style="color:#27ae60;">{{ stats.evenements }}</div>
                     <div class="mod-label">Événements</div>
@@ -296,7 +298,7 @@
             </a>
 
             <a href="{{ path('app_admin_cabinets') }}" class="mod-card">
-                <div class="mod-icon" style="background:#E3F2FD;">🏥</div>
+                <div class="mod-icon" style="background:#E3F2FD;"><i class="bi bi-hospital"></i></div>
                 <div class="mod-body">
                     <div class="mod-count" style="color:#4A90E2;">{{ stats.cabinets }}</div>
                     <div class="mod-label">Cabinets</div>
@@ -304,7 +306,7 @@
             </a>
 
             <a href="{{ path('app_admin_order_index') }}" class="mod-card">
-                <div class="mod-icon" style="background:#F3E5F5;">📦</div>
+                <div class="mod-icon" style="background:#F3E5F5;"><i class="bi bi-box-seam"></i></div>
                 <div class="mod-body">
                     <div class="mod-count" style="color:#8E44AD;">{{ stats.commandes }}</div>
                     <div class="mod-label">Commandes</div>
@@ -312,7 +314,7 @@
             </a>
 
             <a href="#" class="mod-card">
-                <div class="mod-icon" style="background:#E0F7FA;">📋</div>
+                <div class="mod-icon" style="background:#E0F7FA;"><i class="bi bi-clipboard-data"></i></div>
                 <div class="mod-body">
                     <div class="mod-count" style="color:#00ACC1;">{{ stats.tests }}</div>
                     <div class="mod-label">Tests</div>
@@ -320,7 +322,7 @@
             </a>
 
             <a href="{{ path('app_admin_wallets') }}" class="mod-card">
-                <div class="mod-icon" style="background:#E8F5E9;">💰</div>
+                <div class="mod-icon" style="background:#E8F5E9;"><i class="bi bi-wallet2"></i></div>
                 <div class="mod-body">
                     <div class="mod-count" style="color:#5FBF9F;">{{ stats.revenue }}</div>
                     <div class="mod-label">DT en wallets</div>
@@ -328,7 +330,7 @@
             </a>
 
             <a href="{{ path('app_admin_cabinets') }}" class="mod-card">
-                <div class="mod-icon" style="background:#FFF8E1;">📆</div>
+                <div class="mod-icon" style="background:#FFF8E1;"><i class="bi bi-calendar-check"></i></div>
                 <div class="mod-body">
                     <div class="mod-count" style="color:#F39C12;">{{ stats.reservations }}</div>
                     <div class="mod-label">Réservations</div>
@@ -336,7 +338,7 @@
             </a>
 
             <a href="{{ path('app_admin_users') }}" class="mod-card">
-                <div class="mod-icon" style="background:#FDECEA;">👥</div>
+                <div class="mod-icon" style="background:#FDECEA;"><i class="bi bi-people"></i></div>
                 <div class="mod-body">
                     <div class="mod-count" style="color:#E74C3C;">{{ stats.suspended }}</div>
                     <div class="mod-label">Comptes suspendus</div>
@@ -407,12 +409,14 @@
                         <th>Rôle</th>
                         <th>Statut</th>
                         <th>Inscrit le</th>
-                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for user in recentUsers ?? [] %}
-                    <tr>
+                    <tr class="clickable-row"
+                        onclick="window.location='{{ path('app_admin_user_show', {id: user.id}) }}'"
+                        tabindex="0"
+                        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location='{{ path('app_admin_user_show', {id: user.id}) }}';}">
                         <td>
                             <div class="d-flex align-items-center gap-2">
                                 <div class="mb-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">
@@ -448,15 +452,10 @@
                         <td style="color:#bbb;font-size:12px;">
                             {{ user.createdAt ? user.createdAt|date('d/m/Y') : '—' }}
                         </td>
-                        <td>
-                            <a href="{{ path('app_admin_user_show', {id: user.id}) }}" class="edit-link">
-                                Détails
-                            </a>
-                        </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" style="text-align:center;color:#ccc;padding:32px;font-size:13px;">
+                        <td colspan="5" style="text-align:center;color:#ccc;padding:32px;font-size:13px;">
                             Aucun utilisateur pour le moment.
                         </td>
                     </tr>

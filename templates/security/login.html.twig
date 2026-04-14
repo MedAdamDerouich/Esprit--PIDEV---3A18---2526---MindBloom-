@@ -1,154 +1,824 @@
 {% extends 'base.html.twig' %}
-{% block title %}Connexion — MindBloom{% endblock %}
+{% block title %}MindBloom — Authentification{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('css/auth.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/auth.css') }}?v=5">
+    <style>
+    html, body {
+      background: #F9F7F2 !important;
+      overflow: hidden !important;
+      width: 100vw !important;
+      height: 100vh !important;
+    }
+
+    /* ═══ LAYOUT ═══════════════════════════════════════════ */
+    .auth-root {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Nunito', 'Segoe UI', sans-serif;
+    }
+
+    /* ── Left botanical panel (fixed, always visible) ── */
+    .auth-left {
+      width: 44%;
+      min-width: 360px;
+      height: 100vh;
+      flex-shrink: 0;
+      position: relative;
+      background: linear-gradient(160deg, #EEF4FF 0%, #E8F5F0 45%, #F0EEFF 100%);
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      overflow: hidden;
+      transition: background 0.9s ease;
+    }
+
+    /* Ambient blobs */
+    .auth-left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 55% 45% at 85% 10%,  rgba(74,144,226,0.16) 0%,  transparent 55%),
+        radial-gradient(ellipse 45% 40% at 10% 90%,  rgba(95,191,159,0.16) 0%,  transparent 50%),
+        radial-gradient(ellipse 35% 35% at 50% 50%,  rgba(74,144,226,0.07) 0%,  transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+      animation: orbDrift 14s ease-in-out infinite alternate;
+    }
+    @keyframes orbDrift {
+      0%   { transform: translate(0,0) scale(1); }
+      33%  { transform: translate(6px,-10px) scale(1.02); }
+      66%  { transform: translate(-5px,7px) scale(0.98); }
+      100% { transform: translate(3px,-5px) scale(1.01); }
+    }
+
+    /* Bottom glow */
+    .auth-left::after {
+      content: '';
+      position: absolute;
+      bottom: -50px; left: 50%;
+      transform: translateX(-50%);
+      width: 320px; height: 180px;
+      background: radial-gradient(ellipse, rgba(95,191,159,0.22) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 1;
+      animation: bloomPulse 5s ease-in-out infinite;
+    }
+    @keyframes bloomPulse {
+      0%,100% { opacity:.7; transform: translateX(-50%) scale(1); }
+      50%      { opacity:1;  transform: translateX(-50%) scale(1.08); }
+    }
+
+    /* Left panel inner content */
+    .auth-left__inner {
+      position: relative;
+      z-index: 2;
+      padding: 48px 44px;
+      width: 100%; height: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ── Right form zone (clips the sliding cards) ── */
+    .auth-right {
+      flex: 1;
+      min-width: 0;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      background: #F9F7F2;
+    }
+
+    /* ── Two overlapping form cards ── */
+    .auth-form-card {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 48px;
+      overflow-y: auto;
+      transform: translateX(0);
+      opacity: 1;
+      transition:
+        transform 0.62s cubic-bezier(0.65, 0, 0.35, 1),
+        opacity   0.45s cubic-bezier(0.65, 0, 0.35, 1);
+      will-change: transform, opacity;
+      pointer-events: auto;
+    }
+
+    /* Register card starts off-screen to the right */
+    .auth-form-card--register {
+      transform: translateX(100%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ── When switching to register ── */
+    .auth-root.show-register .auth-form-card--login {
+      transform: translateX(-100%);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .auth-root.show-register .auth-form-card--register {
+      transform: translateX(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ── Botanical panel: subtle accent shift on register ── */
+    .auth-root.show-register .auth-left {
+      background: linear-gradient(160deg, #EDF7F2 0%, #E8F0F9 45%, #EEF7EE 100%);
+    }
+
+    /* ── Brand block ── */
+    .auth-brand-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+    }
+    .auth-brand-block img {
+      width: 90px; height: auto;
+      display: block;
+      filter: drop-shadow(0 4px 16px rgba(74,144,226,0.25));
+      animation: logoBreath 4.5s ease-in-out infinite;
+      will-change: transform, filter;
+    }
+    @keyframes logoBreath {
+      0%,100% { transform: translateY(0) scale(1);    filter: drop-shadow(0 4px 14px rgba(74,144,226,.22)); }
+      50%      { transform: translateY(-7px) scale(1.03); filter: drop-shadow(0 8px 24px rgba(74,144,226,.38)); }
+    }
+    .auth-brand-name {
+      font-size: 26px; font-weight: 800;
+      color: #2C3E50;
+      letter-spacing: -0.3px; line-height: 1;
+    }
+    .auth-brand-name em { font-style: italic; color: #4A90E2; }
+    .auth-brand-tagline { font-size: 12px; color: #7F8C8D; font-weight: 500; margin: 0; letter-spacing: .3px; }
+
+    /* ── Botanical SVG ── */
+    .auth-botanical {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      width: 100%;
+      position: relative;
+      margin: 12px 0;
+    }
+    .auth-botanical svg { width: 100%; max-width: 310px; height: auto; overflow: visible; }
+
+    /* Stem draw */
+    .stem-path {
+      stroke-dasharray: 500; stroke-dashoffset: 500;
+      animation: drawStem 2s cubic-bezier(.4,0,.2,1) forwards;
+    }
+    .stem-path:nth-child(2) { animation-delay: .3s; }
+    .stem-path:nth-child(3) { animation-delay: .6s; }
+    .stem-path:nth-child(4) { animation-delay: .75s; }
+    .stem-path:nth-child(5) { animation-delay: .85s; }
+    @keyframes drawStem { to { stroke-dashoffset: 0; } }
+
+    /* Leaves */
+    .leaf-shape {
+      transform-origin: center bottom;
+      opacity: 0; transform: scale(0) rotate(-30deg);
+      animation: leafUnfurl .8s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+    .leaf-1{animation-delay:.9s}.leaf-2{animation-delay:1.05s}.leaf-3{animation-delay:1.2s}
+    .leaf-4{animation-delay:1.35s}.leaf-5{animation-delay:1.5s}.leaf-6{animation-delay:1.65s}.leaf-7{animation-delay:1.8s}
+    @keyframes leafUnfurl {
+      0%  { opacity:0; transform:scale(0) rotate(-40deg); }
+      60% { opacity:1; }
+      100%{ opacity:1; transform:scale(1) rotate(0); }
+    }
+
+    /* Petals */
+    .petal { transform-origin:50% 100%; opacity:0; animation:petalBloom .6s cubic-bezier(.34,1.2,.64,1) forwards; }
+    .petal:nth-child(1){animation-delay:2.1s}.petal:nth-child(2){animation-delay:2.2s}
+    .petal:nth-child(3){animation-delay:2.3s}.petal:nth-child(4){animation-delay:2.4s}
+    .petal:nth-child(5){animation-delay:2.5s}.petal:nth-child(6){animation-delay:2.6s}
+    @keyframes petalBloom { 0%{opacity:0;transform:scale(0)} 100%{opacity:1;transform:scale(1)} }
+
+    /* Sway */
+    .plant-group { animation:plantSway 6s ease-in-out infinite; transform-origin:50% 100%; }
+    @keyframes plantSway { 0%,100%{transform:rotate(0)} 25%{transform:rotate(1deg)} 75%{transform:rotate(-.8deg)} }
+
+    /* Spores */
+    .spore { animation:sporeFloat linear infinite; opacity:0; }
+    .spore:nth-child(1){animation-duration:8s;animation-delay:2.6s}
+    .spore:nth-child(2){animation-duration:11s;animation-delay:3.3s}
+    .spore:nth-child(3){animation-duration:9s;animation-delay:4.1s}
+    .spore:nth-child(4){animation-duration:13s;animation-delay:2.9s}
+    .spore:nth-child(5){animation-duration:7s;animation-delay:5.1s}
+    @keyframes sporeFloat {
+      0%  { opacity:0;   transform:translateY(0) scale(.5); }
+      15% { opacity:.7; }
+      85% { opacity:.4; }
+      100%{ opacity:0;   transform:translateY(-150px) translateX(var(--dx,20px)) scale(1.2); }
+    }
+
+    /* ── Metrics bar ── */
+    .auth-metrics {
+      width: 100%;
+      display: flex; align-items: center;
+      background: rgba(255,255,255,0.75);
+      border: 1px solid rgba(74,144,226,0.12);
+      border-radius: 16px; padding: 18px 0;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 16px rgba(74,144,226,0.08);
+    }
+    .auth-metric { flex:1; text-align:center; }
+    .auth-metric__value { display:block; font-size:20px; font-weight:800; letter-spacing:-.5px; line-height:1; color:#4A90E2; }
+    .auth-metric:nth-child(3) .auth-metric__value { color:#5FBF9F; }
+    .auth-metric:nth-child(5) .auth-metric__value { color:#2563EB; }
+    .auth-metric__label { display:block; font-size:9px; color:#95A5A6; font-weight:700; margin-top:5px; text-transform:uppercase; letter-spacing:1px; }
+    .auth-metric__sep { width:1px; height:28px; background:#E0E0E0; flex-shrink:0; }
+
+    /* ── Card inner ── */
+    .auth-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 44px 40px;
+      width: 100%; max-width: 420px;
+      border: 1px solid #EAEAEA;
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,.03),
+        0 4px 20px rgba(0,0,0,.06),
+        0 20px 50px rgba(74,144,226,.07);
+    }
+    .auth-card--wide { max-width: 520px; padding: 40px 38px; }
+
+    .auth-card__header { margin-bottom: 28px; }
+    .auth-card__header h2 { font-size:28px; font-weight:800; color:#2C3E50; letter-spacing:-.4px; margin:0 0 6px; line-height:1.15; }
+    .auth-card__header h2 em { font-style:italic; color:#4A90E2; }
+    .auth-card__header p { font-size:13px; color:#7F8C8D; margin:0; font-weight:500; }
+
+    /* ── Fields ── */
+    .auth-field { margin-bottom: 18px; }
+    .auth-field label { display:block; font-size:11px; font-weight:700; color:#2C3E50; margin-bottom:6px; text-transform:uppercase; letter-spacing:.6px; }
+
+    .auth-input-wrap { position:relative; display:flex; align-items:center; }
+    .auth-input-icon { position:absolute; left:14px; color:#b0bec5; pointer-events:none; flex-shrink:0; transition:color .2s; }
+
+    .auth-input {
+      width:100%; background:#F8F9FA;
+      border: 1.5px solid #DEE2E6;
+      border-radius: 11px;
+      padding: 13px 14px 13px 42px;
+      font-size:14px; font-family:'Nunito','Segoe UI',sans-serif;
+      font-weight:500; color:#2C3E50;
+      transition: border-color .2s, box-shadow .2s, background .2s, transform .18s;
+      outline: none;
+    }
+    .auth-input::placeholder { color:#95A5A6; font-weight:400; }
+    .auth-input:hover { border-color:#c8d6e5; }
+    .auth-input:focus {
+      border-color:#4A90E2; background:#fff;
+      box-shadow: 0 0 0 3px rgba(74,144,226,.12);
+      transform: translateY(-1px);
+    }
+    .auth-input-wrap:focus-within .auth-input-icon { color:#4A90E2; }
+    .auth-field .auth-input:not(.auth-input-wrap .auth-input) { padding-left:14px; }
+
+    .auth-options { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .auth-checkbox { display:flex; align-items:center; gap:7px; font-size:13px; color:#7F8C8D; cursor:pointer; user-select:none; font-weight:500; }
+    .auth-checkbox input[type="checkbox"] { width:15px; height:15px; accent-color:#4A90E2; cursor:pointer; }
+    .auth-link { font-size:13px; color:#4A90E2; font-weight:600; text-decoration:none; transition:color .15s; }
+    .auth-link:hover { color:#2563EB; }
+
+    /* ── Buttons ── */
+    .auth-btn {
+      width:100%; background:linear-gradient(135deg,#4A90E2 0%,#2563EB 100%);
+      color:#fff; border:none; border-radius:11px;
+      padding:14px 24px; font-size:15px; font-weight:700;
+      font-family:'Nunito','Segoe UI',sans-serif;
+      cursor:pointer; transition:all .2s;
+      box-shadow:0 4px 16px rgba(74,144,226,.3);
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      position:relative; overflow:hidden;
+    }
+    .auth-btn::before {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(135deg,rgba(255,255,255,.1) 0%,transparent 60%);
+      pointer-events:none;
+    }
+    .auth-btn:hover { background:linear-gradient(135deg,#5aa0ec 0%,#4A90E2 100%); box-shadow:0 6px 24px rgba(74,144,226,.4); transform:translateY(-1px); }
+    .auth-btn:active { transform:translateY(1px); box-shadow:0 2px 8px rgba(74,144,226,.2); }
+
+    .auth-btn--google {
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      width:100%; padding:12px 20px; background:#fff; border:1.5px solid #E0E8F0;
+      border-radius:12px; color:#2C3E50; font-family:'Nunito','Segoe UI',sans-serif;
+      font-size:14px; font-weight:600; text-decoration:none; cursor:pointer;
+      transition:background .2s,box-shadow .2s,border-color .2s; margin-top:12px;
+    }
+    .auth-btn--google:hover { background:#F4F8FF; border-color:#C5DDF8; box-shadow:0 2px 10px rgba(74,144,226,.10); color:#2C3E50; text-decoration:none; }
+
+    /* ── Divider ── */
+    .auth-divider { position:relative; text-align:center; margin:24px 0 18px; }
+    .auth-divider::before { content:''; position:absolute; top:50%; left:0; right:0; height:1px; background:#E0E0E0; }
+    .auth-divider span { position:relative; background:#fff; padding:0 14px; font-size:11px; color:#95A5A6; font-weight:600; text-transform:uppercase; letter-spacing:.8px; }
+
+    .auth-footer { text-align:center; font-size:13px; color:#7F8C8D; margin:0; font-weight:500; }
+    .auth-footer a { color:#4A90E2; font-weight:700; text-decoration:none; transition:color .15s; }
+    .auth-footer a:hover { color:#2563EB; }
+
+    /* Flash error */
+    .auth-card .flash-error { background:#fef2f2; border-left:3px solid #ef4444; color:#b91c1c; padding:12px 16px; border-radius:9px; margin-bottom:20px; font-weight:600; font-size:13px; }
+
+    /* ── Role selector ── */
+    .auth-role-selector { display:flex; gap:10px; }
+    .auth-role {
+      flex:1; display:flex; align-items:center; justify-content:center; gap:9px;
+      padding:13px 12px; border:1.5px solid #DEE2E6; border-radius:11px;
+      background:#F8F9FA; cursor:pointer; transition:all .2s;
+      color:#7F8C8D; font-size:13px; font-weight:600;
+      font-family:'Nunito','Segoe UI',sans-serif;
+      transform-style:preserve-3d;
+    }
+    .auth-role:hover { border-color:#a8c8f0; color:#4A90E2; background:rgba(74,144,226,.05); transform:perspective(400px) rotateY(-5deg) translateY(-2px); }
+    .auth-role.selected { border-color:#4A90E2; background:rgba(74,144,226,.08); color:#4A90E2; box-shadow:0 0 0 3px rgba(74,144,226,.1); transform:perspective(400px) rotateY(0) translateY(-1px); }
+    .auth-role svg { flex-shrink:0; }
+
+    /* Form errors */
+    .auth-field .form-error-message,
+    .auth-card  .form-error-message { font-size:12px; color:#ef4444; font-weight:600; margin-top:4px; }
+    .auth-field select.auth-input { appearance:none; cursor:pointer; }
+
+    /* Password strength */
+    .password-strength-container { height:4px; background:#E0E0E0; border-radius:2px; overflow:hidden; margin-top:8px; }
+    .password-strength-bar { height:100%; width:0%; transition:width .35s ease,background-color .35s ease; border-radius:2px; }
+    .password-strength-text, .password-match-text { display:block; font-size:11px; margin-top:5px; min-height:16px; font-weight:600; }
+
+    /* Input glow on focus */
+    .auth-input:focus { animation: inputGlow 2s ease-in-out infinite; }
+    @keyframes inputGlow {
+      0%,100%{ box-shadow:0 0 0 3px rgba(74,180,100,.12),0 0 20px rgba(74,180,100,.06); }
+      50%    { box-shadow:0 0 0 3px rgba(74,180,100,.22),0 0 30px rgba(74,180,100,.12); }
+    }
+
+    /* ── Entrance animation (login card on first load) ── */
+    body.auth-ready .auth-form-card--login .auth-card {
+      animation: cardReveal .7s cubic-bezier(.22,1,.36,1) .1s both;
+    }
+    @keyframes cardReveal {
+      from { opacity:0; transform:translateY(22px) scale(.98); }
+      to   { opacity:1; transform:none; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width:960px) {
+      .auth-left { display:none; }
+      .auth-right { width:100%; }
+      .auth-form-card { padding:24px 20px; }
+    }
+    @media (max-width:480px) {
+      .auth-card { padding:24px 16px; }
+      .auth-card__header h2 { font-size:24px; }
+      .auth-role-selector { flex-direction:column; }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      .auth-form-card, .auth-left { transition:none !important; }
+      .stem-path, .leaf-shape, .petal, .spore, .plant-group,
+      .auth-brand-block img, .auth-form-card--login .auth-card { animation:none !important; }
+      .auth-form-card--register { opacity:1 !important; transform:none !important; display:none; }
+      .auth-root.show-register .auth-form-card--login { display:none; }
+      .auth-root.show-register .auth-form-card--register { display:flex !important; opacity:1 !important; transform:none !important; }
+      .auth-input:focus { animation:none; }
+      .auth-role:hover,.auth-role.selected { transform:none !important; }
+    }
+    </style>
 {% endblock %}
 
 {% block body %}
-<div class="auth-page">
+<div class="auth-root" id="authRoot">
 
-    {# ── LEFT PANEL ── #}
-    <div class="auth-panel-left">
-        <div class="auth-panel-left__content">
+  {# ════════════════════════════════════════════
+     LEFT — Botanical panel (fixed, shared)
+  ════════════════════════════════════════════ #}
+  <div class="auth-left">
+    <div class="auth-left__inner">
 
-            <div class="auth-brand-block">
-                <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom">
-                <p class="auth-brand-tagline">Plateforme de bien-être mental</p>
-            </div>
+      <div class="auth-brand-block">
+        <img src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom">
+        <div class="auth-brand-name">Mind<em>Bloom</em></div>
+        <p class="auth-brand-tagline">Plateforme de bien-être mental</p>
+      </div>
 
-            <div class="auth-feature-list">
-                <div class="auth-feature">
-                    <div class="auth-feature__icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
-                            <rect x="9" y="3" width="6" height="4" rx="1"/>
-                            <path d="M9 14l2 2 4-4"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4>Tests Psychologiques</h4>
-                        <p>Évaluez votre bien-être avec nos tests certifiés</p>
-                    </div>
-                </div>
+      <div class="auth-botanical">
+        <svg viewBox="0 0 300 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="lgGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%"   stop-color="#A8CEED" stop-opacity="0.4"/>
+              <stop offset="100%" stop-color="#4A90E2" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="lgStem" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stop-color="#5FBF9F"/>
+              <stop offset="100%" stop-color="#3a9478"/>
+            </linearGradient>
+            <linearGradient id="lgLeaf1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%"   stop-color="#6FCFB0"/>
+              <stop offset="100%" stop-color="#4DAE8E"/>
+            </linearGradient>
+            <linearGradient id="lgLeaf2" x1="1" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stop-color="#74B8E8"/>
+              <stop offset="100%" stop-color="#4A90E2"/>
+            </linearGradient>
+            <linearGradient id="lgPetal" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%"   stop-color="#C5DFF8" stop-opacity="0.95"/>
+              <stop offset="100%" stop-color="#9ED8C7" stop-opacity="0.8"/>
+            </linearGradient>
+            <filter id="lgGlowF"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            <filter id="lgSoftF"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <ellipse cx="150" cy="290" rx="90" ry="28" fill="url(#lgGlow)" opacity="0.5"/>
+          <g class="plant-group">
+            <path class="stem-path" d="M150 300 C150 280 148 260 150 240 C152 220 148 200 152 180 C156 160 150 140 150 120" stroke="url(#lgStem)" stroke-width="3" stroke-linecap="round"/>
+            <path class="stem-path" d="M150 220 C140 210 125 205 110 195 C95 185 82 180 70 168" stroke="url(#lgStem)" stroke-width="2" stroke-linecap="round"/>
+            <path class="stem-path" d="M152 190 C162 180 175 175 190 165 C205 155 215 150 228 140" stroke="url(#lgStem)" stroke-width="2" stroke-linecap="round"/>
+            <path class="stem-path" d="M150 155 C138 147 122 142 108 132 C94 122 84 118 72 108" stroke="url(#lgStem)" stroke-width="1.5" stroke-linecap="round"/>
+            <ellipse class="leaf-shape leaf-1" cx="68" cy="165" rx="32" ry="14" fill="url(#lgLeaf1)" transform="rotate(-35 68 165)" filter="url(#lgGlowF)"/>
+            <ellipse class="leaf-shape leaf-2" cx="55" cy="148" rx="22" ry="10" fill="url(#lgLeaf2)" transform="rotate(-50 55 148)" opacity="0.85"/>
+            <ellipse class="leaf-shape leaf-3" cx="80" cy="178" rx="18" ry="8"  fill="url(#lgLeaf1)" transform="rotate(-20 80 178)" opacity="0.7"/>
+            <ellipse class="leaf-shape leaf-4" cx="232" cy="138" rx="30" ry="13" fill="url(#lgLeaf2)" transform="rotate(30 232 138)" filter="url(#lgGlowF)"/>
+            <ellipse class="leaf-shape leaf-5" cx="218" cy="152" rx="20" ry="9"  fill="url(#lgLeaf1)" transform="rotate(15 218 152)" opacity="0.75"/>
+            <ellipse class="leaf-shape leaf-6" cx="70"  cy="106" rx="28" ry="11" fill="url(#lgLeaf1)" transform="rotate(-40 70 106)" filter="url(#lgGlowF)"/>
+            <ellipse class="leaf-shape leaf-7" cx="82"  cy="120" rx="16" ry="7"  fill="url(#lgLeaf2)" transform="rotate(-25 82 120)" opacity="0.65"/>
+            <g filter="url(#lgSoftF)">
+              <ellipse class="petal" cx="150" cy="108" rx="14" ry="26" fill="url(#lgPetal)" transform="rotate(0   150 120)"/>
+              <ellipse class="petal" cx="150" cy="108" rx="14" ry="26" fill="url(#lgPetal)" transform="rotate(60  150 120)"/>
+              <ellipse class="petal" cx="150" cy="108" rx="14" ry="26" fill="url(#lgPetal)" transform="rotate(120 150 120)"/>
+              <ellipse class="petal" cx="150" cy="108" rx="14" ry="26" fill="url(#lgPetal)" transform="rotate(180 150 120)"/>
+              <ellipse class="petal" cx="150" cy="108" rx="14" ry="26" fill="url(#lgPetal)" transform="rotate(240 150 120)"/>
+              <ellipse class="petal" cx="150" cy="108" rx="14" ry="26" fill="url(#lgPetal)" transform="rotate(300 150 120)"/>
+            </g>
+            <circle cx="150" cy="120" r="10" fill="#E8F4FD" opacity="0.95" filter="url(#lgSoftF)" style="animation:bloomPulse 3s ease-in-out infinite;animation-delay:2.6s"/>
+            <circle cx="150" cy="120" r="6"  fill="#ffffff"/>
+          </g>
+          <circle class="spore" cx="100" cy="240" r="2.5" fill="#A8CEED" style="--dx:30px"/>
+          <circle class="spore" cx="200" cy="200" r="2"   fill="#9ED8C7" style="--dx:-20px"/>
+          <circle class="spore" cx="130" cy="260" r="1.5" fill="#4A90E2" style="--dx:15px"/>
+          <circle class="spore" cx="175" cy="250" r="2"   fill="#5FBF9F" style="--dx:-35px"/>
+          <circle class="spore" cx="120" cy="220" r="1.5" fill="#A8CEED" style="--dx:25px"/>
+          <circle cx="82"  cy="158" r="3"   fill="rgba(168,206,237,0.7)" filter="url(#lgGlowF)" style="animation:bloomPulse 5s ease-in-out infinite;animation-delay:3s"/>
+          <circle cx="222" cy="133" r="2.5" fill="rgba(158,216,199,0.6)" filter="url(#lgGlowF)" style="animation:bloomPulse 5s ease-in-out infinite;animation-delay:3.5s"/>
+        </svg>
+      </div>
 
-                <div class="auth-feature">
-                    <div class="auth-feature__icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="4" width="18" height="18" rx="2"/>
-                            <line x1="16" y1="2" x2="16" y2="6"/>
-                            <line x1="8" y1="2" x2="8" y2="6"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4>Rendez-vous en ligne</h4>
-                        <p>Réservez facilement avec un psychologue qualifié</p>
-                    </div>
-                </div>
+      <div class="auth-metrics">
+        <div class="auth-metric"><span class="auth-metric__value">500+</span><span class="auth-metric__label">Patients</span></div>
+        <div class="auth-metric__sep"></div>
+        <div class="auth-metric"><span class="auth-metric__value">50+</span><span class="auth-metric__label">Psychologues</span></div>
+        <div class="auth-metric__sep"></div>
+        <div class="auth-metric"><span class="auth-metric__value">98%</span><span class="auth-metric__label">Satisfaction</span></div>
+      </div>
 
-                <div class="auth-feature">
-                    <div class="auth-feature__icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4>Suivi personnalisé</h4>
-                        <p>Un accompagnement adapté à votre parcours</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="auth-metrics">
-                <div class="auth-metric">
-                    <span class="auth-metric__value">500+</span>
-                    <span class="auth-metric__label">Patients</span>
-                </div>
-                <div class="auth-metric__sep"></div>
-                <div class="auth-metric">
-                    <span class="auth-metric__value">50+</span>
-                    <span class="auth-metric__label">Psychologues</span>
-                </div>
-                <div class="auth-metric__sep"></div>
-                <div class="auth-metric">
-                    <span class="auth-metric__value">98%</span>
-                    <span class="auth-metric__label">Satisfaction</span>
-                </div>
-            </div>
-
-        </div>
     </div>
+  </div>
 
-    {# ── RIGHT PANEL ── #}
-    <div class="auth-panel-right">
-        <div class="auth-card">
+  {# ════════════════════════════════════════════
+     RIGHT — Clipping zone with two sliding cards
+  ════════════════════════════════════════════ #}
+  <div class="auth-right">
 
-            <div class="auth-card__header">
-                <h2>Bon retour</h2>
-                <p>Connectez-vous à votre espace MindBloom</p>
-            </div>
+    {# ── LOGIN card ── #}
+    <div class="auth-form-card auth-form-card--login">
+      <div class="auth-card">
 
-            {% if error %}
-                <div class="flash-error">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-            {% endif %}
-
-            <form method="post" action="{{ path('app_login') }}" class="auth-form">
-                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
-                <div class="auth-field">
-                    <label for="username">Nom d'utilisateur</label>
-                    <div class="auth-input-wrap">
-                        <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                        </svg>
-                        <input type="text" id="username" name="_username" class="auth-input"
-                               placeholder="votre_username"
-                               value="{{ last_username }}" autocomplete="username" required>
-                    </div>
-                </div>
-
-                <div class="auth-field">
-                    <label for="password">Mot de passe</label>
-                    <div class="auth-input-wrap">
-                        <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                        </svg>
-                        <input type="password" id="password" name="_password" class="auth-input"
-                               placeholder="Entrez votre mot de passe" autocomplete="current-password" required>
-                    </div>
-                </div>
-
-                <div class="auth-options">
-                    <label class="auth-checkbox">
-                        <input type="checkbox" name="_remember_me">
-                        <span>Se souvenir de moi</span>
-                    </label>
-                    <a href="#" class="auth-link">Mot de passe oublié ?</a>
-                </div>
-
-                <button type="submit" class="auth-btn">
-                    Se connecter
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="5" y1="12" x2="19" y2="12"/>
-                        <polyline points="12 5 19 12 12 19"/>
-                    </svg>
-                </button>
-            </form>
-
-            <div class="auth-divider">
-                <span>ou</span>
-            </div>
-
-            <p class="auth-footer">
-                Pas encore de compte ?
-                <a href="{{ path('app_register') }}">Créer un compte</a>
-            </p>
+        <div class="auth-card__header">
+          <h2>Bon<em> retour</em></h2>
+          <p>Connectez-vous à votre espace MindBloom</p>
         </div>
-    </div>
 
-</div>
+        {% if error %}
+          <div class="flash-error">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        {% endif %}
+
+        <form method="post" action="{{ path('app_login') }}" style="display:flex;flex-direction:column;gap:0;">
+          <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+          <div class="auth-field">
+            <label for="username">Nom d'utilisateur</label>
+            <div class="auth-input-wrap">
+              <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="username" name="_username" class="auth-input"
+                     placeholder="Entrez votre nom d'utilisateur"
+                     value="{{ last_username }}" autocomplete="username" required>
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label for="password">Mot de passe</label>
+            <div class="auth-input-wrap">
+              <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <input type="password" id="password" name="_password" class="auth-input"
+                     placeholder="Entrez votre mot de passe" autocomplete="current-password" required>
+            </div>
+          </div>
+
+          <div class="auth-options">
+            <label class="auth-checkbox">
+              <input type="checkbox" name="_remember_me">
+              <span>Se souvenir de moi</span>
+            </label>
+            <a href="#" class="auth-link">Mot de passe oublié ?</a>
+          </div>
+
+          <div style="display:flex;justify-content:center;margin:6px 0 4px;">
+            <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
+          </div>
+
+          <button type="submit" class="auth-btn">
+            Se connecter
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </form>
+
+        <a href="{{ path('connect_google_start') }}" class="auth-btn auth-btn--google">
+          <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Continuer avec Google
+        </a>
+
+        <div class="auth-divider"><span>ou connexion classique</span></div>
+
+        <p class="auth-footer">
+          Pas encore de compte ?
+          <a href="#" id="btn-to-register">Créer un compte</a>
+        </p>
+
+        {# DEV QUICK ACCESS #}
+        <div style="margin-top:20px;border-top:1px dashed #E0E0E0;padding-top:16px;">
+          <p style="font-size:11px;font-weight:700;color:#bbb;text-align:center;letter-spacing:1px;margin-bottom:10px;">DEV ACCESS</p>
+          <div style="display:flex;gap:8px;">
+            <a href="{{ path('dev_login', {role: 'admin'}) }}" style="flex:1;padding:9px 6px;border-radius:10px;border:1.5px solid #e74c3c;background:#fff5f5;color:#e74c3c;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;text-align:center;text-decoration:none;" onmouseover="this.style.background='#e74c3c';this.style.color='white';" onmouseout="this.style.background='#fff5f5';this.style.color='#e74c3c';">Admin</a>
+            <a href="{{ path('dev_login', {role: 'patient'}) }}" style="flex:1;padding:9px 6px;border-radius:10px;border:1.5px solid #4A90E2;background:#f0f6ff;color:#4A90E2;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;text-align:center;text-decoration:none;" onmouseover="this.style.background='#4A90E2';this.style.color='white';" onmouseout="this.style.background='#f0f6ff';this.style.color='#4A90E2';">Patient</a>
+            <a href="{{ path('dev_login', {role: 'psycho'}) }}" style="flex:1;padding:9px 6px;border-radius:10px;border:1.5px solid #6FBF9B;background:#f0faf5;color:#6FBF9B;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.15s;text-align:center;text-decoration:none;" onmouseover="this.style.background='#6FBF9B';this.style.color='white';" onmouseout="this.style.background='#f0faf5';this.style.color='#6FBF9B';">Psycho</a>
+          </div>
+        </div>
+
+      </div>
+    </div>{# /auth-form-card--login #}
+
+    {# ── REGISTER card ── #}
+    <div class="auth-form-card auth-form-card--register">
+      <div class="auth-card auth-card--wide">
+
+        <div class="auth-card__header">
+          <h2>Créer un<em> compte</em></h2>
+          <p>Rejoignez MindBloom et prenez soin de vous</p>
+        </div>
+
+        {{ form_errors(registrationForm) }}
+
+        {{ form_start(registrationForm, {action: path('app_register'), method: 'post', attr: {style: 'display:flex;flex-direction:column;gap:0;'}}) }}
+          {{ form_widget(registrationForm.roles, {attr: {id: 'roleInput', value: 'PATIENT'}}) }}
+
+          <div class="auth-field" style="margin-bottom:16px;">
+            <label>Je suis un(e)</label>
+            <div class="auth-role-selector">
+              <div class="auth-role selected" onclick="selectRole('PATIENT', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Patient</span>
+              </div>
+              <div class="auth-role" onclick="selectRole('PSYCHOLOGUE', this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                <span>Psychologue</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12">
+              <div class="auth-field" style="margin-bottom:0;">
+                <label>Nom complet <span style="color:#f87171;">*</span></label>
+                <div class="auth-input-wrap">
+                  <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  {{ form_widget(registrationForm.fullName, {'attr': {'class': 'auth-input', 'placeholder': 'Prénom Nom'}}) }}
+                </div>
+                {{ form_errors(registrationForm.fullName) }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="auth-field" style="margin-bottom:0;">
+                <label>Nom d'utilisateur <span style="color:#f87171;">*</span></label>
+                {{ form_widget(registrationForm.username, {'attr': {'class': 'auth-input', 'placeholder': 'username'}}) }}
+                {{ form_errors(registrationForm.username) }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="auth-field" style="margin-bottom:0;">
+                <label>Email <span style="color:#f87171;">*</span></label>
+                {{ form_widget(registrationForm.email, {'attr': {'class': 'auth-input', 'placeholder': 'email@exemple.com'}}) }}
+                {{ form_errors(registrationForm.email) }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="auth-field" style="margin-bottom:0;">
+                <label>Téléphone</label>
+                {{ form_widget(registrationForm.phone, {'attr': {'class': 'auth-input', 'placeholder': '+216'}}) }}
+                {{ form_errors(registrationForm.phone) }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="auth-field" style="margin-bottom:0;">
+                <label>Date de naissance <span style="color:#f87171;">*</span></label>
+                {{ form_widget(registrationForm.dateOfBirth, {'attr': {'class': 'auth-input'}}) }}
+                {{ form_errors(registrationForm.dateOfBirth) }}
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="auth-field" style="margin-bottom:0;">
+                <label>Adresse</label>
+                {{ form_widget(registrationForm.address, {'attr': {'class': 'auth-input', 'placeholder': 'Votre adresse'}}) }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="auth-field" style="margin-bottom:0;">
+                <label>Mot de passe <span style="color:#f87171;">*</span></label>
+                {{ form_widget(registrationForm.plainPassword.first, {'attr': {'class': 'auth-input', 'placeholder': 'Min. 8 caractères', 'id': 'password-field'}}) }}
+                <div class="password-strength-container mt-2"><div class="password-strength-bar" id="password-strength-bar"></div></div>
+                <small class="password-strength-text" id="password-strength-text"></small>
+                {{ form_errors(registrationForm.plainPassword) }}
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="auth-field" style="margin-bottom:0;">
+                <label>Confirmer <span style="color:#f87171;">*</span></label>
+                {{ form_widget(registrationForm.plainPassword.second, {'attr': {'class': 'auth-input', 'placeholder': 'Confirmez le mot de passe', 'id': 'password-confirm-field'}}) }}
+                <small class="password-match-text" id="password-match-text"></small>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="auth-btn" style="margin-top:24px;">
+            Créer mon compte
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        {{ form_end(registrationForm) }}
+
+        <div class="auth-divider"><span>déjà membre</span></div>
+
+        <p class="auth-footer">
+          Déjà inscrit ?
+          <a href="#" id="btn-to-login">Se connecter</a>
+        </p>
+
+      </div>
+    </div>{# /auth-form-card--register #}
+
+  </div>{# /auth-right #}
+
+</div>{# /auth-root #}
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script>
+(function () {
+  'use strict';
+  var root    = document.getElementById('authRoot');
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function disableTransitions() {
+    document.querySelectorAll('.auth-form-card,.auth-left').forEach(function(el){
+      el.style.transition = 'none';
+    });
+  }
+  function restoreTransitions() {
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      document.querySelectorAll('.auth-form-card,.auth-left').forEach(function(el){
+        el.style.transition = '';
+      });
+    }); });
+  }
+
+  function showRegister(animate) {
+    if (!animate) disableTransitions();
+    root.classList.add('show-register');
+    history.pushState({mode:'register'}, '', '/login?mode=register');
+    if (!animate) restoreTransitions();
+  }
+
+  function showLogin(animate) {
+    if (!animate) disableTransitions();
+    root.classList.remove('show-register');
+    history.pushState({mode:'login'}, '', '/login');
+    if (!animate) restoreTransitions();
+  }
+
+  document.getElementById('btn-to-register').addEventListener('click', function(e){ e.preventDefault(); showRegister(true); });
+  document.getElementById('btn-to-login').addEventListener('click',    function(e){ e.preventDefault(); showLogin(true);    });
+
+  window.addEventListener('popstate', function(e){
+    if (e.state && e.state.mode === 'register') showRegister(false);
+    else showLogin(false);
+  });
+
+  {% if mode == 'register' %}
+  showRegister(false);
+  {% endif %}
+
+  document.body.classList.add('auth-ready');
+  if (reduced) return;
+
+  /* Botanical parallax */
+  var panel = document.querySelector('.auth-left');
+  var grp   = panel && panel.querySelector('.plant-group');
+  if (grp) {
+    panel.addEventListener('mousemove', function(e){
+      var r  = panel.getBoundingClientRect();
+      var nx = ((e.clientX - r.left) / r.width)  * 2 - 1;
+      var ny = ((e.clientY - r.top)  / r.height) * 2 - 1;
+      grp.style.transform  = 'rotate('+(nx*2)+'deg) translateY('+(ny*-6)+'px)';
+      grp.style.transition = 'transform 0.3s ease-out';
+    });
+    panel.addEventListener('mouseleave', function(){
+      grp.style.transform  = '';
+      grp.style.transition = 'transform 0.8s cubic-bezier(0.22,1,0.36,1)';
+    });
+  }
+
+  /* Card 3D tilt */
+  document.querySelectorAll('.auth-card').forEach(function(card){
+    card.addEventListener('mousemove', function(e){
+      var r  = card.getBoundingClientRect();
+      var nx = ((e.clientX - r.left) / r.width)  * 2 - 1;
+      var ny = ((e.clientY - r.top)  / r.height) * 2 - 1;
+      card.style.transition = 'transform 0.08s ease-out,box-shadow 0.15s';
+      card.style.transform  = 'perspective(900px) rotateX('+(-ny*2.5)+'deg) rotateY('+(nx*2.5)+'deg)';
+    });
+    card.addEventListener('mouseleave', function(){
+      card.style.transition = 'transform 0.5s cubic-bezier(0.22,1,0.36,1),box-shadow 0.3s';
+      card.style.transform  = 'perspective(900px) rotateX(0) rotateY(0)';
+    });
+  });
+
+  /* Input icon brightens when filled */
+  document.querySelectorAll('.auth-input').forEach(function(input){
+    input.addEventListener('input', function(){
+      var wrap = this.closest('.auth-input-wrap');
+      var icon = wrap && wrap.querySelector('.auth-input-icon');
+      if (icon) icon.style.color = this.value.length > 0 ? 'rgba(74,144,226,0.8)' : '';
+    });
+  });
+})();
+
+function selectRole(role, el) {
+  document.querySelectorAll('.auth-role').forEach(function(o){ o.classList.remove('selected'); });
+  el.classList.add('selected');
+  var f = document.getElementById('roleInput') || document.querySelector('input[name="registration_form[roles]"]');
+  if (f) f.value = role;
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  var pw  = document.querySelector('input[name="registration_form[plainPassword][first]"]');
+  var pw2 = document.querySelector('input[name="registration_form[plainPassword][second]"]');
+  var bar = document.getElementById('password-strength-bar');
+  var txt = document.getElementById('password-strength-text');
+  var mtx = document.getElementById('password-match-text');
+
+  function strength(p){
+    var s=0,c={len:p.length>=8,lower:/[a-z]/.test(p),upper:/[A-Z]/.test(p),num:/\d/.test(p),special:/[!@#$%^&*(),.?":{}|<>]/.test(p),long:p.length>=12};
+    Object.values(c).forEach(function(v){if(v)s++;});
+    return {score:s,checks:c};
+  }
+  function updateBar(p){
+    if(!bar||!txt) return;
+    if(!p){bar.style.width='0%';txt.textContent='';return;}
+    var r=strength(p),w,c,l;
+    if(r.score<=2){w='33%';c='#f87171';l='Faible';}
+    else if(r.score<=4){w='66%';c='#fb923c';l='Moyen';}
+    else{w='100%';c='#4ab464';l='Fort ✓';}
+    bar.style.width=w;bar.style.backgroundColor=c;txt.style.color=c;
+    var tips=[];
+    if(!r.checks.len)tips.push('8+ car.');
+    if(!r.checks.upper)tips.push('majuscule');
+    if(!r.checks.num)tips.push('chiffre');
+    txt.textContent=l+(tips.length&&r.score<5?' — '+tips.slice(0,2).join(', '):'');
+  }
+  function checkMatch(){
+    if(!pw||!pw2||!mtx) return;
+    if(!pw2.value){mtx.textContent='';return;}
+    if(pw.value===pw2.value){mtx.textContent='✓ Correspondent';mtx.style.color='#4ab464';}
+    else{mtx.textContent='✗ Ne correspondent pas';mtx.style.color='#f87171';}
+  }
+  if(pw) pw.addEventListener('input',function(){updateBar(this.value);checkMatch();});
+  if(pw2) pw2.addEventListener('input',checkMatch);
+});
+</script>
 {% endblock %}

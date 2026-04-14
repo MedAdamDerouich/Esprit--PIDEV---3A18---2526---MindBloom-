@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Facture #{{ facture.id }}</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 13px; color: #495057; line-height: 1.5; margin: 0; padding: 20px;}
+        .bg-light { background-color: #f8f9fa; }
+        .text-primary { color: #4A90E2; }
+        .text-muted { color: #868e96; }
+        .fw-bold { font-weight: bold; }
+        
+        .header { border-bottom: 2px solid #e9ecef; padding-bottom: 20px; margin-bottom: 40px; }
+        .header table { width: 100%; border: none; margin: 0; }
+        .header table td { border: none; padding: 0; vertical-align: middle; }
+        .logo-img { height: 60px; object-fit: contain; }
+        
+        .info-section { margin-bottom: 40px; }
+        .info-section table { width: 100%; border: none; margin: 0; }
+        .info-section table td { border: none; padding: 0; vertical-align: top; width: 50%; }
+        
+        .box { background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-right: 20px; }
+        .box-title { color: #adb5bd; font-size: 11px; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; letter-spacing: 1px; }
+        .profile-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); float: right; }
+        
+        table.items { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+        table.items th { background-color: #4A90E2; color: #fff; text-align: left; padding: 12px; font-size: 12px; text-transform: uppercase; border: none; }
+        table.items td { padding: 12px; border-bottom: 1px solid #e9ecef; vertical-align: middle; }
+        .product-img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; float: left; margin-right: 15px; }
+        .product-name { font-weight: bold; color: #343a40; font-size: 13px; display: block; margin-top: 10px;}
+        
+        .totals { width: 40%; float: right; }
+        .tot-row { padding: 8px 0; display: flex; justify-content: space-between; border-bottom: 1px solid #f1f3f5; }
+        .tot-label { display: inline-block; width: 60%; text-align: right; padding-right: 15px; color: #868e96; }
+        .tot-val { display: inline-block; width: 35%; text-align: right; font-weight: bold; color: #495057; }
+        .total-final { font-size: 18px; color: #4A90E2; margin-top: 15px; border-top: 2px solid #4A90E2; padding-top: 10px; }
+        .total-final .tot-label { color: #4A90E2; font-weight: bold; }
+        .total-final .tot-val { color: #4A90E2; font-weight: bold; }
+        
+        .footer { position: fixed; bottom: 30px; width: 100%; text-align: center; font-size: 11px; color: #adb5bd; border-top: 1px solid #e9ecef; padding-top: 15px; }
+        .clear { clear: both; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <table>
+            <tr>
+                <td style="width: 50%;">
+                    <div style="font-size: 24px; font-weight: bold; color: #4A90E2;">
+                        <img src="{{ publicDir }}/images/mindbloom_logo.png" class="logo-img" alt="MindBloom" onerror="this.style.display='none';"> MindBloom
+                    </div>
+                </td>
+                <td style="width: 50%; text-align: right;">
+                    <h1 style="color: #343a40; margin: 0 0 5px 0; font-size: 28px;">FACTURE</h1>
+                    <div style="font-size: 14px; color: #868e96;"><strong>N°:</strong> #{{ facture.id|default('0000') }}</div>
+                    <div style="font-size: 14px; color: #868e96;"><strong>Date:</strong> {{ facture.dateFacture|date('d/m/Y') }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="info-section">
+        <table>
+            <tr>
+                <td>
+                    <div class="box">
+                        <div class="box-title">Informations de Facturation</div>
+                        <div style="margin-bottom: 5px;">
+                            <strong>Statut:</strong> <span style="color: #10b981;">{{ facture.statutLivraison|default('En attente') }}</span>
+                        </div>
+                        <div style="margin-bottom: 5px;">
+                            <strong>Moyen de Paiement:</strong> {{ facture.typePaiement|default('') }}
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; margin-right: 20px; font-size: 12px; color: #868e96;">
+                        <strong>MindBloom Boutique</strong><br>
+                        Avenue de l'indépendance, Tunis, Tunisie<br>
+                        contact@mindbloom.tn - +216 71 000 000
+                    </div>
+                </td>
+                <td style="padding-left: 20px;">
+                    <div class="box" style="margin-right: 0; background-color: #fff; border: 1px solid #e9ecef;">
+                        {% if facture.user and facture.user.profileImage %}
+                            <img src="{{ publicDir }}/uploads/profiles/{{ facture.user.profileImage }}" class="profile-img" alt="Profil">
+                        {% endif %}
+                        <div class="box-title">Client & Livraison</div>
+                        <strong style="color: #343a40; font-size: 16px;">{{ facture.user ? facture.user.fullName : 'Client' }}</strong><br>
+                        <span style="color: #868e96;">{{ facture.user ? facture.user.email : '' }}</span><br>
+                        <br>
+                        <strong>Adresse de Livraison:</strong><br>
+                        {{ facture.adresseLivraison|nl2br }}
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <table class="items">
+        <thead>
+            <tr>
+                <th style="width: 50%;">Article</th>
+                <th style="text-align: right; width: 15%;">Prix Unitaire</th>
+                <th style="text-align: center; width: 15%;">Quantité</th>
+                <th style="text-align: right; width: 20%;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cmd in commandes %}
+                <tr>
+                    <td>
+                        {% if cmd.produit.image %}
+                            <img src="{{ publicDir }}/uploads/produits/{{ cmd.produit.image }}" class="product-img" alt="{{ cmd.produit.nom }}">
+                        {% endif %}
+                        <span class="product-name">{{ cmd.produit.nom }}</span>
+                    </td>
+                    <td style="text-align: right;">{{ cmd.produit.prix|number_format(2, ',', ' ') }} DT</td>
+                    <td style="text-align: center;">{{ cmd.quantite }}</td>
+                    <td style="text-align: right; font-weight: bold;">{{ (cmd.produit.prix * cmd.quantite)|number_format(2, ',', ' ') }} DT</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <div class="tot-row">
+            <span class="tot-label">Sous-total HT :</span>
+            <span class="tot-val">{{ subtotal|number_format(2, ',', ' ') }} DT</span>
+        </div>
+        <div class="tot-row">
+            <span class="tot-label">TVA (7%) :</span>
+            <span class="tot-val">{{ tva|number_format(2, ',', ' ') }} DT</span>
+        </div>
+        <div class="tot-row">
+            <span class="tot-label">Frais de livraison :</span>
+            <span class="tot-val">{{ shipping|number_format(2, ',', ' ') }} DT</span>
+        </div>
+        <div class="tot-row total-final">
+            <span class="tot-label">TOTAL TTC :</span>
+            <span class="tot-val">{{ facture.montantTotal|number_format(2, ',', ' ') }} DT</span>
+        </div>
+    </div>
+    <div class="clear"></div>
+
+    <div class="footer">
+        <strong>MindBloom</strong>. Merci pour votre confiance et à bientôt.<br>
+        Ce document ne peut tenir lieu de bon de commande. Les conditions générales de vente s'appliquent.
+    </div>
+</body>
+</html>

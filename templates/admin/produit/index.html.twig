@@ -5,12 +5,97 @@
 {% block admin_header %}Catalogue des Produits{% endblock %}
 
 {% block admin_content %}
+    <!-- Statistics Row -->
     <div class="row mb-4">
-        <div class="col-md-6">
-            <p class="text-muted">Gérez votre inventaire et visualisez les stocks en temps réel.</p>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-primary border-5">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-3">
+                                <i class="bi bi-box-seam fs-4"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1 small fw-bold text-uppercase">Total Produits</h6>
+                            <h4 class="mb-0 fw-bold">{{ stats.total }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-md-6 text-end">
-            <a href="{{ path('app_admin_produit_new') }}" class="btn btn-primary px-4 shadow-sm rounded-pill">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-danger border-5">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="bg-danger bg-opacity-10 text-danger p-3 rounded-3">
+                                <i class="bi bi-exclamation-octagon fs-4"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1 small fw-bold text-uppercase">Rupture de Stock</h6>
+                            <h4 class="mb-0 fw-bold">{{ stats.outOfStock }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-warning border-5">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-3">
+                                <i class="bi bi-graph-down fs-4"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1 small fw-bold text-uppercase">Stock Faible (< 10)</h6>
+                            <h4 class="mb-0 fw-bold">{{ stats.lowStock }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-success border-5">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="bg-success bg-opacity-10 text-success p-3 rounded-3">
+                                <i class="bi bi-cash-coin fs-4"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-1 small fw-bold text-uppercase">Valeur du Stock</h6>
+                            <h4 class="mb-0 fw-bold">{{ stats.totalValue|number_format(2, ',', ' ') }} <small>DT</small></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <p class="text-muted mb-0">Gérez votre inventaire et vos stocks.</p>
+        </div>
+        <div class="col-md-9 text-end d-inline-flex gap-2 mb-0 align-items-center flex-wrap justify-content-end">
+            <div class="search-sort-wrapper">
+                <form action="{{ path('app_admin_produit_index') }}" method="GET" class="m-0 p-0" id="adminSortForm">
+                    <select name="tri" class="premium-select form-select" onchange="document.getElementById('adminSortForm').submit()">
+                        <option value="default" {% if tri is defined and tri == 'default' %}selected{% endif %}>Trier par défaut</option>
+                        <option value="prix_asc" {% if tri is defined and tri == 'prix_asc' %}selected{% endif %}>Prix : Croissant</option>
+                        <option value="prix_desc" {% if tri is defined and tri == 'prix_desc' %}selected{% endif %}>Prix : Décroissant</option>
+                    </select>
+                </form>
+                
+                <input type="text" id="liveAdminSearch" class="premium-input form-control" placeholder="Recherche en direct...">
+                <button class="premium-icon-btn" type="button"><i class="bi bi-search"></i></button>
+            </div>
+            
+            <a href="{{ path('app_admin_produit_new') }}" class="btn btn-success px-4 shadow-sm rounded-pill ms-2" style="height: 40px; display: flex; align-items: center;">
                 <i class="bi bi-plus-circle me-1"></i> Nouveau Produit
             </a>
         </div>
@@ -28,9 +113,9 @@
                             <th class="py-3 border-0 text-center">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="adminProductTableBody">
                     {% for produit in produits %}
-                        <tr>
+                        <tr class="admin-product-row">
                             <td class="ps-4 py-4 border-0">
                                 <div class="d-flex align-items-center">
                                     {% if produit.image %}
@@ -41,8 +126,8 @@
                                         </div>
                                     {% endif %}
                                     <div>
-                                        <h6 class="mb-0 fw-bold">{{ produit.nom }}</h6>
-                                        <small class="text-muted text-truncate d-inline-block" style="max-width: 200px;">{{ produit.description|slice(0, 50) }}...</small>
+                                        <h6 class="mb-0 fw-bold product-title">{{ produit.nom }}</h6>
+                                        <small class="text-muted text-truncate d-inline-block product-desc" style="max-width: 200px;">{{ produit.description|slice(0, 50) }}...</small>
                                     </div>
                                 </div>
                             </td>
@@ -76,6 +161,9 @@
                             <td colspan="4" class="py-5 text-center text-muted border-0"> Aucun produit trouvé dans le catalogue. </td>
                         </tr>
                     {% endfor %}
+                        <tr id="adminNoResults" style="display:none;">
+                            <td colspan="4" class="py-5 text-center text-muted border-0"> Aucun produit ne correspond à votre recherche en direct. </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -88,4 +176,41 @@
 .bg-danger-subtle { background-color: #f8d7da; }
 .btn-white:hover { background-color: #f8f9fa !important; }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('liveAdminSearch');
+    const tableBody = document.getElementById('adminProductTableBody');
+    const rows = tableBody.querySelectorAll('.admin-product-row');
+    const noResultsRow = document.getElementById('adminNoResults');
+
+    if (!searchInput) return;
+
+    searchInput.addEventListener('input', function() {
+        let searchQuery = this.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const titleEl = row.querySelector('.product-title');
+            const descEl = row.querySelector('.product-desc');
+            
+            let titleText = titleEl ? titleEl.textContent.toLowerCase() : '';
+            let descText = descEl ? descEl.textContent.toLowerCase() : '';
+
+            if (titleText.includes(searchQuery) || descText.includes(searchQuery)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        if (visibleCount === 0 && searchQuery !== '') {
+            noResultsRow.style.display = '';
+        } else {
+            noResultsRow.style.display = 'none';
+        }
+    });
+});
+</script>
 {% endblock %}

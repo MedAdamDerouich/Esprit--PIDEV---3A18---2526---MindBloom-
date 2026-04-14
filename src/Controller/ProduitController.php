@@ -49,6 +49,14 @@ class ProduitController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Bad word filter
+            $comment = $feedback->getCommentaire();
+            if ($comment) {
+                // censor the word 'louay'
+                $comment = str_ireplace('louay', '****', $comment);
+                $feedback->setCommentaire($comment);
+            }
+
             $feedback->setProduit($produit);
             $feedback->setUser($this->getUser());
             $feedback->setDateFeedback(new \DateTime());
@@ -79,6 +87,13 @@ class ProduitController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $comment = $feedback->getCommentaire();
+            if ($comment) {
+                // censor the word 'louay'
+                $comment = str_ireplace('louay', '****', $comment);
+                $feedback->setCommentaire($comment);
+            }
+
             $entityManager->flush();
             $this->addFlash('success', 'Votre avis a été modifié !');
             return $this->redirectToRoute('app_produit_show', ['id' => $feedback->getProduit()->getId()]);

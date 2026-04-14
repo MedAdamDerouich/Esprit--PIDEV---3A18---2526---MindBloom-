@@ -20,10 +20,50 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 class ProduitController extends AbstractController
 {
     #[Route('', name: 'app_admin_produit_index', methods: ['GET'])]
-    public function index(ProduitRepository $produitRepository): Response
+    public function index(ProduitRepository $produitRepository, Request $request): Response
     {
+        $q = $request->query->get('q');
+        $tri = $request->query->get('tri', 'default');
+
+        $qb = $produitRepository->createQueryBuilder('p');
+
+        if ($q) {
+            $qb->andWhere('p.nom LIKE :q OR p.description LIKE :q')
+               ->setParameter('q', '%' . $q . '%');
+        }
+
+        if ($tri === 'prix_asc') {
+            $qb->orderBy('p.prix', 'ASC');
+        } elseif ($tri === 'prix_desc') {
+            $qb->orderBy('p.prix', 'DESC');
+        } else {
+            $qb->orderBy('p.id', 'DESC');
+        }
+
+        $produits = $qb->getQuery()->getResult();
+
+        // Calculate Stats
+        $stats = [
+            'total' => count($produits),
+            'outOfStock' => 0,
+            'lowStock' => 0,
+            'totalValue' => 0
+        ];
+
+        foreach ($produits as $p) {
+            $stats['totalValue'] += ($p->getQuantite() * $p->getPrix());
+            if ($p->getQuantite() == 0) {
+                $stats['outOfStock']++;
+            } elseif ($p->getQuantite() <= 10) {
+                $stats['lowStock']++;
+            }
+        }
+
         return $this->render('admin/produit/index.html.twig', [
-            'produits' => $produitRepository->findAll(),
+            'produits' => $produits,
+            'q' => $q,
+            'tri' => $tri,
+            'stats' => $stats
         ]);
     }
 

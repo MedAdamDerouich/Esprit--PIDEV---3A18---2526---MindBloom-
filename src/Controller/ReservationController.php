@@ -102,6 +102,22 @@ class ReservationController extends AbstractController
         return $this->redirectToRoute('app_patient_reservations');
     }
 
+    #[Route('/patient/reserver/creneau/{id}/confirmer-page', name: 'app_patient_reserver_confirm_page')]
+    #[IsGranted('ROLE_PATIENT')]
+    public function confirmerPage(int $id, \App\Repository\CreneauRepository $creneauRepository): Response
+    {
+        $creneau = $creneauRepository->find($id);
+
+        if (!$creneau || !$creneau->isDisponible()) {
+            $this->addFlash('error', 'Ce créneau n\'est plus disponible.');
+            return $this->redirectToRoute('app_patient_cabinets_index');
+        }
+
+        return $this->render('patient/confirmation_reservation.html.twig', [
+            'creneau' => $creneau,
+        ]);
+    }
+
     #[Route('/patient/reserver/creneau/{id}', name: 'app_patient_reserver_creneau', methods: ['POST'])]
     #[IsGranted('ROLE_PATIENT')]
     public function reserverCreneau(int $id, \App\Repository\CreneauRepository $creneauRepository, \Doctrine\ORM\EntityManagerInterface $em): Response
@@ -109,8 +125,9 @@ class ReservationController extends AbstractController
         $patient = $this->getUser();
         $creneau = $creneauRepository->find($id);
 
-        if (!$creneau) {
-            throw $this->createNotFoundException('Créneau introuvable');
+        if (!$creneau || !$creneau->isDisponible()) {
+            $this->addFlash('error', 'Ce créneau n\'est plus disponible.');
+            return $this->redirectToRoute('app_patient_cabinets_index');
         }
 
         $reservation = new \App\Entity\Reservation();
@@ -122,11 +139,11 @@ class ReservationController extends AbstractController
         $creneau->setDisponible(false);
 
         $em->persist($reservation);
-        // Doctrine détecte le changement sur le créneau
         $em->flush();
 
         $this->addFlash('success', 'Votre réservation a été confirmée avec succès !');
 
-        return $this->redirectToRoute('app_patient_cabinets_index');
+        return $this->redirectToRoute('app_patient_reservations');
     }
 }
+

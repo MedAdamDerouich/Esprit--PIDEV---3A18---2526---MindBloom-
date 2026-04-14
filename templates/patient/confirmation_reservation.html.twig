@@ -1,0 +1,128 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Confirmation de Réservation — MindBloom{% endblock %}
+
+{% block body %}
+<div style="background:#F5F3EF; min-height:calc(100vh - 80px); display:flex; align-items:center; justify-content:center; padding:40px;">
+    
+    <div style="background:white; border-radius:25px; width:100%; max-width:420px; box-shadow:0 25px 50px rgba(0,0,0,0.1); overflow:hidden; border:1px solid #E2E8F0; display:flex; flex-direction:column;">
+        
+        {# Header Gradient - Smaller #}
+        <div style="background:linear-gradient(to right, #6FBF9B, #4A90E2); padding:20px; text-align:center; color:white;">
+            <div style="background:rgba(255,255,255,0.2); width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px;">
+                <svg fill="white" width="20" height="20" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            </div>
+            <h2 style="margin:0; font-size:18px; font-weight:bold;">Confirmation</h2>
+        </div>
+
+        {# Content - Compact #}
+        <div style="padding:25px; display:flex; flex-direction:column; gap:20px;">
+            
+            <div style="display:flex; align-items:center; gap:15px; padding:12px; background:#F8FAFC; border-radius:15px; border:1px solid #EDF2F7;">
+                <div style="width:50px; height:50px; border-radius:50%; overflow:hidden; background:#E2E8F0; flex-shrink:0;">
+                    {% if creneau.cabinet.psychologue and creneau.cabinet.psychologue.profileImage %}
+                        <img src="{{ asset('uploads/profiles/' ~ creneau.cabinet.psychologue.profileImage) }}" style="width:100%; height:100%; object-fit:cover;" />
+                    {% else %}
+                        <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:30px;">👤</div>
+                    {% endif %}
+                </div>
+                <div style="display:flex; flex-direction:column; gap:2px;">
+                    <span style="font-size:12px; color:#718096; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Professionnel</span>
+                    <span style="font-size:16px; font-weight:bold; color:#2D3748;">Dr. {{ creneau.cabinet.psychologue.fullName }}</span>
+                    <span style="font-size:13px; color:#4A90E2; font-weight:500;">{{ creneau.cabinet.specialite }}</span>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <span style="font-size:11px; color:#A0AEC0; font-weight:bold; text-transform:uppercase;">Date</span>
+                    <div style="display:flex; align-items:center; gap:8px; color:#2D3748; font-weight:700; font-size:13px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A90E2" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        {% set days = {'Monday': 'Lundi', 'Tuesday': 'Mardi', 'Wednesday': 'Mercredi', 'Thursday': 'Jeudi', 'Friday': 'Vendredi', 'Saturday': 'Samedi', 'Sunday': 'Dimanche'} %}
+                        {% set months = {'January': 'Janvier', 'February': 'Février', 'March': 'Mars', 'April': 'Avril', 'May': 'Mai', 'June': 'Juin', 'July': 'Juillet', 'August': 'Août', 'September': 'Septembre', 'October': 'Octobre', 'November': 'Novembre', 'December': 'Décembre'} %}
+                        {{ days[creneau.dateCreneau|date('l')] }} {{ creneau.dateCreneau|date('d') }} {{ months[creneau.dateCreneau|date('F')] }}
+                    </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    <span style="font-size:11px; color:#A0AEC0; font-weight:bold; text-transform:uppercase;">Heure</span>
+                    <div style="display:flex; align-items:center; gap:8px; color:#2D3748; font-weight:700; font-size:13px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A90E2" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        {{ creneau.heureDebut|date('H:i') }}
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:5px; padding:12px; background:rgba(74, 144, 226, 0.05); border-radius:12px; border:1px dashed #4A90E2;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <svg fill="#4A90E2" width="16" height="16" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                    <span style="font-size:13px; color:#2D3748; font-weight:600;">{{ creneau.cabinet.nomCabinet }}</span>
+                </div>
+                <span style="font-size:12px; color:#718096; margin-left:24px;">{{ creneau.cabinet.adresse }}</span>
+            </div>
+
+            <div style="display:flex; gap:15px; margin-top:10px;">
+                <a href="{{ path('app_patient_cabinet_reserver', {id: creneau.cabinet.idCabinet}) }}" id="backToReserverBtn" style="flex:1; text-align:center; padding:14px; border:1.5px solid #E2E8F0; border-radius:15px; color:#718096; font-weight:bold; text-decoration:none; transition:all 0.2s;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='transparent'">Retour</a>
+                
+                <form action="{{ path('app_patient_reserver_creneau', {id: creneau.id}) }}" method="POST" style="flex:2; margin:0;">
+                    <button type="submit" style="width:100%; padding:15px; background:#4A90E2; border:none; border-radius:15px; color:white; font-weight:bold; font-size:15px; cursor:pointer; box-shadow:0 10px 20px rgba(74, 144, 226, 0.2); transition:all 0.2s;" onmouseover="this.style.background='#357ABD'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#4A90E2'; this.style.transform='translateY(0)'">
+                        Confirmer la réservation
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <div style="background:#F8FAFC; padding:12px; text-align:center;">
+             <span style="font-size:10px; color:#A0AEC0;">En cliquant sur confirmer, vous bloquez ce créneau pour votre consultation.</span>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+(function() {
+    const backBtn = document.getElementById('backToReserverBtn');
+    if (backBtn) {
+        backBtn.addEventListener('click', function(e) {
+            const modalContent = document.getElementById('modalContentWrapper');
+            if (!modalContent) return; // Mode page complète
+
+            e.preventDefault();
+            const url = this.href;
+            const spinner = document.getElementById('modalSpinner');
+            
+            if (spinner) spinner.style.display = 'block';
+            modalContent.innerHTML = '';
+
+            fetch(url)
+                .then(r => r.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const reserveUI = doc.querySelector('div[style*="width:450px"]');
+                    
+                    if (reserveUI) {
+                        modalContent.appendChild(reserveUI);
+                        
+                        // Ré-exécuter les scripts
+                        const scripts = doc.querySelectorAll('script');
+                        scripts.forEach(s => {
+                            const newScript = document.createElement('script');
+                            newScript.text = s.text;
+                            document.body.appendChild(newScript);
+                        });
+                    } else {
+                        window.location.href = url;
+                    }
+                })
+                .finally(() => {
+                    if (spinner) spinner.style.display = 'none';
+                });
+        });
+    }
+})();
+</script>
+{% endblock %}

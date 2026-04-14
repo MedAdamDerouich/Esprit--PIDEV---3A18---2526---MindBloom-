@@ -5,7 +5,7 @@
 <div style="background:#EBF1F5; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px;">
     
     {# MODAL CONTAINER #}
-    <div style="background:#FAFAF8; border-radius:15px; width:450px; display:flex; flex-direction:column; box-shadow:0 15px 35px rgba(0,0,0,0.1); overflow:hidden; position:relative;">
+    <div style="background:#FAFAF8; border-radius:25px; width:450px; display:flex; flex-direction:column; box-shadow:0 25px 50px rgba(0,0,0,0.15); overflow:hidden; position:relative; max-height:90vh;">
         <style>
             /* Styling scrollbar for webkit */
             ::-webkit-scrollbar { width: 6px; }
@@ -61,78 +61,73 @@
                 </span>
             </div>
 
-            <div style="font-weight:bold; color:#2D3748; font-size:15px; margin-top:25px; margin-bottom:15px;">
+            {# SÉPARATEUR #}
+            <hr style="border:0; border-top:1.5px solid #E2E8F0; margin:25px 0; opacity:1;">
+
+            <div style="font-weight:bold; color:#2D3748; font-size:15px; margin-bottom:15px;">
                 📅 Créneaux disponibles
             </div>
-        </div>
-
-        {# LISTE CRENEAUX #}
-        <div style="flex:1; max-height:280px; overflow-y:auto; padding:0 25px; display:flex; flex-direction:column; gap:10px;">
-            {% if creneaux is empty %}
+           {# LISTE GROUPÉE PAR DATE #}
+        <div style="flex:1; max-height:280px; overflow-y:auto; padding:0 25px; display:flex; flex-direction:column; gap:15px;">
+            {% if groupedCreneaux is empty %}
                 <div style="text-align:center; padding:30px; color:#A0AEC0; font-size:14px;">
                     Aucun créneau configuré par ce professionnel.
                 </div>
             {% else %}
                 {% set now = date() %}
-                {% for creneau in creneaux %}
-                    
-                    {# Logique disponibilité temporelle #}
-                    {% set dateCreneau = creneau.dateCreneau|date('Y-m-d') %}
-                    {% set today = now|date('Y-m-d') %}
-                    {% set timeCreneau = creneau.heureDebut|date('H:i') %}
-                    {% set currTime = now|date('H:i') %}
+                {% set todayKey = now|date('Y-m-d') %}
+                {% set currTime = now|date('H:i') %}
 
-                    {% set isDatePast = (dateCreneau < today) %}
-                    {% set isHourPast = (dateCreneau == today and timeCreneau < currTime) %}
-                    {% set isPast = isDatePast or isHourPast %}
-                    {% set isClickable = (creneau.isDisponible and not isPast) %}
-
-                    {% set bgColor = isClickable ? 'white' : '#F7FAFC' %}
-                    {% set opacity = isClickable ? '1' : '0.6' %}
-
-                    <div class="creneau-card {% if isClickable %}clickable{% endif %}" data-id="{{ creneau.id }}"
-                         style="background:{{ bgColor }}; border:2px solid #E2E8F0; border-radius:10px; padding:12px 15px; display:flex; align-items:center; gap:15px; opacity:{{ opacity }}; transition:all 0.2s; {% if isClickable %}cursor:pointer;{% endif %}">
-                        
-                        {# Jour & Date #}
-                        <div style="display:flex; flex-direction:column; width:80px;">
-                            <span style="color:#A0AEC0; font-size:11px; text-transform:uppercase;">
+                {% for group in groupedCreneaux %}
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        {# Date header #}
+                        <div style="display:flex; align-items:center; gap:10px; padding-bottom:5px; border-bottom:1px solid #edf2f7;">
+                            <span style="font-weight:bold; color:#4A90E2; font-size:14px; opacity:0.75;">
                                 {% set joursFr = {'Mon':'Lundi','Tue':'Mardi','Wed':'Mercredi','Thu':'Jeudi','Fri':'Vendredi','Sat':'Samedi','Sun':'Dimanche'} %}
-                                {{ joursFr[creneau.dateCreneau|date('D')]|default(creneau.dateCreneau|date('D')) }}
+                                {% set moisFr = {'Jan':'Janvier','Feb':'Février','Mar':'Mars','Apr':'Avril','May':'Mai','Jun':'Juin','Jul':'Juillet','Aug':'Août','Sep':'Septembre','Oct':'Octobre','Nov':'Novembre','Dec':'Décembre'} %}
+                                {{ joursFr[group.date|date('D')]|default(group.date|date('D')) }} {{ group.date|date('d') }} {{ moisFr[group.date|date('M')]|default(group.date|date('M')) }} {{ group.date|date('Y') }}
                             </span>
-                            <span style="font-weight:bold; color:#2D3748; font-size:13px;">{{ creneau.dateCreneau|date('d/m/Y') }}</span>
                         </div>
 
-                        {# Heure & Duree #}
-                        <span style="color:{% if isClickable %}#4A5568{% else %}#A0AEC0{% endif %}; font-size:13px; font-weight:500;">
-                            🕒 {{ creneau.heureDebut|date('H:i') }} • {{ creneau.dureeMinutes }} min
-                        </span>
+                        {# Slots Grid for this date #}
+                        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;">
+                            {% for creneau in group.slots %}
+                                {% set dateKey = creneau.dateCreneau|date('Y-m-d') %}
+                                {% set timeCreneau = creneau.heureDebut|date('H:i') %}
+                                {% set isPast = (dateKey < todayKey) or (dateKey == todayKey and timeCreneau < currTime) %}
+                                {% set isClickable = (creneau.isDisponible and not isPast) %}
 
-                        <div style="flex:1; display:flex; justify-content:flex-end;">
-                            {% if isDatePast %}
-                                <span style="color:#718096; font-weight:bold; font-size:12px;">📅 Date passée</span>
-                            {% elseif isHourPast %}
-                                <span style="color:#718096; font-weight:bold; font-size:12px;">⏰ Heure passée</span>
-                            {% elseif not creneau.isDisponible %}
-                                <span style="color:#E53E3E; font-weight:bold; font-size:12px;">✘ Indisponible</span>
-                            {% else %}
-                                <span style="color:#5FBF9F; font-weight:bold; font-size:12px;">✔ Disponible</span>
-                            {% endif %}
+                                <div class="creneau-card {% if isClickable %}clickable{% endif %}" data-id="{{ creneau.id }}"
+                                     style="background:{% if isClickable %}white{% else %}#F7FAFC{% endif %}; border:1.5px solid #E2E8F0; border-radius:12px; padding:8px 5px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; transition:all 0.2s; position:relative; overflow:hidden; {% if isClickable %}cursor:pointer;{% else %}opacity:0.6;{% endif %}">
+                                    
+                                    <span style="font-weight:bold; color:{% if isClickable %}#2D3748{% else %}#A0AEC0{% endif %}; font-size:13px;">
+                                        {{ creneau.heureDebut|date('H:i') }}
+                                    </span>
+                                    
+                                    {% if isPast %}
+                                        <span style="color:#A0AEC0; font-size:8px; font-weight:bold; text-transform:uppercase;">Passé</span>
+                                    {% elseif not creneau.isDisponible %}
+                                        <span style="color:#E53E3E; font-size:8px; font-weight:bold; text-transform:uppercase;">Indisponible</span>
+                                    {% else %}
+                                        <span style="color:#5FBF9F; font-size:8px; font-weight:bold; text-transform:uppercase;">Disponible</span>
+                                    {% endif %}
+
+                                    <span style="font-size:9px; color:#A0AEC0; font-weight:500;">
+                                        {{ creneau.dureeMinutes }} min
+                                    </span>
+                                </div>
+                            {% endfor %}
                         </div>
-
                     </div>
-
                 {% endfor %}
             {% endif %}
         </div>
 
-        {# FOOTER / VALIDATION BUTTON #}
+        {# FOOTER / VALIDATION LINK #}
         <div style="padding:20px 25px;">
-            <form id="reservationForm" method="post" action="">
-                <!-- URL action dynamique remplie par Javascript -->
-                <button type="submit" id="btnConfirmer" disabled style="width:100%; height:45px; background:#A4C6ED; color:white; border-radius:10px; font-weight:bold; font-size:14px; border:none; cursor:not-allowed; transition:background 0.3s;">
-                    Confirmer la réservation
-                </button>
-            </form>
+            <a href="#" id="btnConfirmerPage" style="display:flex; align-items:center; justify-content:center; width:100%; height:45px; background:#CBD5E0; color:white; border-radius:10px; font-weight:bold; font-size:14px; text-decoration:none; pointer-events:none; transition:background 0.3s; cursor:not-allowed;">
+                Continuer vers la confirmation
+            </a>
         </div>
 
     </div>
@@ -145,8 +140,7 @@
 <script>
 function initReserverScript() {
     const clickableCards = document.querySelectorAll('.creneau-card.clickable');
-    const btnConfirmer = document.getElementById('btnConfirmer');
-    const reservationForm = document.getElementById('reservationForm');
+    const btnConfirmerPage = document.getElementById('btnConfirmerPage');
 
     // ----- SÉLECTION CRÉNEAU -----
     clickableCards.forEach(card => {
@@ -157,17 +151,66 @@ function initReserverScript() {
             // Add selection to clicked
             this.classList.add('selected');
             
-            // Enable button
-            btnConfirmer.disabled = false;
-            btnConfirmer.style.background = '#4A90E2';
-            btnConfirmer.style.cursor = 'pointer';
+            // Enable link
+            btnConfirmerPage.style.background = '#4A90E2';
+            btnConfirmerPage.style.pointerEvents = 'auto';
+            btnConfirmerPage.style.cursor = 'pointer';
             
-            // Set form action target
+            // Set link target (we'll use this in the click event)
             const id = this.getAttribute('data-id');
-            reservationForm.action = '/patient/reserver/creneau/' + id;
+            btnConfirmerPage.setAttribute('data-target-url', '/patient/reserver/creneau/' + id + '/confirmer-page');
         });
     });
+
+    // ----- LOGIQUE AJAX CONFIRMATION -----
+    btnConfirmerPage.addEventListener('click', function(e) {
+        e.preventDefault();
+        const url = this.getAttribute('data-target-url');
+        if (!url) return;
+
+        const modalContent = document.getElementById('modalContentWrapper');
+        if (!modalContent) {
+             window.location.href = url;
+             return;
+        }
+
+        // Show spinner if possible
+        const spinner = document.getElementById('modalSpinner');
+        if (spinner) spinner.style.display = 'block';
+        modalContent.innerHTML = '';
+
+        fetch(url)
+            .then(r => r.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const confirmUI = doc.querySelector('div[style*="max-width:420px"]');
+                
+                if (confirmUI) {
+                    modalContent.appendChild(confirmUI);
+                    
+                    // Re-execute scripts
+                    const scripts = doc.querySelectorAll('script');
+                    scripts.forEach(s => {
+                        const newScript = document.createElement('script');
+                        newScript.text = s.text;
+                        document.body.appendChild(newScript);
+                    });
+                } else {
+                    window.location.href = url;
+                }
+            })
+            .catch(err => {
+                console.error("Erreur de chargement confirmation:", err);
+                window.location.href = url;
+            })
+            .finally(() => {
+                if (spinner) spinner.style.display = 'none';
+            });
+    });
 }
+
+
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initReserverScript);

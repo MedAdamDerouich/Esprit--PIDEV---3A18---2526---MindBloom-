@@ -1,0 +1,118 @@
+<div style="width:600px; max-width:95vw; background:white; border-radius:25px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 25px 50px rgba(0,0,0,0.22);">
+    
+    {# Header #}
+    <div style="padding:20px 30px; background:#F8FAFC; border-bottom:1px solid #E2E8F0; display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <svg fill="#4A90E2" width="24" height="24" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>
+            {% set days = {'Mon': 'Lundi', 'Tue': 'Mardi', 'Wed': 'Mercredi', 'Thu': 'Jeudi', 'Fri': 'Vendredi', 'Sat': 'Samedi', 'Sun': 'Dimanche'} %}
+            {% set months = {'Jan': 'Janvier', 'Feb': 'Février', 'Mar': 'Mars', 'Apr': 'Avril', 'May': 'Mai', 'Jun': 'Juin', 'Jul': 'Juillet', 'Aug': 'Août', 'Sep': 'Septembre', 'Oct': 'Octobre', 'Nov': 'Novembre', 'Dec': 'Décembre'} %}
+            <span style="font-size:20px; font-weight:bold; color:#2D3748;">Disponibilités — {{ days[selectedDate|date('D')] }} {{ selectedDate|date('d') }} {{ months[selectedDate|date('M')] }}</span>
+        </div>
+        <a href="#" id="closeAvailabilityModal" title="Fermer" style="color:#A0AEC0; font-size:28px; text-decoration:none; line-height:1;">&times;</a>
+    </div>
+
+    {# Body #}
+    <div style="padding:30px; max-height:70vh; overflow-y:auto; display:flex; flex-direction:column; gap:20px; background:#F5F3EF;">
+        <span style="color:#718096; font-size:15px; font-weight:500;">{{ grouped|length }} psychologues disponibles</span>
+
+        {% if grouped is empty %}
+            <div style="padding:40px; text-align:center; color:#A0AEC0;">
+                Aucune disponibilité trouvée pour cette date.
+            </div>
+        {% else %}
+            {% for g in grouped %}
+                {% set cabinet = g.cabinet %}
+                {% set psychologue = cabinet.psychologue %}
+                
+                <div style="background:white; border-radius:20px; padding:20px; box-shadow:0 4px 6px rgba(0,0,0,0.02); border:1px solid #EDF2F7; display:flex; flex-direction:column; gap:15px;">
+                    
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <div style="width:60px; height:60px; border-radius:50%; overflow:hidden; background:#E2E8F0;">
+                            {% if psychologue and psychologue.profileImage %}
+                                <img src="{{ asset('uploads/profiles/' ~ psychologue.profileImage) }}" style="width:100%; height:100%; object-fit:cover;" />
+                            {% else %}
+                                <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:30px;">👤</div>
+                            {% endif %}
+                        </div>
+                        <div style="display:flex; flex-direction:column;">
+                            <span style="font-size:17px; font-weight:bold; color:#2C3E50;">Dr. {{ psychologue ? psychologue.fullName : 'Inconnu' }}</span>
+                            <span style="font-size:14px; color:#718096;">{{ cabinet.specialite }}</span>
+                        </div>
+                        
+                        <div style="flex:1;"></div>
+
+                        {# Badge Cabinet direct #}
+                        <div style="background:#E6F4EA; color:#2E7D32; font-size:11px; font-weight:bold; padding:4px 10px; border-radius:8px; display:flex; align-items:center; gap:5px;">
+                            🏠 Cabinet
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; padding-top:10px; border-top:1px dashed #E2E8F0;">
+                        {% for slot in g.slots %}
+                            <a href="{{ path('app_patient_reserver_confirm_page', {id: slot.id}) }}" style="border:1.5px solid #F3F0E9; background:white; color:#2D3748; padding:10px 5px; border-radius:12px; transition: all 0.2s; text-decoration:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;" onmouseover="this.style.background='#F8FAFC'; this.style.borderColor='#4A90E2'" onmouseout="this.style.background='white'; this.style.borderColor='#F3F0E9'">
+                                <span style="font-weight:bold; font-size:14px; color:#2D3748;">{{ slot.heureDebut|date('H:i') }}</span>
+                                <span style="font-size:8px; font-weight:bold; color:#5FBF9F; text-transform:uppercase;">Disponible</span>
+                                <span style="font-size:9px; color:#A0AEC0; font-weight:500;">{{ slot.dureeMinutes }} min</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<script>
+(function() {
+    const closeBtn = document.getElementById('closeAvailabilityModal');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('reservationModalOverlay').style.display = 'none';
+            document.getElementById('modalContentWrapper').innerHTML = '';
+    // Logique AJAX pour charger la confirmation
+    document.querySelectorAll('a[href*="confirmer-page"]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const modalContent = document.getElementById('modalContentWrapper');
+            if (!modalContent) return; // Si pas d'overlay global, on laisse le lien normal
+
+            e.preventDefault();
+            const url = this.href;
+            const spinner = document.getElementById('modalSpinner');
+            
+            if (spinner) spinner.style.display = 'block';
+            modalContent.innerHTML = '';
+
+            fetch(url)
+                .then(r => r.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const confirmUI = doc.querySelector('div[style*="max-width:420px"]');
+                    
+                    if (confirmUI) {
+                        modalContent.appendChild(confirmUI);
+                        
+                        // Ré-exécuter les scripts de la confirmation cargée
+                        const scripts = doc.querySelectorAll('script');
+                        scripts.forEach(s => {
+                            const newScript = document.createElement('script');
+                            newScript.text = s.text;
+                            document.body.appendChild(newScript);
+                        });
+                    } else {
+                        window.location.href = url;
+                    }
+                })
+                .catch(err => {
+                    console.error("Erreur AJAX confirmation:", err);
+                    window.location.href = url;
+                })
+                .finally(() => {
+                    if (spinner) spinner.style.display = 'none';
+                });
+        });
+    });
+})();
+</script>
+

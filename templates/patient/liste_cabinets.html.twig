@@ -14,10 +14,22 @@
         <span style="color:#718096; font-size:16px; margin-top:10px;">Trouvez le psychologue qui vous convient et réservez votre consultation.</span>
     </div>
 
-    <!-- Barre de Recherche Dynamique -->
-    <div style="width:100%; max-width:650px; background:white; border-radius:15px; padding:15px 20px; display:flex; align-items:center; gap:15px; box-shadow:0 4px 10px rgba(0,0,0,0.05); margin-bottom:40px;">
-        <span style="font-size:18px; color:#A0AEC0;">🔍</span>
-        <input type="text" id="searchField" placeholder="Rechercher par professionnel ou spécialité..." style="border:none; outline:none; font-size:15px; width:100%; color:#2D3748;" />
+    <!-- Barre de Recherche et Filtres -->
+    <div style="width:100%; max-width:1200px; display:flex; flex-direction:column; align-items:center; gap:20px; margin-bottom:40px;">
+        
+        <div style="width:100%; max-width:650px; background:white; border-radius:15px; padding:15px 20px; display:flex; align-items:center; gap:15px; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
+            <span style="font-size:18px; color:#A0AEC0;">🔍</span>
+            <input type="text" id="searchField" placeholder="Rechercher par professionnel ou spécialité..." style="border:none; outline:none; font-size:15px; width:100%; color:#2D3748;" />
+        </div>
+
+        <!-- Filtre par Date (Pill) -->
+        <div style="display:flex; gap:15px; align-items:center;">
+            <div id="dateFilterPill" style="background:white; border:1px solid #E2E8F0; padding:10px 25px; border-radius:50px; display:flex; align-items:center; gap:12px; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.02); transition: all 0.2s;" onmouseover="this.style.borderColor='#4A90E2'; this.style.boxShadow='0 4px 12px rgba(74,144,226,0.1)'" onmouseout="this.style.borderColor='#E2E8F0'; this.style.boxShadow='0 2px 5px rgba(0,0,0,0.02)'">
+                <svg fill="#4A90E2" width="18" height="18" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z"/></svg>
+                <span id="dateLabel" style="font-size:15px; font-weight:600; color:#4A5568;">Filtrer par date</span>
+                <input type="date" id="dateInput" style="position:absolute; opacity:0; pointer-events:none; width:1px; height:1px;" />
+            </div>
+        </div>
     </div>
 
     {# Grille des Cabinets #}
@@ -176,15 +188,57 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Fermeture avec clique à l'exterieur
-    overlay.addEventListener('click', function(e) {
-        if (e.target === overlay) {
-            overlay.style.display = 'none';
-            content.innerHTML = ''; // Clean up
-        }
-    });
+    // --- LOGIQUE FILTRE PAR DATE ---
+    const dateFilterPill = document.getElementById('dateFilterPill');
+    const dateInput = document.getElementById('dateInput');
+    const dateLabel = document.getElementById('dateLabel');
+
+    if (dateFilterPill && dateInput) {
+        dateFilterPill.addEventListener('click', () => {
+            dateInput.showPicker(); // Ouvre le sélecteur natif
+        });
+
+        dateInput.addEventListener('change', function() {
+            const dateValue = this.value;
+            if (!dateValue) return;
+
+            // Mettre à jour le label avec la date en français
+            const dateObj = new Date(dateValue);
+            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            dateLabel.textContent = dateObj.toLocaleDateString('fr-FR', options);
+
+            // Afficher le chargement
+            overlay.style.display = 'flex';
+            spinner.style.display = 'block';
+            content.innerHTML = '';
+
+            const url = "/patient/availability/" + dateValue;
+
+            fetch(url)
+                .then(r => r.text())
+                .then(html => {
+                    content.innerHTML = html;
+                    
+                    // Exécuter les scripts de la modal chargée
+                    const scripts = content.querySelectorAll('script');
+                    scripts.forEach(s => {
+                        const newScript = document.createElement('script');
+                        newScript.text = s.text;
+                        document.body.appendChild(newScript);
+                    });
+                })
+                .catch(err => {
+                    console.error("Erreur de chargement disponibilités:", err);
+                    overlay.style.display = 'none';
+                })
+                .finally(() => {
+                    spinner.style.display = 'none';
+                });
+        });
+    }
 
 });
 </script>
+
 
 {% endblock %}

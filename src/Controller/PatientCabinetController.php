@@ -44,18 +44,68 @@ class PatientCabinetController extends AbstractController
             throw $this->createNotFoundException('Cabinet introuvable');
         }
 
-        // On récupère les créneaux du cabinet
-        $creneaux = [];
+        // On récupère les créneaux du cabinet groupés par date
+        $groupedCreneaux = [];
         if ($cabinet->getPsychologue()) {
             $creneaux = $creneauRepository->findBy(
                 ['cabinet' => $cabinet],
                 ['dateCreneau' => 'ASC', 'heureDebut' => 'ASC']
             );
+
+            foreach ($creneaux as $c) {
+                $dateKey = $c->getDateCreneau()->format('Y-m-d');
+                if (!isset($groupedCreneaux[$dateKey])) {
+                    $groupedCreneaux[$dateKey] = [
+                        'date' => $c->getDateCreneau(),
+                        'slots' => []
+                    ];
+                }
+                $groupedCreneaux[$dateKey]['slots'][] = $c;
+            }
         }
 
         return $this->render('patient/reserver.html.twig', [
             'cabinet' => $cabinet,
-            'creneaux' => $creneaux,
+            'groupedCreneaux' => $groupedCreneaux,
+        ]);
+    }
+
+
+    #[Route('/patient/availability/{date}', name: 'app_patient_availability')]
+    public function checkAvailability(string $date, \App\Repository\CreneauRepository $creneauRepository): Response
+    {
+        try {
+            $selectedDate = new \DateTime($date);
+        } catch (\Exception $e) {
+            return new Response('Date invalide', 400);
+        }
+
+        // On cherche tous les créneaux disponibles pour cette date
+        $creneaux = $creneauRepository->findBy(
+            ['dateCreneau' => $selectedDate, 'disponible' => true],
+            ['heureDebut' => 'ASC']
+        );
+
+        // Grouper les créneaux par cabinet/psychologue
+        $grouped = [];
+        foreach ($creneaux as $c) {
+            $cabinet = $c->getCabinet();
+            if (!$cabinet) continue;
+            
+            $id = $cabinet->getIdCabinet();
+            if (!isset($grouped[$id])) {
+                $grouped[$id] = [
+                    'cabinet' => $cabinet,
+                    'slots' => []
+                ];
+            }
+            $grouped[$id]['slots'][] = $c;
+        }
+
+        return $this->render('patient/_availability_modal.html.twig', [
+            'grouped' => $grouped,
+            'selectedDate' => $selectedDate
         ]);
     }
 }
+

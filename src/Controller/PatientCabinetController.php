@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\CabinetRepository;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -10,9 +11,14 @@ use Symfony\Component\Routing\Annotation\Route;
 class PatientCabinetController extends AbstractController
 {
     #[Route('/patient/cabinets', name: 'app_patient_cabinets_index')]
-    public function index(CabinetRepository $cabinetRepository, \Symfony\Component\HttpFoundation\Request $request, \App\Repository\CreneauRepository $creneauRepository): Response
+    public function index(
+        CabinetRepository $cabinetRepository, 
+        \Symfony\Component\HttpFoundation\Request $request, 
+        \App\Repository\CreneauRepository $creneauRepository,
+        PaginatorInterface $paginator
+    ): Response
     {
-        $cabinets = $cabinetRepository->findAllWithPsychologue();
+        $cabinetsQuery = $cabinetRepository->findAllWithPsychologueQuery();
 
         // Extraire les dates ayant des créneaux disponibles
         $creneauxDispos = $creneauRepository->findBy(['disponible' => true]);
@@ -27,24 +33,15 @@ class PatientCabinetController extends AbstractController
         $availableDates = array_values(array_unique($availableDates));
 
 
-        // Pagination setup
-        $page = $request->query->getInt('page', 1);
-        $limit = 3;
-        $totalCabinets = count($cabinets);
-        $totalPages = (int) ceil($totalCabinets / $limit);
-        
-        if ($page < 1) $page = 1;
-        if ($totalPages > 0 && $page > $totalPages) $page = $totalPages;
-
-        $offset = ($page - 1) * $limit;
-        
-        // Handle empty case
-        $paginatedCabinets = $totalCabinets > 0 ? array_slice($cabinets, $offset, $limit) : [];
+        // Pagination using KnpPaginatorBundle
+        $pagination = $paginator->paginate(
+            $cabinetsQuery, // source data (array or query)
+            $request->query->getInt('page', 1), // current page number
+            3 // limit per page
+        );
 
         return $this->render('patient/liste_cabinets.html.twig', [
-            'cabinets' => $paginatedCabinets,
-            'currentPage' => $page,
-            'totalPages' => $totalPages,
+            'cabinets' => $pagination,
             'availableDates' => $availableDates,
         ]);
     }

@@ -94,22 +94,91 @@
 
     </div>
 
-    <!-- Pagination Controls -->
-    {% if totalPages > 1 %}
-    <div style="display:flex; justify-content:center; gap:10px; margin-top:40px; margin-bottom:20px;">
-        {% if currentPage > 1 %}
-            <a href="{{ path('app_patient_cabinets_index', {page: currentPage - 1}) }}" style="background:white; color:#4A90E2; padding:8px 15px; border-radius:10px; text-decoration:none; font-weight:600; box-shadow:0 2px 5px rgba(0,0,0,0.05); transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Précédent</a>
-        {% endif %}
+    <style>
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        /* Hide 'First' and 'Last' labels */
+        .pagination .first, 
+        .pagination .last {
+            display: none;
+        }
+        /* Style for page numbers (small boxes) */
+        .pagination .page a, 
+        .pagination .current {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background: white;
+            color: #4A5568;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+        .pagination .page a:hover {
+            background: #EDF2F7;
+            color: #4A90E2;
+            transform: translateY(-1px);
+        }
+        .pagination .current {
+            background: #4A90E2;
+            color: white;
+            box-shadow: 0 4px 8px rgba(74, 144, 226, 0.2);
+        }
+        /* Style 'Next' and 'Previous' buttons */
+        .pagination .next a, 
+        .pagination .previous a {
+            background: #4A90E2;
+            color: white;
+            padding: 6px 18px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 13px;
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.2);
+            transition: all 0.2s;
+        }
+        .pagination .previous a {
+            margin-right: 10px;
+        }
+        .pagination .next a {
+            margin-left: 10px;
+        }
+        .pagination .next a:hover, 
+        .pagination .previous a:hover {
+            background: #357ABD;
+            transform: scale(1.05);
+        }
+        /* Hide if disabled */
+        .pagination .disabled {
+            display: none;
+        }
+    </style>
 
-        {% for i in 1..totalPages %}
-            <a href="{{ path('app_patient_cabinets_index', {page: i}) }}" style="background:{% if i == currentPage %}#4A90E2{% else %}white{% endif %}; color:{% if i == currentPage %}white{% else %}#2C3E50{% endif %}; padding:8px 15px; border-radius:10px; text-decoration:none; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.05); min-width:40px; text-align:center; transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">{{ i }}</a>
-        {% endfor %}
-
-        {% if currentPage < totalPages %}
-            <a href="{{ path('app_patient_cabinets_index', {page: currentPage + 1}) }}" style="background:white; color:#4A90E2; padding:8px 15px; border-radius:10px; text-decoration:none; font-weight:600; box-shadow:0 2px 5px rgba(0,0,0,0.05); transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Suivant</a>
-        {% endif %}
+    <div class="navigation">
+        {{ knp_pagination_render(cabinets) }}
     </div>
-    {% endif %}
+
+    <!-- Footer Line -->
+    <div style="margin-top: auto; padding-top: 50px; padding-bottom: 20px; color: #A0AEC0; font-size: 13px; text-align: center;">
+        © 2026 MindBloom. Votre bien-être mental est notre priorité.
+    </div>
 
 </div>
 

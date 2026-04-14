@@ -32,6 +32,10 @@ services:
         arguments:
             $secretKey: '%env(RECAPTCHA_SECRET_KEY)%'
 
+    App\Service\PdfTicketService:
+        arguments:
+            $apdfApiKey: '%env(APDF_API_KEY)%'
+
     Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator:
         alias: security.authenticator.form_login.main
         public: true

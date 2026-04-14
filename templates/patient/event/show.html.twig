@@ -72,15 +72,25 @@
                     </ul>
                     
                     {% if isRegistered %}
-                        <div class="alert alert-success">✅ Vous êtes déjà inscrit</div>
+                        <button disabled style="width: 100%; padding: 15px; font-size: 16px; background-color: #4ECB71; opacity: 0.9; cursor: not-allowed; border: none; color: white; border-radius: 8px; font-weight: 600;">
+                            ✅ Vous êtes déjà inscrit
+                        </button>
+                    {% elseif event.dateDebut < date() %}
+                        <button disabled style="width: 100%; padding: 15px; font-size: 16px; background-color: #6c757d; cursor: not-allowed; border: none; color: white; border-radius: 8px; font-weight: 600;">
+                            ⏳ Événement déjà passé
+                        </button>
                     {% elseif not event.isPlacesDisponibles %}
-                        <div class="alert alert-warning">⚠️ Complet</div>
+                        <button disabled style="width: 100%; padding: 15px; font-size: 16px; background-color: #e74c3c; cursor: not-allowed; border: none; color: white; border-radius: 8px; font-weight: 600;">
+                            ⚠️ Complet (Places épuisées)
+                        </button>
                     {% elseif event.statut != 'actif' %}
-                        <div class="alert alert-secondary">Événement {{ event.statut }}</div>
+                        <button disabled style="width: 100%; padding: 15px; font-size: 16px; background-color: #9A9A9A; cursor: not-allowed; border: none; color: white; border-radius: 8px; font-weight: 600;">
+                            Événement {{ event.statut }}
+                        </button>
                     {% else %}
                         <form method="post" action="{{ path('app_patient_event_participate', {id: event.id}) }}">
                             <input type="hidden" name="_token" value="{{ csrf_token('participate' ~ event.id) }}">
-                            <button type="submit" class="btn-participate" style="width: 100%; padding: 15px; font-size: 16px;">
+                            <button type="submit" class="btn-participate" style="width: 100%; padding: 15px; font-size: 16px; background: linear-gradient(135deg, #00C2C7, #4ecb71); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
                                 🎉 S'inscrire maintenant
                             </button>
                         </form>

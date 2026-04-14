@@ -25,10 +25,17 @@ class DashboardController extends AbstractController
     }
 
     #[Route('/patient/dashboard', name: 'app_patient_dashboard')]
-    public function patientDashboard(): Response
+    public function patientDashboard(\App\Repository\ParticipationRepository $participationRepo): Response
     {
         $this->denyAccessUnlessGranted('ROLE_PATIENT');
-        return $this->render('patient/dashboard.html.twig');
+        
+        $user = $this->getUser();
+        $nextUpcomingParticipation = $participationRepo->findNextUpcomingEventForUser($user);
+        
+        return $this->render('patient/dashboard.html.twig', [
+            'next_event' => $nextUpcomingParticipation ? $nextUpcomingParticipation->getEvenement() : null,
+            'next_event_jours_restants' => $nextUpcomingParticipation ? (new \DateTime())->diff($nextUpcomingParticipation->getEvenement()->getDateDebut())->days : null,
+        ]);
     }
 
     #[Route('/psychologue/dashboard', name: 'app_psychologue_dashboard')]

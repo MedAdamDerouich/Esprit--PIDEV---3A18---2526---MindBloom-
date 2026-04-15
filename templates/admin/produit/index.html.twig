@@ -186,6 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!searchInput) return;
 
+    // Live filtering (only for current page results)
     searchInput.addEventListener('input', function() {
         let searchQuery = this.value.toLowerCase().trim();
         let visibleCount = 0;

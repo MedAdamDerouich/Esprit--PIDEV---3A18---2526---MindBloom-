@@ -27,14 +27,14 @@
             </div>
             
             <div id="searchValidationMessage" class="text-danger mt-2 small fw-bold" style="display: none; text-align: center;"></div>
-            <div id="searchNoResults" class="text-muted mt-2 small" style="display: none; text-align: center;">Aucun produit trouvé pour cette recherche.</div>
+     <div id="searchNoResults" class="text-muted mt-2 small" style="display: none; text-align: center;">Aucun produit trouvé pour cette recherche.</div>
         </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="productGrid">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5" id="productGrid">
         {% for produit in produits %}
             <div class="col product-item" data-price="{{ produit.prix }}">
-                <div class="android-cardview h-100">
+                <div class="android-cardview h-100" style="cursor: pointer;" onclick="window.location.href='{{ path('app_produit_show', {'id': produit.id}) }}'">
                     <div class="image-wrapper">
                         {% if produit.image %}
                             <img src="{{ asset('uploads/produits/' ~ produit.image) }}" class="product-image" alt="{{ produit.nom }}">
@@ -67,8 +67,7 @@
                     </div>
                     
                     <div class="card-actions">
-                        <a href="{{ path('app_produit_show', {'id': produit.id}) }}" class="btn-android-flat">DÉTAILS</a>
-                        <a href="{{ path('app_produit_feedback_new', {'id': produit.id}) }}" class="btn-android-raised">AVIS</a>
+                        <a href="{{ path('app_produit_feedback_new', {'id': produit.id}) }}" class="btn-android-raised" onclick="event.stopPropagation();">AVIS</a>
                     </div>
                 </div>
             </div>
@@ -78,6 +77,43 @@
             </div>
         {% endfor %}
     </div>
+
+    <!-- Pagination -->
+    {% if maxPages > 1 %}
+    <div class="d-flex justify-content-center mt-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination pagination-md">
+                <li class="page-item {{ currentPage == 1 ? 'disabled' : '' }}">
+                    <a class="page-link border-0 shadow-sm rounded-pill px-4 mx-1" 
+                       href="{{ path('app_produit_index', {page: currentPage - 1, q: searchTerm}) }}"
+                       style="color: #4A90E2; background-color: white;">
+                        <i class="bi bi-chevron-left me-1"></i> Précédent
+                    </a>
+                </li>
+                
+                {% for i in 1..maxPages %}
+                    {% if i >= currentPage - 2 and i <= currentPage + 2 %}
+                        <li class="page-item {{ i == currentPage ? 'active' : '' }}">
+                            <a class="page-link border-0 shadow-sm rounded-circle mx-1 {{ i == currentPage ? 'text-white' : 'text-muted' }}" 
+                               href="{{ path('app_produit_index', {page: i, q: searchTerm}) }}"
+                               style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; {{ i == currentPage ? 'background-color: #4A90E2;' : 'background-color: white;' }}">
+                                {{ i }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                <li class="page-item {{ currentPage == maxPages ? 'disabled' : '' }}">
+                    <a class="page-link border-0 shadow-sm rounded-pill px-4 mx-1" 
+                       href="{{ path('app_produit_index', {page: currentPage + 1, q: searchTerm}) }}"
+                       style="color: #4A90E2; background-color: white;">
+                        Suivant <i class="bi bi-chevron-right ms-1"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
 </div>
 
 <style>
@@ -213,6 +249,15 @@
     color: white;
     box-shadow: 0 2px 4px -1px rgba(0,0,0,.2), 0 4px 5px 0 rgba(0,0,0,.14), 0 1px 10px 0 rgba(0,0,0,.12);
 }
+
+.pagination .page-link:hover {
+    background-color: #f8f9fa !important;
+    transform: translateY(-1px);
+    transition: all 0.2s;
+}
+.pagination .active .page-link:hover {
+    background-color: #357ABD !important;
+}
 </style>
 
 <script>
@@ -222,8 +267,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const productGrid = document.getElementById('productGrid');
     const validationMessage = document.getElementById('searchValidationMessage');
     const noResultsMessage = document.getElementById('searchNoResults');
-    const emptyStateFallback = productGrid.querySelector('.col-12.text-center'); 
     
+    // Search on Enter
+    if (searchInput) {
+        searchInput.value = "{{ searchTerm }}";
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                window.location.href = "{{ path('app_produit_index') }}?q=" + encodeURIComponent(this.value);
+            }
+        });
+    }
+
     // Store original order
     let originalItems = Array.from(productGrid.querySelectorAll('.col.product-item'));
 
@@ -259,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sortedItems.sort((a, b) => parseFloat(b.dataset.price) - parseFloat(a.dataset.price));
         }
 
-        // Apply filter and re-append
+        // Apply filter (only for items on current page)
         sortedItems.forEach(col => {
             const titleEl = col.querySelector('.product-title');
             const descEl = col.querySelector('.product-description');
@@ -276,17 +330,10 @@ document.addEventListener('DOMContentLoaded', function() {
             productGrid.appendChild(col);
         });
 
-        // Add empty fallback to end if needed
-        if (emptyStateFallback) productGrid.appendChild(emptyStateFallback);
-
         if (hasRealItems && visibleCount === 0 && searchQuery !== '') {
             noResultsMessage.style.display = 'block';
-            if (emptyStateFallback) emptyStateFallback.style.display = 'none';
         } else {
             noResultsMessage.style.display = 'none';
-            if (emptyStateFallback && !hasRealItems) {
-                emptyStateFallback.style.display = 'block';
-            }
         }
     }
 

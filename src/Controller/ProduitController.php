@@ -20,15 +20,30 @@ class ProduitController extends AbstractController
     public function index(ProduitRepository $produitRepository, Request $request): Response
     {
         $query = $request->query->get('q');
+        $page = $request->query->getInt('page', 1);
+        $limit = 6;
+
+        $qb = $produitRepository->createQueryBuilder('p');
+
         if ($query) {
-            $produits = $produitRepository->search($query);
-        } else {
-            $produits = $produitRepository->findAll();
+            $qb->where('p.nom LIKE :q OR p.description LIKE :q')
+               ->setParameter('q', '%' . $query . '%');
         }
+
+        $allProduits = $qb->getQuery()->getResult();
+        $totalProduits = count($allProduits);
+        $maxPages = ceil($totalProduits / $limit);
+
+        $qb->setFirstResult(($page - 1) * $limit)
+           ->setMaxResults($limit);
+        
+        $produits = $qb->getQuery()->getResult();
 
         return $this->render('produit/index.html.twig', [
             'produits' => $produits,
             'searchTerm' => $query,
+            'currentPage' => $page,
+            'maxPages' => $maxPages
         ]);
     }
 

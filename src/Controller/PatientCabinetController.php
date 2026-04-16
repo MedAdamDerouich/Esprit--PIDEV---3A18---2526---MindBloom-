@@ -18,7 +18,8 @@ class PatientCabinetController extends AbstractController
         PaginatorInterface $paginator
     ): Response
     {
-        $cabinetsQuery = $cabinetRepository->findAllWithPsychologueQuery();
+        $search = $request->query->get('search');
+        $cabinetsQuery = $cabinetRepository->findAllWithPsychologueQuery($search);
 
         // Extraire les dates ayant des créneaux disponibles
         $creneauxDispos = $creneauRepository->findBy(['disponible' => true]);
@@ -43,6 +44,7 @@ class PatientCabinetController extends AbstractController
         return $this->render('patient/liste_cabinets.html.twig', [
             'cabinets' => $pagination,
             'availableDates' => $availableDates,
+            'search' => $search,
         ]);
     }
 

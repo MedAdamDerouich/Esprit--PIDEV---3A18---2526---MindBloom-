@@ -65,6 +65,9 @@
             e.preventDefault();
             document.getElementById('reservationModalOverlay').style.display = 'none';
             document.getElementById('modalContentWrapper').innerHTML = '';
+            if (typeof window.resetDateFilter === 'function') {
+                window.resetDateFilter();
+            }
         });
     }
 

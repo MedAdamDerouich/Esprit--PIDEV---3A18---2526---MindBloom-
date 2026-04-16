@@ -30,7 +30,7 @@
         
         <div style="width:100%; max-width:650px; background:white; border-radius:15px; padding:15px 20px; display:flex; align-items:center; gap:15px; box-shadow:0 4px 10px rgba(0,0,0,0.05);">
             <span style="font-size:18px; color:#A0AEC0;">🔍</span>
-            <input type="text" id="searchField" placeholder="Rechercher par professionnel ou spécialité..." style="border:none; outline:none; font-size:15px; width:100%; color:#2D3748;" />
+            <input type="text" id="searchField" placeholder="Rechercher par professionnel ou spécialité..." value="{{ search }}" style="border:none; outline:none; font-size:15px; width:100%; color:#2D3748;" />
         </div>
 
         <!-- Filtre par Date (Pill) -->
@@ -194,29 +194,72 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // --- LOGIQUE RECHERCHE ---
     const searchField = document.getElementById('searchField');
-    const cards = document.querySelectorAll('.psychologist-card');
 
     if (searchField) {
-        searchField.addEventListener('input', function(e) {
-            const query = e.target.value.toLowerCase().trim();
+        // Fonction de debounce pour éviter de recharger à chaque lettre
+        function debounce(func, timeout = 500) {
+            let timer;
+            return (...args) => {
+                clearTimeout(timer);
+                timer = setTimeout(() => { func.apply(this, args); }, timeout);
+            };
+        }
 
-            cards.forEach(card => {
-                const nom = card.getAttribute('data-nom') || '';
-                const specialite = card.getAttribute('data-specialite') || '';
-
-                if (nom.includes(query) || specialite.includes(query)) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+        const triggerSearch = debounce((query) => {
+            const url = new URL(window.location.href);
+            if (query) {
+                url.searchParams.set('search', query);
+            } else {
+                url.searchParams.delete('search');
+            }
+            url.searchParams.set('page', 1); // Toujours revenir à la page 1
+            window.location.href = url.toString();
         });
+
+        searchField.addEventListener('input', (e) => {
+            triggerSearch(e.target.value.trim());
+        });
+
+        // Garder aussi la recherche sur Entrée (immédiate)
+        searchField.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const query = e.target.value.trim();
+                const url = new URL(window.location.href);
+                if (query) {
+                    url.searchParams.set('search', query);
+                } else {
+                    url.searchParams.delete('search');
+                }
+                url.searchParams.set('page', 1);
+                window.location.href = url.toString();
+            }
+        });
+
+        // Remettre le focus et le curseur à la fin si une recherche est active
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('search')) {
+            searchField.focus();
+            const val = searchField.value;
+            searchField.value = '';
+            searchField.value = val;
+        }
     }
 
     // --- LOGIQUE MODAL CRENEAU ---
     const overlay = document.getElementById('reservationModalOverlay');
     const content = document.getElementById('modalContentWrapper');
     const spinner = document.getElementById('modalSpinner');
+
+    // Fermer si clic sur l'overlay (en dehors du contenu)
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) {
+            overlay.style.display = 'none';
+            content.innerHTML = '';
+            if (typeof window.resetDateFilter === 'function') {
+                window.resetDateFilter();
+            }
+        }
+    });
 
     document.querySelectorAll('.open-modal-creneau').forEach(btn => {
         btn.addEventListener('click', function(e) {
@@ -337,14 +380,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        window.resetDateFilter = function() {
+            fp.clear();
+            dateLabel.textContent = 'Filtrer par date';
+            document.getElementById('clearDateBtn').style.display = 'none';
+        };
+
         dateFilterPill.addEventListener('click', () => {
             fp.open();
         });
 
         document.getElementById('clearDateBtn').addEventListener('click', () => {
-            fp.clear();
-            dateLabel.textContent = 'Filtrer par date';
-            document.getElementById('clearDateBtn').style.display = 'none';
+            window.resetDateFilter();
         });
     }
 

@@ -6,10 +6,12 @@ use App\Entity\User;
 use App\Entity\Wallet;
 use App\Repository\TransactionRepository;
 use App\Repository\WalletRepository;
+use App\Service\AI\WalletAIService;
 use App\Service\StripeService;
 use App\Service\WalletService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -133,6 +135,28 @@ class WalletController extends AbstractController
             'selectedWallet' => $selectedWallet,
             'selectedTransactions' => $selectedTransactions,
         ]);
+    }
+
+    // ── AI endpoints ──────────────────────────────────────────────────────────
+
+    #[Route('/wallet/ai/fraud', name: 'app_wallet_ai_fraud', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function aiFraud(WalletAIService $aiService): JsonResponse
+    {
+        /** @var User $user */
+        $user   = $this->getUser();
+        $result = $aiService->analyzeFraudRisk($user);
+        return $this->json(['result' => $result]);
+    }
+
+    #[Route('/wallet/ai/insight', name: 'app_wallet_ai_insight', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function aiInsight(WalletAIService $aiService): JsonResponse
+    {
+        /** @var User $user */
+        $user   = $this->getUser();
+        $result = $aiService->getFinancialInsight($user);
+        return $this->json(['result' => $result]);
     }
 
     #[Route('/admin/wallets/{id}/toggle', name: 'app_admin_wallet_toggle', methods: ['POST'])]

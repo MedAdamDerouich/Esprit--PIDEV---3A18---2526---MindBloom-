@@ -68,10 +68,151 @@
    DARK MODE — surgical, no wildcard div rule
    ══════════════════════════════════════════ */
 
+/* ── Smooth transitions (applies light AND dark) ── */
+body,
+body header,
+body .mnav-link,
+body .mnav-wallet,
+body .mnav-profile-inner,
+body .mnav-logout,
+body .service-card-3d,
+body .wallet-balance-card,
+body .mb-card,
+body .card,
+body .transaction-row,
+body input, body textarea, body select,
+body .modal-content,
+body .form-control,
+body .btn {
+    transition: background-color 0.35s ease, color 0.3s ease,
+                border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
 /* ── Body & page background ── */
 body.dark-mode {
     background: #0F1117 !important;
     color: #D8DCE8;
+}
+
+/* ── Wider coverage: generic pages ── */
+body.dark-mode main,
+body.dark-mode section:not(#hero-section):not(#services-section),
+body.dark-mode .container,
+body.dark-mode .container-fluid {
+    color: #D8DCE8;
+}
+
+/* ── Cards / generic containers ── */
+body.dark-mode .card,
+body.dark-mode .mb-card,
+body.dark-mode .wallet-balance-card,
+body.dark-mode .panel,
+body.dark-mode .box {
+    background: #161A26 !important;
+    color: #D8DCE8 !important;
+    border-color: #252B3E !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35) !important;
+}
+body.dark-mode .card-header,
+body.dark-mode .card-footer {
+    background: #1A1F2E !important;
+    border-color: #252B3E !important;
+    color: #D8DCE8 !important;
+}
+body.dark-mode .card-title,
+body.dark-mode h1, body.dark-mode h2,
+body.dark-mode h3, body.dark-mode h4,
+body.dark-mode h5, body.dark-mode h6 {
+    color: #E8EAF0 !important;
+}
+body.dark-mode p, body.dark-mode span, body.dark-mode li,
+body.dark-mode td, body.dark-mode label {
+    color: inherit;
+}
+body.dark-mode .text-muted,
+body.dark-mode small {
+    color: #6A7385 !important;
+}
+
+/* ── Tables ── */
+body.dark-mode table,
+body.dark-mode .table {
+    color: #D8DCE8 !important;
+    background: transparent !important;
+}
+body.dark-mode .table thead th {
+    background: #1A1F2E !important;
+    color: #E8EAF0 !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode .table tbody tr {
+    border-color: #252B3E !important;
+}
+body.dark-mode .table tbody tr:hover,
+body.dark-mode .transaction-row:hover {
+    background: #1A1F2E !important;
+}
+body.dark-mode .table-striped tbody tr:nth-of-type(odd) {
+    background: #141824 !important;
+}
+
+/* ── Forms ── */
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select,
+body.dark-mode .form-control,
+body.dark-mode .form-select {
+    background: #1A1F2E !important;
+    color: #E8EAF0 !important;
+    border-color: #2A3147 !important;
+}
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+    color: #5A6275 !important;
+}
+body.dark-mode input:focus,
+body.dark-mode textarea:focus,
+body.dark-mode select:focus,
+body.dark-mode .form-control:focus {
+    background: #1E2333 !important;
+    border-color: #4A90E2 !important;
+    box-shadow: 0 0 0 3px rgba(74,144,226,0.15) !important;
+    color: #E8EAF0 !important;
+}
+
+/* ── Buttons (neutral only, keep colored buttons as-is) ── */
+body.dark-mode .btn-light,
+body.dark-mode .btn-secondary,
+body.dark-mode .btn-outline-secondary {
+    background: #1E2333 !important;
+    color: #D8DCE8 !important;
+    border-color: #2A3147 !important;
+}
+
+/* ── Modals ── */
+body.dark-mode .modal-content {
+    background: #161A26 !important;
+    color: #D8DCE8 !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode .modal-header,
+body.dark-mode .modal-footer {
+    border-color: #252B3E !important;
+}
+
+/* ── Wallet page specific ── */
+body.dark-mode .wallet-balance-card {
+    background: linear-gradient(135deg, #152B22 0%, #1A3529 100%) !important;
+    border-color: #1E4434 !important;
+}
+body.dark-mode .transaction-row {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+}
+
+/* ── Links inside content ── */
+body.dark-mode a:not(.mnav-link):not(.mnav-logout):not(.mnav-wallet):not(.btn) {
+    color: #7BB8F5;
 }
 
 /* ── Navbar ── */
@@ -194,17 +335,15 @@ body.dark-mode .service-card-3d .card-icon-box-green {
     background: #152B22 !important;
 }
 
-/* Stickman toggle canvas */
-#dm-stickman {
-    cursor: pointer;
-    flex-shrink: 0;
-    display: block;
-    border-radius: 12px;
-    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease;
+/* Dark-mode toggle button (desk lamp) */
+body.dark-mode #dm-toggle {
+    background: #1E2333 !important;
+    border-color: #2A3147 !important;
 }
-#dm-stickman:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 16px rgba(74,144,226,0.25);
+body.dark-mode #dm-toggle:hover {
+    background: #252B3E !important;
+    border-color: #5EDDE1 !important;
+    box-shadow: 0 6px 16px rgba(94,221,225,0.25) !important;
 }
 
 /* ── Wallet animation ── */
@@ -338,6 +477,59 @@ body.dark-mode .service-card-3d .card-icon-box-green {
             </div>
         </a>
 
+        {# Dark mode toggle — desk lamp (pull the cord) #}
+        <button id="dm-toggle" type="button" title="Basculer le mode sombre"
+                style="width:44px;height:44px;border:1.5px solid transparent;background:#EAF2FB;border-radius:12px;
+                       cursor:pointer;display:flex;align-items:center;justify-content:center;
+                       flex-shrink:0;transition:background 0.18s ease, border-color 0.18s ease, transform 0.2s ease, box-shadow 0.2s ease;padding:0;"
+                onmouseover="this.style.background='#DCE8F7';this.style.borderColor='#4A90E2';this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 14px rgba(74,144,226,0.25)';"
+                onmouseout="this.style.background='#EAF2FB';this.style.borderColor='transparent';this.style.transform='translateY(0)';this.style.boxShadow='none';">
+            <svg id="dm-lamp" width="36" height="36" viewBox="0 0 40 40"
+                 xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    {# Shade — brand navy/cyan gradient #}
+                    <linearGradient id="dm-shade" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%"  stop-color="#4A90E2"/>
+                        <stop offset="100%" stop-color="#1B3A6B"/>
+                    </linearGradient>
+                    {# Shade highlight #}
+                    <linearGradient id="dm-shade-hi" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="0.35"/>
+                        <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+                    </linearGradient>
+                    {# Stem/base — cool grey #}
+                    <linearGradient id="dm-metal" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%"   stop-color="#B8C2D4"/>
+                        <stop offset="50%"  stop-color="#E5EAF2"/>
+                        <stop offset="100%" stop-color="#B8C2D4"/>
+                    </linearGradient>
+                </defs>
+
+                {# Mushroom shade — inset to fit the button frame #}
+                <path d="M10 17 Q10 8 20 8 Q30 8 30 17 Z"
+                      fill="url(#dm-shade)" stroke="#14294A" stroke-width="0.6"/>
+                {# Shade highlight sheen #}
+                <path d="M12 15 Q13 10 20 9.5 Q27 10 28 15 Z"
+                      fill="url(#dm-shade-hi)"/>
+                {# Shade rim #}
+                <line x1="10" y1="17" x2="30" y2="17" stroke="#0E1F3A" stroke-width="0.8" stroke-linecap="round"/>
+
+                {# Stem #}
+                <rect x="18.8" y="17" width="2.4" height="13" fill="url(#dm-metal)"/>
+                {# Base plate #}
+                <rect x="13.5" y="29.5" width="13" height="2.8" rx="1" fill="url(#dm-metal)" stroke="#8A94A8" stroke-width="0.4"/>
+                {# Base shadow #}
+                <ellipse cx="20" cy="33" rx="7.5" ry="1" fill="#000" opacity="0.15"/>
+
+                {# Pull cord + bead — anchored to the shade rim, hanging straight down #}
+                <g id="dm-lamp-pull" style="transform-origin: 27px 17px; transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1);">
+                    <line x1="27" y1="17" x2="27" y2="23.5" stroke="#7A8299" stroke-width="0.9" stroke-linecap="round"/>
+                    <circle id="dm-lamp-bead" cx="27" cy="24.7" r="1.5" fill="#F5C842" stroke="#B8891F" stroke-width="0.35"/>
+                    <circle cx="26.6" cy="24.3" r="0.45" fill="#FFF3B8" opacity="0.9"/>
+                </g>
+            </svg>
+        </button>
+
         {# Déconnexion #}
         <a href="{{ path('app_logout') }}"
            class="mnav-logout"
@@ -352,443 +544,57 @@ body.dark-mode .service-card-3d .card-icon-box-green {
 </header>
 
 
-<script>
+<script>/* dm-toggle-v5-lamp */
 (function () {
-    var canvas = document.getElementById('dm-stickman');
-    if (!canvas) return;
-    var ctx = canvas.getContext('2d');
+    var btn = document.getElementById('dm-toggle');
+    if (!btn) return;
 
-    /* ── Theme state ── */
-    var dark = localStorage.getItem('mindbloom-theme') === 'dark';
-    if (dark) document.body.classList.add('dark-mode');
+    var STORAGE_KEY = 'mindbloom-theme';
+    var mql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
-    /* ── Canvas logical size (CSS pixel = 1 canvas px, drawn at 2× for retina) ── */
-    var DPR = window.devicePixelRatio || 1;
-    var SIZE = 72;
-    canvas.width  = SIZE * DPR;
-    canvas.height = SIZE * DPR;
-    canvas.style.width  = SIZE + 'px';
-    canvas.style.height = SIZE + 'px';
-    ctx.scale(DPR, DPR);
-
-    /* ── Coordinate system (all in CSS px, origin top-left) ── */
-    var W = SIZE, H = SIZE;
-
-    // Ceiling rail at very top
-    var CEIL  = 4;
-    // Bulb hangs from CEIL by a wire
-    var WIRE_LEN = 10;
-    var BULB_CY  = CEIL + WIRE_LEN + 6;  // bulb centre Y = 20
-    var BULB_R   = 7;
-
-    // Rope hangs from bulb socket
-    var ROPE_X   = W / 2;              // x = 36
-    var ROPE_TOP = BULB_CY + BULB_R + 2; // rope starts just below bulb = 29
-    var ROPE_IDLE_LEN = 22;            // rope at rest ends at y = 51
-    var ROPE_PULL_LEN = 34;            // rope pulled ends at y = 63 (below floor → cap at floor)
-
-    // Floor
-    var FLOOR = H - 8;                 // y = 64
-
-    // Stickman lives on the floor
-    var MAN_X = W / 2;                 // x centre = 36
-    // Stickman proportions
-    var HEAD_R  = 5;
-    var TORSO_H = 12;
-    var ARM_LEN = 10;
-    var LEG_LEN = 11;
-    // In idle: feet at FLOOR, head at FLOOR - LEG_H - TORSO_H - HEAD_R
-    var LEG_H   = LEG_LEN;
-
-    /* ── Easing helpers ── */
-    function eio(t) { return t < .5 ? 2*t*t : -1+(4-2*t)*t; } // ease-in-out quad
-    function eout(t) { return 1-(1-t)*(1-t); }                 // ease-out quad
-    function ein(t)  { return t*t; }                           // ease-in quad
-    function clamp(t){ return t < 0 ? 0 : t > 1 ? 1 : t; }
-    function lerp(a, b, t) { return a + (b-a)*t; }
-    // phase helper: remap t in [from,to] to [0,1]
-    function phase(t, from, to) { return clamp((t-from)/(to-from)); }
-
-    /* ════════════════════════════════════
-       DRAW HELPERS
-    ════════════════════════════════════ */
-
-    function bg() {
-        // background
-        ctx.fillStyle = dark ? '#12141f' : '#f0f4fc';
-        ctx.beginPath();
-        ctx.roundRect(0, 0, W, H, 10);
-        ctx.fill();
+    function apply(dark) {
+        document.body.classList.toggle('dark-mode', dark);
     }
 
-    /* Draw the ceiling bar */
-    function ceil() {
-        ctx.fillStyle = dark ? '#2a2d40' : '#c8d0e0';
-        ctx.fillRect(0, 0, W, CEIL);
-    }
+    // Initial theme: user preference wins; otherwise follow OS
+    var stored = localStorage.getItem(STORAGE_KEY);
+    var initialDark = stored ? (stored === 'dark') : (mql && mql.matches);
+    apply(initialDark);
 
-    /* Draw the hanging bulb.
-       lit   : 0 (off) … 1 (full on)
-       swingX: horizontal offset of bulb centre (rope swing) */
-    function bulb(lit, swingX) {
-        var bx = ROPE_X + swingX;
-        var by = BULB_CY;
-
-        // Wire from ceiling to bulb top
-        ctx.strokeStyle = dark ? '#555' : '#aaa';
-        ctx.lineWidth   = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(ROPE_X, CEIL);
-        ctx.lineTo(bx, by - BULB_R - 2);
-        ctx.stroke();
-
-        // Glow (only when lit)
-        if (lit > 0.05) {
-            var r = lerp(0, 28, lit);
-            var g = ctx.createRadialGradient(bx, by, 0, bx, by, r);
-            g.addColorStop(0, dark
-                ? 'rgba(255,210,50,'+(0.9*lit)+')'
-                : 'rgba(100,170,255,'+(0.6*lit)+')');
-            g.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(bx, by, r, 0, Math.PI*2); ctx.fill();
-        }
-
-        // Bulb glass
-        ctx.beginPath();
-        ctx.arc(bx, by, BULB_R, 0, Math.PI*2);
-        ctx.fillStyle   = lit > 0.3
-            ? (dark ? '#FFD84A' : '#90c8ff')
-            : (dark ? '#2a2d40' : '#c0c8d8');
-        ctx.strokeStyle = dark ? '#4a4060' : '#8899bb';
-        ctx.lineWidth   = 1;
-        ctx.fill(); ctx.stroke();
-
-        // Filament cross (visible when lit)
-        if (lit > 0.4) {
-            ctx.save();
-            ctx.globalAlpha = lit;
-            ctx.strokeStyle = dark ? '#fff8c0' : '#fff';
-            ctx.lineWidth   = 1;
-            ctx.beginPath();
-            ctx.moveTo(bx-3, by+1); ctx.lineTo(bx-1, by-2);
-            ctx.lineTo(bx+1, by+1); ctx.lineTo(bx+3, by-2);
-            ctx.stroke();
-            ctx.restore();
-        }
-
-        // Socket (little rectangle under bulb)
-        ctx.fillStyle   = dark ? '#555' : '#8899aa';
-        ctx.strokeStyle = dark ? '#333' : '#6677aa';
-        ctx.lineWidth   = 0.8;
-        ctx.beginPath();
-        ctx.rect(bx-4, by+BULB_R, 8, 4);
-        ctx.fill(); ctx.stroke();
-
-        return { x: bx, socketY: by + BULB_R + 4 }; // return socket bottom for rope attach
-    }
-
-    /* Draw the rope.
-       topX, topY : where rope attaches (bulb socket bottom)
-       pullY      : Y of the rope handle (knot) that stickman grabs
-       slack      : 0 = taut/straight, 1 = loose/wavy */
-    function rope(topX, topY, pullY, slack) {
-        ctx.save();
-        ctx.strokeStyle = dark ? '#b09060' : '#a08050';
-        ctx.lineWidth   = 2;
-        ctx.lineCap     = 'round';
-
-        if (slack < 0.05) {
-            // Straight taut rope
-            ctx.beginPath();
-            ctx.moveTo(topX, topY);
-            ctx.lineTo(ROPE_X, pullY);
-            ctx.stroke();
-        } else {
-            // Wavy / slack rope using quadratic bezier
-            var mid = (topY + pullY) / 2;
-            var cpx = topX + slack * 10; // control point swings right when slack
-            ctx.beginPath();
-            ctx.moveTo(topX, topY);
-            ctx.quadraticCurveTo(cpx, mid, ROPE_X, pullY);
-            ctx.stroke();
-        }
-
-        // Knot at bottom of rope
-        ctx.fillStyle = dark ? '#b09060' : '#a08050';
-        ctx.beginPath();
-        ctx.arc(ROPE_X, pullY, 3, 0, Math.PI*2);
-        ctx.fill();
-
-        ctx.restore();
-    }
-
-    /* Draw stickman.
-       fy        : feet Y
-       bodyTilt  : body lean angle in radians (+ = lean right)
-       armLAngle : left arm angle from down-vertical (+ = away from body)
-       armRAngle : right arm angle from down-vertical (+ = away from body)
-       legLAngle : left leg angle from down-vertical
-       legRAngle : right leg angle from down-vertical
-       lift      : how many px body lifted off floor (hanging from rope)
-    */
-    function stickman(fy, bodyTilt, armLAngle, armRAngle, legLAngle, legRAngle) {
-        var color = dark ? '#8ab4f8' : '#1a3a6e';
-        ctx.save();
-        ctx.strokeStyle = color;
-        ctx.lineWidth   = 2;
-        ctx.lineCap     = 'round';
-        ctx.lineJoin    = 'round';
-
-        var bt = bodyTilt;
-        // Anchor at hips
-        var hipY = fy - LEG_H;
-        var hipX = MAN_X;
-        // Shoulders (top of torso)
-        var shX = hipX - Math.sin(bt) * TORSO_H;
-        var shY = hipY - Math.cos(bt) * TORSO_H;
-        // Head centre
-        var headX = shX - Math.sin(bt) * (HEAD_R + 1);
-        var headY = shY - Math.cos(bt) * (HEAD_R + 1);
-
-        // Head
-        ctx.beginPath();
-        ctx.arc(headX, headY, HEAD_R, 0, Math.PI*2);
-        ctx.stroke();
-
-        // Torso
-        ctx.beginPath();
-        ctx.moveTo(shX, shY);
-        ctx.lineTo(hipX, hipY);
-        ctx.stroke();
-
-        // Left arm (from shoulders)
-        var laAngle = bt + armLAngle;
-        ctx.beginPath();
-        ctx.moveTo(shX, shY);
-        ctx.lineTo(shX - Math.sin(laAngle)*ARM_LEN, shY + Math.cos(laAngle)*ARM_LEN);
-        ctx.stroke();
-
-        // Right arm
-        var raAngle = bt - armRAngle;
-        ctx.beginPath();
-        ctx.moveTo(shX, shY);
-        ctx.lineTo(shX + Math.sin(raAngle)*ARM_LEN, shY + Math.cos(raAngle)*ARM_LEN);
-        ctx.stroke();
-
-        // Left leg
-        ctx.beginPath();
-        ctx.moveTo(hipX, hipY);
-        ctx.lineTo(hipX - Math.sin(legLAngle)*LEG_LEN, hipY + Math.cos(legLAngle)*LEG_LEN);
-        ctx.stroke();
-
-        // Right leg
-        ctx.beginPath();
-        ctx.moveTo(hipX, hipY);
-        ctx.lineTo(hipX + Math.sin(legRAngle)*LEG_LEN, hipY + Math.cos(legRAngle)*LEG_LEN);
-        ctx.stroke();
-
-        ctx.restore();
-    }
-
-    /* ════════════════════════════════════
-       SCENE RENDER
-    ════════════════════════════════════ */
-    function render(state) {
-        ctx.clearRect(0, 0, W, H);
-        bg();
-        ceil();
-        var b = bulb(state.lit, state.swingX);
-        rope(b.x, b.socketY, state.ropeY, state.ropeSlack);
-        stickman(
-            state.feetY,
-            state.bodyTilt,
-            state.armL,
-            state.armR,
-            state.legL,
-            state.legR
-        );
-    }
-
-    /* ── Idle (resting) state ── */
-    function idleState() {
-        return {
-            lit:       dark ? 0 : 1,
-            swingX:    0,
-            ropeY:     ROPE_TOP + ROPE_IDLE_LEN,   // = ~51
-            ropeSlack: 0,
-            feetY:     FLOOR,
-            bodyTilt:  0,
-            armL:      0.25,   // arms relaxed at sides
-            armR:      0.25,
-            legL:      0.08,
-            legR:      0.08
+    // Follow system changes ONLY when user hasn't made a manual choice
+    if (mql) {
+        var sysListener = function (e) {
+            if (!localStorage.getItem(STORAGE_KEY)) apply(e.matches);
         };
+        if (mql.addEventListener) mql.addEventListener('change', sysListener);
+        else if (mql.addListener) mql.addListener(sysListener);
     }
 
-    /* ── Draw idle ── */
-    function drawIdle() { render(idleState()); }
+    var pull = document.getElementById('dm-lamp-pull');
 
-    /* ════════════════════════════════════
-       ANIMATION
-       Timeline (normalised 0→1, total = 2200ms):
-         0.00–0.20  : stickman reaches arms UP toward rope
-         0.20–0.35  : hands grab rope — arms lock overhead
-         0.35–0.55  : PULL DOWN — body lifts, legs kick, rope stretches, light flips at 0.45
-         0.55–0.70  : bounce back — body settles, rope swings, legs land
-         0.70–1.00  : rope swings to rest, arms lower, idle
-    ════════════════════════════════════ */
-    var animating = false;
-    var animRaf   = null;
-    var DUR = 2200;
+    btn.addEventListener('click', function () {
+        var dark = !document.body.classList.contains('dark-mode');
+        localStorage.setItem(STORAGE_KEY, dark ? 'dark' : 'light');
 
-    function runAnimation(goingDark) {
-        if (animating) return;
-        animating = true;
-        var start = null;
-        // light flips when toggle fires
-        var lightFlipped = false;
-
-        function frame(ts) {
-            if (!start) start = ts;
-            var t = clamp((ts - start) / DUR);
-
-            var s = {};
-
-            /* ── Phase 0: REACH UP (0→0.20) ── */
-            var p0 = phase(t, 0, 0.20);
-            /* ── Phase 1: GRAB (0.20→0.35) ── */
-            var p1 = phase(t, 0.20, 0.35);
-            /* ── Phase 2: PULL DOWN (0.35→0.55) ── */
-            var p2 = phase(t, 0.35, 0.55);
-            /* ── Phase 3: BOUNCE (0.55→0.70) ── */
-            var p3 = phase(t, 0.55, 0.70);
-            /* ── Phase 4: SETTLE (0.70→1.0) ── */
-            var p4 = phase(t, 0.70, 1.0);
-
-            /* ── ARM ANGLES ── */
-            // Phase 0: arms swing up from relaxed (0.25 rad) to overhead (-π*0.8)
-            // Phase 1: arms reach rope (overhead, slightly wider)
-            // Phase 2: arms pull down (go from overhead to by-side / slightly forward)
-            // Phase 3+4: arms settle back to rest
-            if (t < 0.20) {
-                s.armL = lerp(0.25, -Math.PI*0.75, eio(p0));
-                s.armR = lerp(0.25, -Math.PI*0.75, eio(p0));
-            } else if (t < 0.35) {
-                s.armL = lerp(-Math.PI*0.75, -Math.PI*0.80, eio(p1));
-                s.armR = lerp(-Math.PI*0.75, -Math.PI*0.80, eio(p1));
-            } else if (t < 0.55) {
-                s.armL = lerp(-Math.PI*0.80, 0.6, eio(p2));
-                s.armR = lerp(-Math.PI*0.80, 0.6, eio(p2));
-            } else if (t < 0.70) {
-                s.armL = lerp(0.6, 0.3, eout(p3));
-                s.armR = lerp(0.6, 0.3, eout(p3));
-            } else {
-                s.armL = lerp(0.3, 0.25, eout(p4));
-                s.armR = lerp(0.3, 0.25, eout(p4));
-            }
-
-            /* ── FEET / BODY LIFT ── */
-            // During pull (p2), body lifts off ground (hanging from rope)
-            var lift = 0;
-            if (t >= 0.35 && t < 0.55) {
-                lift = lerp(0, 10, eio(p2));
-            } else if (t >= 0.55 && t < 0.70) {
-                lift = lerp(10, 0, eio(p3));
-            }
-            s.feetY = FLOOR - lift;
-
-            /* ── BODY TILT ── */
-            // Slight lean toward rope during pull
-            if (t < 0.35) {
-                s.bodyTilt = lerp(0, -0.15, eout(phase(t,0,0.35)));
-            } else if (t < 0.55) {
-                s.bodyTilt = lerp(-0.15, 0.05, eio(p2));
-            } else {
-                s.bodyTilt = lerp(0.05, 0, eout(phase(t,0.55,1.0)));
-            }
-
-            /* ── LEGS ── */
-            // Kick during pull, spread wide, then settle
-            if (t < 0.35) {
-                s.legL = 0.08; s.legR = 0.08;
-            } else if (t < 0.55) {
-                // legs kick back/up while hanging
-                s.legL = lerp(0.08, 0.55, eio(p2));
-                s.legR = lerp(0.08, 0.55, eio(p2));
-            } else if (t < 0.70) {
-                s.legL = lerp(0.55, 0.12, eout(p3));
-                s.legR = lerp(0.55, 0.12, eout(p3));
-            } else {
-                s.legL = lerp(0.12, 0.08, eout(p4));
-                s.legR = lerp(0.12, 0.08, eout(p4));
-            }
-
-            /* ── ROPE LENGTH ── */
-            // Rope at rest, then snaps short when hands grab, then pulled long,
-            // then bounces back
-            var ropeNormal = ROPE_TOP + ROPE_IDLE_LEN; // ~51
-            var ropePulled = Math.min(ROPE_TOP + ROPE_PULL_LEN, FLOOR - 2); // ~63
-            if (t < 0.20) {
-                s.ropeY = ropeNormal;
-                s.ropeSlack = 0;
-            } else if (t < 0.35) {
-                // rope barely moves as hands approach
-                s.ropeY = ropeNormal;
-                s.ropeSlack = 0;
-            } else if (t < 0.55) {
-                // rope stretches down as stickman pulls
-                s.ropeY = lerp(ropeNormal, ropePulled, eio(p2));
-                s.ropeSlack = 0;
-            } else if (t < 0.70) {
-                // rope bounces back with slight overshoot
-                var bounce = 1 + Math.sin(p3 * Math.PI) * 0.15; // slight overshoot
-                s.ropeY = lerp(ropePulled, ropeNormal, eio(p3)) * bounce;
-                s.ropeY = clamp(s.ropeY - (bounce-1)*2, ROPE_TOP+5, FLOOR-2);
-                s.ropeY = lerp(ropePulled, ropeNormal, eio(p3));
-                s.ropeSlack = lerp(0, 0.4, Math.sin(p3 * Math.PI));
-            } else {
-                s.ropeY = lerp(ropeNormal + 4, ropeNormal, eout(p4));
-                s.ropeSlack = lerp(0.4, 0, eout(p4));
-            }
-
-            /* ── BULB SWING ── */
-            // Slight swing after pull
-            if (t < 0.55) {
-                s.swingX = 0;
-            } else {
-                var swing = Math.sin(p3 * Math.PI * 2) * lerp(1, 0, p3);
-                s.swingX  = (t < 0.70) ? swing * 4 : lerp(swing*4, 0, eout(p4));
-            }
-
-            /* ── LIGHT FLIP at t=0.45 (peak pull) ── */
-            if (!lightFlipped && t >= 0.45) {
-                lightFlipped = true;
-                dark = goingDark;
-                document.body.classList.toggle('dark-mode', goingDark);
-                localStorage.setItem('mindbloom-theme', goingDark ? 'dark' : 'light');
-            }
-            s.lit = dark ? 0 : 1;
-
-            render(s);
-
-            if (t < 1) {
-                animRaf = requestAnimationFrame(frame);
-            } else {
-                animating = false;
-                drawIdle();
-            }
+        // Pull the cord down, then release (spring back)
+        if (pull) {
+            pull.style.transform = 'translateY(4.5px)';
+            setTimeout(function () { pull.style.transform = 'translateY(0)'; }, 240);
         }
-        animRaf = requestAnimationFrame(frame);
-    }
 
-    /* ── Boot ── */
-    drawIdle();
+        // Brief fade veil for a smooth theme swap
+        var veil = document.createElement('div');
+        veil.style.cssText = 'position:fixed;inset:0;background:' +
+            (dark ? '#0F1117' : '#ffffff') +
+            ';opacity:0;pointer-events:none;z-index:99999;transition:opacity 0.25s ease;';
+        document.body.appendChild(veil);
+        requestAnimationFrame(function () { veil.style.opacity = '0.35'; });
 
-    /* ── Click handler ── */
-    canvas.addEventListener('click', function () {
-        if (animating) return;
-        runAnimation(!dark);
+        setTimeout(function () {
+            apply(dark);
+            veil.style.opacity = '0';
+            setTimeout(function () { veil.remove(); }, 280);
+        }, 140);
     });
 })();
 </script>

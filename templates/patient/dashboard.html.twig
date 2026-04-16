@@ -433,6 +433,85 @@ body.anim-ready .ptdash-cta-wrap { animation: ptFadeUp 0.7s cubic-bezier(0.22,1,
     .ptdash-card, .ptdash-icon { transition: none !important; }
     .ptdash-card-wrap, .ptdash-stat { opacity: 1 !important; transform: none !important; }
 }
+
+/* ══════════════════════════════════════════
+   DARK MODE — Patient Dashboard
+   ══════════════════════════════════════════ */
+body.dark-mode .ptdash-page {
+    background: linear-gradient(175deg, #0F1117 0%, #121826 45%, #101A18 100%) !important;
+}
+body.dark-mode .ptdash-hero-kicker {
+    background: rgba(0,194,199,0.15) !important;
+    color: #5EDDE1 !important;
+}
+body.dark-mode .ptdash-hero-title {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .ptdash-hero-subtitle,
+body.dark-mode .ptdash-hero-desc,
+body.dark-mode .ptdash-hero-tagline {
+    color: #A8B0C4 !important;
+}
+body.dark-mode .ptdash-hero-content * {
+    color: inherit;
+}
+body.dark-mode .ptdash-section-title {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .ptdash-section-subtitle {
+    color: #7A8299 !important;
+}
+body.dark-mode .ptdash-stat {
+    background: rgba(22,26,38,0.85) !important;
+    border-color: #252B3E !important;
+    color: #D8DCE8 !important;
+}
+body.dark-mode .ptdash-stat-value {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .ptdash-stat-label {
+    color: #7A8299 !important;
+}
+body.dark-mode .ptdash-card {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.5) !important;
+    color: #D8DCE8 !important;
+}
+body.dark-mode .ptdash-card-title {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .ptdash-card-desc {
+    color: #A8B0C4 !important;
+}
+body.dark-mode .ptdash-card-meta {
+    color: #6A7385 !important;
+}
+body.dark-mode .ptdash-icon--blue   { background: rgba(123,184,245,0.15) !important; color: #7BB8F5 !important; }
+body.dark-mode .ptdash-icon--teal   { background: rgba(0,194,199,0.18)  !important; color: #5EDDE1 !important; }
+body.dark-mode .ptdash-icon--purple { background: rgba(230,63,140,0.18) !important; color: #F17AB4 !important; }
+body.dark-mode .ptdash-icon--amber  { background: rgba(244,123,32,0.18) !important; color: #FFAD6B !important; }
+body.dark-mode .ptdash-icon--rose   { background: rgba(78,203,113,0.18) !important; color: #6EE095 !important; }
+body.dark-mode .ptdash-card-link--blue   { color: #7BB8F5 !important; }
+body.dark-mode .ptdash-card-link--teal   { color: #5EDDE1 !important; }
+body.dark-mode .ptdash-card-link--purple { color: #F17AB4 !important; }
+body.dark-mode .ptdash-card-link--amber  { color: #FFAD6B !important; }
+body.dark-mode .ptdash-card-link--rose   { color: #6EE095 !important; }
+body.dark-mode .ptdash-card::before,
+body.dark-mode .ptdash-card::after {
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 55%) !important;
+}
+body.dark-mode .ptdash-cta,
+body.dark-mode .ptdash-cta:hover {
+    color: #ffffff !important;
+    background: linear-gradient(135deg, var(--mb-cyan) 0%, var(--mb-green) 100%) !important;
+    box-shadow: 0 6px 22px rgba(0,194,199,0.35) !important;
+}
+body.dark-mode .mb-event-reminder {
+    background: #1A1F2E !important;
+    color: #E8EAF0 !important;
+    border-color: #252B3E !important;
+}
 </style>
 {% endblock %}
 

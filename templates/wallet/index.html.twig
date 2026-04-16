@@ -143,6 +143,33 @@
             {% endif %}
         </div>
 
+        {# AI Assistant Panel #}
+        <div class="col-12">
+            <div class="mb-card" style="background:linear-gradient(135deg,#f0fafa 0%,#e8f4f8 100%);border:1.5px solid #b2dde8;">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span style="font-size:22px;">🤖</span>
+                    <h6 style="font-weight:700;margin:0;color:#1B3A6B;">Assistant IA — Analyse de votre wallet</h6>
+                </div>
+                <div class="d-flex gap-3 flex-wrap">
+                    <button id="btnInsight" onclick="requestAI('insight')"
+                            style="display:flex;align-items:center;gap:8px;padding:10px 20px;border:none;border-radius:10px;background:#008c91;color:#fff;font-weight:600;cursor:pointer;font-size:14px;transition:opacity .2s;">
+                        <i class="bi bi-lightbulb-fill"></i> Analyse financière
+                    </button>
+                    <button id="btnFraud" onclick="requestAI('fraud')"
+                            style="display:flex;align-items:center;gap:8px;padding:10px 20px;border:none;border-radius:10px;background:#e74c3c;color:#fff;font-weight:600;cursor:pointer;font-size:14px;transition:opacity .2s;">
+                        <i class="bi bi-shield-exclamation"></i> Analyse de risque
+                    </button>
+                </div>
+
+                <div id="aiLoading" style="display:none;margin-top:18px;text-align:center;color:#008c91;font-size:14px;">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                    &nbsp;L'IA analyse votre wallet…
+                </div>
+
+                <div id="aiResult" style="display:none;margin-top:18px;padding:16px 18px;background:#fff;border-radius:10px;border-left:4px solid #008c91;font-size:14px;line-height:1.7;color:#1B3A6B;white-space:pre-wrap;"></div>
+            </div>
+        </div>
+
         {# Transaction History #}
         <div class="col-md-7">
             <div class="mb-card" style="height:100%;">
@@ -259,6 +286,132 @@
 .field-error { color: #e74c3c; font-size: 12px; margin-top: 4px; min-height: 16px; }
 .mb-input.is-invalid { border-color: #e74c3c !important; background: rgba(231,76,60,.04); }
 .mb-input.is-valid   { border-color: #27ae60 !important; }
+
+/* ══════════════════════════════════════════
+   DARK MODE — Wallet page
+   ══════════════════════════════════════════ */
+body.dark-mode .wallet-balance-card {
+    background: linear-gradient(135deg, #152B22 0%, #1A3529 100%) !important;
+    color: #E8EAF0 !important;
+    border: 1px solid #1E4434 !important;
+}
+body.dark-mode .wallet-balance-card .balance-label,
+body.dark-mode .wallet-balance-card .balance-status {
+    color: #A8B0C4 !important;
+}
+body.dark-mode .wallet-balance-card .balance-amount {
+    color: #5FBF9F !important;
+}
+
+body.dark-mode .mb-page-header h1 {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .mb-card {
+    background: #161A26 !important;
+    color: #D8DCE8 !important;
+    border-color: #252B3E !important;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.45) !important;
+}
+body.dark-mode .mb-card h6,
+body.dark-mode .mb-card h5,
+body.dark-mode .mb-card h4 {
+    color: #E8EAF0 !important;
+}
+
+/* AI panel — keep colored but dark-friendly */
+body.dark-mode .mb-card[style*="linear-gradient(135deg,#f0fafa"] {
+    background: linear-gradient(135deg,#0E2630 0%,#102A38 100%) !important;
+    border-color: #1E4A5C !important;
+}
+body.dark-mode .mb-card[style*="linear-gradient(135deg,#f0fafa"] h6 {
+    color: #7BB8F5 !important;
+}
+
+/* AI result box */
+body.dark-mode #aiResult {
+    background: #0F1117 !important;
+    color: #D8DCE8 !important;
+    border-left-color: #5EDDE1 !important;
+}
+body.dark-mode #aiLoading {
+    color: #5EDDE1 !important;
+}
+
+/* Inputs */
+body.dark-mode .mb-input {
+    background: #1A1F2E !important;
+    color: #E8EAF0 !important;
+    border-color: #2A3147 !important;
+}
+body.dark-mode .mb-input::placeholder {
+    color: #5A6275 !important;
+}
+body.dark-mode .mb-input:focus {
+    background: #1E2333 !important;
+    border-color: #4A90E2 !important;
+    box-shadow: 0 0 0 3px rgba(74,144,226,0.18) !important;
+}
+body.dark-mode .input-icon {
+    color: #7A8299 !important;
+}
+body.dark-mode .mb-form-group label {
+    color: #A8B0C4 !important;
+}
+
+/* Outline quick-preset buttons */
+body.dark-mode .btn-mb-outline {
+    background: #1E2333 !important;
+    color: #D8DCE8 !important;
+    border-color: #2A3147 !important;
+}
+body.dark-mode .btn-mb-outline:hover {
+    background: #252B3E !important;
+    border-color: #4A90E2 !important;
+    color: #7BB8F5 !important;
+}
+
+/* Divider text in recharge form */
+body.dark-mode .mb-card div[style*="background:var(--border-soft)"],
+body.dark-mode .mb-card div[style*="background: var(--border-soft)"] {
+    background: #252B3E !important;
+}
+
+/* Badges */
+body.dark-mode .mb-badge-gray {
+    background: #1E2333 !important;
+    color: #A8B0C4 !important;
+    border-color: #2A3147 !important;
+}
+
+/* Transaction list container / rows */
+body.dark-mode .transaction-row,
+body.dark-mode .tx-row,
+body.dark-mode .mb-card .list-group-item {
+    background: #1A1F2E !important;
+    color: #D8DCE8 !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode .transaction-row:hover,
+body.dark-mode .tx-row:hover {
+    background: #1E2333 !important;
+}
+
+/* Empty state */
+body.dark-mode #txEmpty {
+    color: #6A7385 !important;
+}
+
+/* Error banner already red — just dim background */
+body.dark-mode #formError {
+    background: rgba(231,76,60,.15) !important;
+    color: #F59493 !important;
+}
+
+/* Page wrapper bg (inline var(--bg-warm)) */
+body.dark-mode > div[style*="var(--bg-warm)"],
+body.dark-mode .container > div[style*="var(--bg-warm)"] {
+    background: #0F1117 !important;
+}
 </style>
 <script>
 /* ── Transaction search/filter ── */
@@ -356,6 +509,36 @@ function validateField(input, isValid, errorEl, message) {
         input.classList.remove('is-valid');
         errorEl.textContent = message;
     }
+}
+
+/* ── AI wallet assistant ── */
+async function requestAI(type) {
+    const loading  = document.getElementById('aiLoading');
+    const result   = document.getElementById('aiResult');
+    const btnI     = document.getElementById('btnInsight');
+    const btnF     = document.getElementById('btnFraud');
+
+    result.style.display  = 'none';
+    loading.style.display = 'block';
+    btnI.disabled = btnF.disabled = true;
+
+    const url = type === 'fraud'
+        ? '{{ path('app_wallet_ai_fraud') }}'
+        : '{{ path('app_wallet_ai_insight') }}';
+
+    try {
+        const resp = await fetch(url, { method: 'POST' });
+        const data = await resp.json();
+        result.textContent    = data.result ?? 'Pas de réponse.';
+        result.style.borderLeftColor = type === 'fraud' ? '#e74c3c' : '#008c91';
+        result.style.display  = 'block';
+    } catch (e) {
+        result.textContent   = 'Erreur lors de l\'appel à l\'IA.';
+        result.style.display = 'block';
+    }
+
+    loading.style.display = 'none';
+    btnI.disabled = btnF.disabled = false;
 }
 
 /* ── Form submit guard ── */

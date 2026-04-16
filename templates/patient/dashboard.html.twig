@@ -439,6 +439,72 @@ body.anim-ready .ptdash-cta-wrap { animation: ptFadeUp 0.7s cubic-bezier(0.22,1,
 {% block body %}
 <div class="ptdash-page">
 
+    {# ── Upcoming Event Notification (10 seconds) ── #}
+    {% if next_event %}
+        <div id="mb-event-reminder" class="mb-event-reminder">
+            <div class="mb-er-content">
+                <span class="mb-er-icon">📅</span>
+                <div class="mb-er-text">
+                    <strong>Rappel :</strong> Votre prochain événement <em>"{{ next_event.titre }}"</em> 
+                    est prévu pour le {{ next_event.dateDebut|date('d/m/Y à H:i') }} 
+                    (dans {{ next_event_jours_restants }} jour{{ next_event_jours_restants > 1 ? 's' : '' }}).
+                </div>
+            </div>
+            <button class="mb-er-close" onclick="document.getElementById('mb-event-reminder').style.display='none'">&times;</button>
+        </div>
+        <style>
+            .mb-event-reminder {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #FFB75E, #ED8F03);
+                color: #fff;
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 14px 20px;
+                box-shadow: 0 4px 15px rgba(237, 143, 3, 0.3);
+                animation: slideDown 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
+                transform: translateY(-100%);
+            }
+            .mb-er-content {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                max-width: 800px;
+                width: 100%;
+                font-size: 14px;
+            }
+            .mb-er-icon { font-size: 20px; }
+            .mb-er-text strong { font-weight: 800; letter-spacing: 0.5px; }
+            .mb-er-close {
+                background: none;
+                border: none;
+                color: #fff;
+                font-size: 24px;
+                cursor: pointer;
+                opacity: 0.8;
+                transition: opacity 0.2s;
+                margin-left: 20px;
+            }
+            .mb-er-close:hover { opacity: 1; }
+            @keyframes slideDown { to { transform: translateY(0); } }
+            @keyframes slideUpFade { to { transform: translateY(-100%); opacity: 0; visibility: hidden; } }
+            .mb-event-reminder.hiding {
+                animation: slideUpFade 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
+            }
+        </style>
+        <script>
+            // Disparition automatique après 10 secondes
+            setTimeout(function() {
+                var el = document.getElementById('mb-event-reminder');
+                if(el) { el.classList.add('hiding'); }
+            }, 10000);
+        </script>
+    {% endif %}
+
     {# ── Hero Section ── #}
     <div class="ptdash-hero">
         <canvas id="hero-canvas"></canvas>

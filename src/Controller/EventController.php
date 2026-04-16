@@ -9,6 +9,7 @@ use App\Repository\ParticipationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -19,6 +20,47 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 #[IsGranted('ROLE_ADMIN')]
 class EventController extends AbstractController
 {
+    #[Route('/ai/suggest-description', name: 'app_admin_event_ai_suggest_description', methods: ['POST'])]
+    public function suggestDescription(Request $request, \App\Service\EvenementAiService $evenementAiService): JsonResponse
+    {
+        $payload = json_decode($request->getContent(), true);
+
+        if (!is_array($payload)) {
+            return $this->json(['success' => false, 'message' => 'Payload JSON invalide.'], 400);
+        }
+
+        $csrf = (string)($payload['_token'] ?? '');
+        if (!$this->isCsrfTokenValid('ai_event_description', $csrf)) {
+            return $this->json(['success' => false, 'message' => 'Token CSRF invalide.'], 403);
+        }
+
+        $titre = trim((string)($payload['titre'] ?? ''));
+        $lieu = trim((string)($payload['lieu'] ?? ''));
+        $organisateur = trim((string)($payload['organisateur'] ?? ''));
+        $descBase = trim((string)($payload['description'] ?? ''));
+
+        if ($titre === '' && $descBase === '') {
+            return $this->json([
+                'success' => false,
+                'message' => 'Veuillez saisir au moins un titre ou une description de base avant d\'utiliser l\'IA.',
+            ], 422);
+        }
+
+        try {
+            $suggestion = $evenementAiService->genererDescription($titre, $lieu, $organisateur, $descBase);
+
+            return $this->json([
+                'success' => true,
+                'suggestion' => $suggestion,
+            ]);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Erreur lors de la generation IA: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
     #[Route('', name: 'app_admin_event_index', methods: ['GET'])]
     public function index(Request $request, EventRepository $eventRepository): Response
     {

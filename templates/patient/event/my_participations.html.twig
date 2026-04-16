@@ -56,6 +56,12 @@
                         <td>
                             <a href="{{ path('app_patient_event_show', {id: event.id}) }}" 
                                class="btn-action btn-view">👁️</a>
+                            
+                            <a href="{{ path('app_patient_event_ticket', {id: participation.id}) }}" 
+                               class="btn-action btn-print" style="text-decoration: none;" title="Télécharger le PDF de cet événement">
+                                📄 PDF
+                            </a>
+
                             <form method="post" 
                                   action="{{ path('app_patient_event_cancel', {id: event.id}) }}" 
                                   style="display: inline;"

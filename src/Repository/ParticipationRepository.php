@@ -86,9 +86,6 @@ class ParticipationRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
-    /**
-     * Trouve une participation spécifique
-     */
     public function findOneByEventAndUser(Event $event, User $user): ?Participation
     {
         return $this->createQueryBuilder('p')
@@ -96,6 +93,25 @@ class ParticipationRepository extends ServiceEntityRepository
             ->andWhere('p.user = :user')
             ->setParameter('event', $event)
             ->setParameter('user', $user)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Trouve la prochaine participation à venir pour l'utilisateur
+     */
+    public function findNextUpcomingEventForUser(User $user): ?Participation
+    {
+        return $this->createQueryBuilder('p')
+            ->join('p.evenement', 'e')
+            ->where('p.user = :user')
+            ->andWhere('p.statut != :cancelled')
+            ->andWhere('e.dateDebut > :now')
+            ->setParameter('user', $user)
+            ->setParameter('cancelled', Participation::STATUT_ANNULE)
+            ->setParameter('now', new \DateTime())
+            ->orderBy('e.dateDebut', 'ASC') // Le plus proche en premier
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
     }

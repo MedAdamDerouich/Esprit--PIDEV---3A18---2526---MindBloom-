@@ -44,6 +44,18 @@
             "ref": "1ff300d8c030f55c99219cc55050b97a695af3f6"
         }
     },
+    "nucleos/dompdf-bundle": {
+        "version": "4.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "main",
+            "version": "3.1",
+            "ref": "0a89461aec4873f9205f1fc04c96c607116abb2e"
+        },
+        "files": [
+            "./config/packages/nucleos_dompdf.yaml"
+        ]
+    },
     "stripe/stripe-php": {
         "version": "20.0",
         "recipe": {

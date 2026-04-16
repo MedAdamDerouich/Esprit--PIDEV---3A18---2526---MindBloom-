@@ -13,8 +13,8 @@
     <div class="row g-4">
 
         {# Balance Card #}
-        <div class="col-md-5">
-            <div class="wallet-balance-card mb-4">
+        <div class="col-md-6">
+            <div class="wallet-balance-card mb-4" style="margin-bottom:0 !important;">
                 <div class="balance-label">Solde disponible</div>
                 <div class="balance-amount">
                     {{ wallet.balance|number_format(2, '.', ' ') }} <small style="font-size:22px;">DT</small>
@@ -33,13 +33,23 @@
                 </div>
                 {% endif %}
             </div>
+        </div>
 
-            {# Recharge form #}
-            {% if wallet.status == 'ACTIVE' %}
+        {# Recharge form — collapsible, side-by-side with balance #}
+        {% if wallet.status == 'ACTIVE' %}
+        <div class="col-md-6">
             <div class="mb-card">
-                <h6 style="font-weight:700;margin-bottom:16px;">
-                    <i class="bi bi-lightning-charge-fill" style="color:#f59e0b;margin-right:6px;"></i>Recharger le wallet
-                </h6>
+                <button type="button" id="rechargeToggle"
+                        onclick="toggleSection('rechargeBody','rechargeToggle')"
+                        style="width:100%;display:flex;align-items:center;justify-content:space-between;
+                               background:transparent;border:none;padding:0;cursor:pointer;">
+                    <h6 style="font-weight:700;margin:0;">
+                        <i class="bi bi-lightning-charge-fill" style="color:#f59e0b;margin-right:6px;"></i>Recharger le wallet
+                    </h6>
+                    <i class="bi bi-chevron-down toggle-caret" style="font-size:16px;color:var(--text-mid);transition:transform .25s ease;"></i>
+                </button>
+
+                <div id="rechargeBody" style="display:none;margin-top:16px;">
 
                 {# Quick amount buttons #}
                 <div class="d-flex gap-2 mb-3 flex-wrap">
@@ -139,48 +149,143 @@
                         <i class="bi bi-shield-check" style="margin-right:4px;"></i>Paiement sécurisé via Stripe · Mode test
                     </div>
                 </form>
+                </div>{# /rechargeBody #}
             </div>
-            {% endif %}
         </div>
+        {% endif %}
 
-        {# AI Assistant Panel #}
+        {# AI Budget Coach — Smart Categorizer #}
         <div class="col-12">
-            <div class="mb-card" style="background:linear-gradient(135deg,#f0fafa 0%,#e8f4f8 100%);border:1.5px solid #b2dde8;">
-                <div class="d-flex align-items-center gap-2 mb-3">
-                    <span style="font-size:22px;">🤖</span>
-                    <h6 style="font-weight:700;margin:0;color:#1B3A6B;">Assistant IA — Analyse de votre wallet</h6>
-                </div>
-                <div class="d-flex gap-3 flex-wrap">
-                    <button id="btnInsight" onclick="requestAI('insight')"
-                            style="display:flex;align-items:center;gap:8px;padding:10px 20px;border:none;border-radius:10px;background:#008c91;color:#fff;font-weight:600;cursor:pointer;font-size:14px;transition:opacity .2s;">
-                        <i class="bi bi-lightbulb-fill"></i> Analyse financière
-                    </button>
-                    <button id="btnFraud" onclick="requestAI('fraud')"
-                            style="display:flex;align-items:center;gap:8px;padding:10px 20px;border:none;border-radius:10px;background:#e74c3c;color:#fff;font-weight:600;cursor:pointer;font-size:14px;transition:opacity .2s;">
-                        <i class="bi bi-shield-exclamation"></i> Analyse de risque
+            <div class="mb-card" id="aiCoachCard"
+                 style="background:linear-gradient(135deg,#f0fafa 0%,#e8f4f8 100%);border:1.5px solid #b2dde8;">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="font-size:24px;">🧠</span>
+                        <div>
+                            <h6 style="font-weight:700;margin:0;color:#1B3A6B;">Coach Budgétaire IA</h6>
+                            <div style="font-size:12px;color:#4a6a82;">Analyse intelligente de vos dépenses ce mois-ci</div>
+                        </div>
+                    </div>
+                    <button id="btnCoach" type="button"
+                            style="display:flex;align-items:center;gap:8px;padding:10px 20px;border:none;border-radius:10px;background:linear-gradient(135deg,#00C2C7 0%,#4ECB71 100%);color:#fff;font-weight:700;cursor:pointer;font-size:13px;box-shadow:0 4px 14px rgba(0,194,199,.35);transition:transform .2s;">
+                        <i class="bi bi-magic"></i> Lancer l'analyse
                     </button>
                 </div>
 
-                <div id="aiLoading" style="display:none;margin-top:18px;text-align:center;color:#008c91;font-size:14px;">
+                <div id="coachLoading" style="display:none;padding:24px;text-align:center;color:#008c91;font-size:14px;">
                     <span class="spinner-border spinner-border-sm" role="status"></span>
-                    &nbsp;L'IA analyse votre wallet…
+                    &nbsp;Catégorisation de vos transactions par IA…
                 </div>
 
-                <div id="aiResult" style="display:none;margin-top:18px;padding:16px 18px;background:#fff;border-radius:10px;border-left:4px solid #008c91;font-size:14px;line-height:1.7;color:#1B3A6B;white-space:pre-wrap;"></div>
+                <div id="coachError" style="display:none;margin-top:14px;padding:12px 14px;background:rgba(231,76,60,.08);border-left:3px solid #e74c3c;border-radius:8px;color:#c0392b;font-size:13px;"></div>
+
+                <div id="coachResult" style="display:none;margin-top:18px;">
+                    {# Top stat strip — with hover tooltips #}
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-3 col-6">
+                            <div class="coach-stat" data-tip="Montant total dépensé depuis le 1er du mois (hors recharges)."
+                                 style="background:#fff;border-radius:10px;padding:14px;border:1px solid #e1ecf4;position:relative;cursor:help;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;">
+                                    <div style="font-size:11px;color:#7a8a9a;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">Dépensé ce mois</div>
+                                    <i class="bi bi-info-circle" style="color:#b8c2d0;font-size:13px;"></i>
+                                </div>
+                                <div id="coachSpent" style="font-size:20px;font-weight:800;color:#1B3A6B;margin-top:4px;">— DT</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="coach-stat" data-tip="Total des fonds ajoutés à votre wallet ce mois-ci via recharge carte."
+                                 style="background:#fff;border-radius:10px;padding:14px;border:1px solid #e1ecf4;position:relative;cursor:help;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;">
+                                    <div style="font-size:11px;color:#7a8a9a;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">Rechargé</div>
+                                    <i class="bi bi-info-circle" style="color:#b8c2d0;font-size:13px;"></i>
+                                </div>
+                                <div id="coachRecharged" style="font-size:20px;font-weight:800;color:#4ECB71;margin-top:4px;">— DT</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="coach-stat" data-tip="Catégorie sur laquelle vous avez le plus dépensé (classée par l'IA à partir des descriptions)."
+                                 style="background:#fff;border-radius:10px;padding:14px;border:1px solid #e1ecf4;position:relative;cursor:help;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;">
+                                    <div style="font-size:11px;color:#7a8a9a;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">Top catégorie</div>
+                                    <i class="bi bi-info-circle" style="color:#b8c2d0;font-size:13px;"></i>
+                                </div>
+                                <div id="coachTopCat" style="font-size:16px;font-weight:800;color:#1B3A6B;margin-top:4px;">—</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <div class="coach-stat" data-tip="Note globale sur 100 évaluée par l'IA : équilibre recharges/dépenses, diversification des catégories et régularité."
+                                 style="background:#fff;border-radius:10px;padding:14px;border:1px solid #e1ecf4;position:relative;cursor:help;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;">
+                                    <div style="font-size:11px;color:#7a8a9a;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">Score santé</div>
+                                    <i class="bi bi-info-circle" style="color:#b8c2d0;font-size:13px;"></i>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+                                    <div id="coachScore" style="font-size:20px;font-weight:800;color:#1B3A6B;">—</div>
+                                    <div style="flex:1;height:6px;background:#e1ecf4;border-radius:3px;overflow:hidden;">
+                                        <div id="coachScoreBar" style="height:100%;width:0%;background:linear-gradient(90deg,#00C2C7,#4ECB71);transition:width .6s ease;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Chart + legend #}
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <div style="background:#fff;border-radius:12px;padding:18px;border:1px solid #e1ecf4;display:flex;align-items:center;justify-content:center;min-height:260px;">
+                                <svg id="coachChart" viewBox="-110 -110 220 220" width="220" height="220" style="overflow:visible;"></svg>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div style="background:#fff;border-radius:12px;padding:18px;border:1px solid #e1ecf4;height:100%;">
+                                <div style="font-size:13px;font-weight:700;color:#1B3A6B;margin-bottom:12px;">Répartition</div>
+                                <div id="coachLegend"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Summary + recommendations #}
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-5">
+                            <div style="background:#fff;border-radius:12px;padding:18px;border:1px solid #e1ecf4;border-left:4px solid #00C2C7;height:100%;">
+                                <div style="font-size:12px;font-weight:700;color:#008c91;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">
+                                    <i class="bi bi-chat-heart"></i> Résumé du mois
+                                </div>
+                                <div id="coachSummary" style="font-size:14px;line-height:1.7;color:#1B3A6B;"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div style="background:#fff;border-radius:12px;padding:18px;border:1px solid #e1ecf4;border-left:4px solid #4ECB71;height:100%;">
+                                <div style="font-size:12px;font-weight:700;color:#2ea255;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">
+                                    <i class="bi bi-lightbulb-fill"></i> Recommandations personnalisées
+                                </div>
+                                <ul id="coachRecs" style="margin:0;padding-left:0;list-style:none;"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        {# Transaction History #}
-        <div class="col-md-7">
-            <div class="mb-card" style="height:100%;">
+        {# Transaction History — collapsible, full width #}
+        <div class="col-12">
+            <div class="mb-card">
 
-                {# Header + count #}
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                {# Header with toggle #}
+                <button type="button" id="txToggle"
+                        onclick="toggleSection('txBody','txToggle')"
+                        style="width:100%;display:flex;align-items:center;justify-content:space-between;
+                               background:transparent;border:none;padding:0;cursor:pointer;">
                     <h6 style="font-weight:700;margin:0;">
-                        <i class="bi bi-clock-history" style="margin-right:7px;color:var(--teal-mid);"></i>Historique des transactions
+                        <i class="bi bi-clock-history" style="margin-right:7px;color:var(--teal-mid);"></i>Voir les transactions
                     </h6>
-                    <span class="mb-badge mb-badge-gray" id="txCount">{{ transactions|length }} opération(s)</span>
-                </div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span class="mb-badge mb-badge-gray" id="txCount">{{ transactions|length }} opération(s)</span>
+                        <i class="bi bi-chevron-down toggle-caret" style="font-size:16px;color:var(--text-mid);transition:transform .25s ease;"></i>
+                    </div>
+                </button>
+
+                <div id="txBody" style="display:none;margin-top:16px;">
 
                 {# ── Search + filter bar ── #}
                 {% if transactions is not empty %}
@@ -274,6 +379,7 @@
                     </div>
                 {% endif %}
 
+                </div>{# /txBody #}
             </div>
         </div>
 
@@ -284,6 +390,60 @@
 {% block javascripts %}
 <style>
 .field-error { color: #e74c3c; font-size: 12px; margin-top: 4px; min-height: 16px; }
+
+/* Coach stat hover tooltips */
+.coach-stat { transition: transform .2s ease, box-shadow .2s ease; }
+.coach-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(27,58,107,0.12);
+}
+.coach-stat::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: #1B3A6B;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.45;
+    padding: 9px 12px;
+    border-radius: 8px;
+    white-space: normal;
+    width: max-content;
+    max-width: 260px;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    transition: opacity .18s ease, transform .18s ease;
+    z-index: 50;
+}
+.coach-stat::before {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #1B3A6B;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s ease;
+    z-index: 50;
+}
+.coach-stat:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+.coach-stat:hover::before { opacity: 1; }
+body.dark-mode .coach-stat::after {
+    background: #252B3E;
+    color: #E8EAF0;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+body.dark-mode .coach-stat::before { border-top-color: #252B3E; }
 .mb-input.is-invalid { border-color: #e74c3c !important; background: rgba(231,76,60,.04); }
 .mb-input.is-valid   { border-color: #27ae60 !important; }
 
@@ -318,13 +478,58 @@ body.dark-mode .mb-card h4 {
     color: #E8EAF0 !important;
 }
 
-/* AI panel — keep colored but dark-friendly */
-body.dark-mode .mb-card[style*="linear-gradient(135deg,#f0fafa"] {
+/* AI Coach panel */
+body.dark-mode #aiCoachCard {
     background: linear-gradient(135deg,#0E2630 0%,#102A38 100%) !important;
     border-color: #1E4A5C !important;
+    color: #D8DCE8 !important;
 }
-body.dark-mode .mb-card[style*="linear-gradient(135deg,#f0fafa"] h6 {
-    color: #7BB8F5 !important;
+body.dark-mode #aiCoachCard h6 { color: #5EDDE1 !important; }
+body.dark-mode #aiCoachCard > div:first-child > div > div > div:last-child { color: #A8B0C4 !important; }
+
+/* Inner white cards inside the coach become dark */
+body.dark-mode #aiCoachCard #coachResult > div > div > div,
+body.dark-mode #aiCoachCard #coachResult > div > div > div > div {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode #aiCoachCard #coachResult [style*="background:#fff"] {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+}
+/* Stat tile labels/values */
+body.dark-mode #coachSpent,
+body.dark-mode #coachTopCat,
+body.dark-mode #coachScore {
+    color: #E8EAF0 !important;
+}
+body.dark-mode #coachRecharged { color: #6EE095 !important; }
+body.dark-mode #coachScoreBar { background: linear-gradient(90deg,#5EDDE1,#6EE095) !important; }
+body.dark-mode #aiCoachCard [style*="background:#e1ecf4"] { background: #2A3147 !important; }
+
+/* Chart card inner bg + donut slice borders */
+body.dark-mode #coachChart path { stroke: #161A26 !important; }
+
+/* Legend rows */
+body.dark-mode #coachLegend > div {
+    border-color: #252B3E !important;
+}
+body.dark-mode #coachLegend span[style*="color:#1B3A6B"] { color: #E8EAF0 !important; }
+body.dark-mode #coachLegend span[style*="color:#7a8a9a"] { color: #7A8299 !important; }
+
+/* Summary + recommendations text */
+body.dark-mode #coachSummary { color: #D8DCE8 !important; }
+body.dark-mode #coachRecs li  { color: #D8DCE8 !important; }
+
+/* Loading + center text */
+body.dark-mode #coachLoading { color: #5EDDE1 !important; }
+body.dark-mode #coachChart text[y="-6"]  { fill: #7A8299 !important; }
+body.dark-mode #coachChart text[y="14"]  { fill: #E8EAF0 !important; }
+
+/* Error banner */
+body.dark-mode #coachError {
+    background: rgba(231,76,60,.15) !important;
+    color: #F59493 !important;
 }
 
 /* AI result box */
@@ -511,34 +716,150 @@ function validateField(input, isValid, errorEl, message) {
     }
 }
 
-/* ── AI wallet assistant ── */
-async function requestAI(type) {
-    const loading  = document.getElementById('aiLoading');
-    const result   = document.getElementById('aiResult');
-    const btnI     = document.getElementById('btnInsight');
-    const btnF     = document.getElementById('btnFraud');
+/* ── Collapsible sections ── */
+function toggleSection(bodyId, btnId) {
+    const body = document.getElementById(bodyId);
+    const btn  = document.getElementById(btnId);
+    if (!body || !btn) return;
+    const caret = btn.querySelector('.toggle-caret');
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    if (caret) caret.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+/* ── AI Budget Coach (categorizer + recommendations) ── */
+document.getElementById('btnCoach')?.addEventListener('click', runCoach);
+
+async function runCoach() {
+    const btn     = document.getElementById('btnCoach');
+    const loading = document.getElementById('coachLoading');
+    const result  = document.getElementById('coachResult');
+    const errBox  = document.getElementById('coachError');
 
     result.style.display  = 'none';
+    errBox.style.display  = 'none';
     loading.style.display = 'block';
-    btnI.disabled = btnF.disabled = true;
-
-    const url = type === 'fraud'
-        ? '{{ path('app_wallet_ai_fraud') }}'
-        : '{{ path('app_wallet_ai_insight') }}';
+    btn.disabled = true;
+    btn.style.opacity = '.6';
 
     try {
-        const resp = await fetch(url, { method: 'POST' });
+        const resp = await fetch('{{ path('app_wallet_ai_coach') }}', { method: 'POST' });
         const data = await resp.json();
-        result.textContent    = data.result ?? 'Pas de réponse.';
-        result.style.borderLeftColor = type === 'fraud' ? '#e74c3c' : '#008c91';
-        result.style.display  = 'block';
+
+        if (data.error) {
+            errBox.textContent = data.error;
+            errBox.style.display = 'block';
+        } else {
+            renderCoach(data);
+            result.style.display = 'block';
+        }
     } catch (e) {
-        result.textContent   = 'Erreur lors de l\'appel à l\'IA.';
-        result.style.display = 'block';
+        errBox.textContent = 'Erreur de connexion à l\'IA. Réessayez.';
+        errBox.style.display = 'block';
     }
 
     loading.style.display = 'none';
-    btnI.disabled = btnF.disabled = false;
+    btn.disabled = false;
+    btn.style.opacity = '1';
+}
+
+function renderCoach(data) {
+    // Stats
+    document.getElementById('coachSpent').textContent     = (data.totalSpending ?? 0).toFixed(2) + ' DT';
+    document.getElementById('coachRecharged').textContent = (data.totalRecharges ?? 0).toFixed(2) + ' DT';
+    document.getElementById('coachTopCat').textContent    = data.topCategory ?? '—';
+    document.getElementById('coachScore').textContent     = (data.healthScore ?? 0) + '/100';
+    document.getElementById('coachScoreBar').style.width  = (data.healthScore ?? 0) + '%';
+
+    // Donut chart
+    drawDonut(data.categories || []);
+
+    // Legend
+    const legend = document.getElementById('coachLegend');
+    legend.innerHTML = (data.categories || []).map(c => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f4f8;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="width:12px;height:12px;border-radius:3px;background:${c.color};display:inline-block;"></span>
+                <span style="font-size:13px;color:#1B3A6B;font-weight:600;">${escapeHtml(c.name)}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:12px;color:#7a8a9a;">${c.percent}%</span>
+                <span style="font-size:13px;font-weight:700;color:#1B3A6B;">${c.amount.toFixed(2)} DT</span>
+            </div>
+        </div>
+    `).join('') || '<div style="color:#7a8a9a;font-size:13px;">Aucune catégorie.</div>';
+
+    // Summary
+    document.getElementById('coachSummary').textContent = data.summary || '—';
+
+    // Recommendations
+    const recs = document.getElementById('coachRecs');
+    recs.innerHTML = (data.recommendations || []).map(r => `
+        <li style="display:flex;gap:10px;padding:8px 0;font-size:13.5px;color:#1B3A6B;line-height:1.6;">
+            <i class="bi bi-check-circle-fill" style="color:#4ECB71;flex-shrink:0;margin-top:2px;"></i>
+            <span>${escapeHtml(r)}</span>
+        </li>
+    `).join('') || '<li style="color:#7a8a9a;font-size:13px;">Aucune recommandation.</li>';
+}
+
+function drawDonut(categories) {
+    const svg = document.getElementById('coachChart');
+    svg.innerHTML = '';
+    const total = categories.reduce((s, c) => s + c.amount, 0);
+    if (total <= 0) {
+        svg.innerHTML = '<text x="0" y="0" text-anchor="middle" dominant-baseline="middle" fill="#7a8a9a" font-size="13">Aucune dépense</text>';
+        return;
+    }
+
+    const R_OUTER = 95, R_INNER = 58;
+    let angle = -Math.PI / 2; // start at top
+
+    categories.forEach(c => {
+        const slice = (c.amount / total) * Math.PI * 2;
+        const a2 = angle + slice;
+        const large = slice > Math.PI ? 1 : 0;
+
+        const x1 = Math.cos(angle) * R_OUTER, y1 = Math.sin(angle) * R_OUTER;
+        const x2 = Math.cos(a2)    * R_OUTER, y2 = Math.sin(a2)    * R_OUTER;
+        const x3 = Math.cos(a2)    * R_INNER, y3 = Math.sin(a2)    * R_INNER;
+        const x4 = Math.cos(angle) * R_INNER, y4 = Math.sin(angle) * R_INNER;
+
+        const d = `M ${x1} ${y1} A ${R_OUTER} ${R_OUTER} 0 ${large} 1 ${x2} ${y2} L ${x3} ${y3} A ${R_INNER} ${R_INNER} 0 ${large} 0 ${x4} ${y4} Z`;
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', d);
+        path.setAttribute('fill', c.color);
+        path.setAttribute('stroke', '#fff');
+        path.setAttribute('stroke-width', '2');
+        svg.appendChild(path);
+        angle = a2;
+    });
+
+    // Center text
+    const total2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    total2.setAttribute('text-anchor', 'middle');
+    total2.setAttribute('dominant-baseline', 'middle');
+    total2.setAttribute('y', '-6');
+    total2.setAttribute('fill', '#7a8a9a');
+    total2.setAttribute('font-size', '11');
+    total2.setAttribute('font-weight', '600');
+    total2.textContent = 'Total';
+    svg.appendChild(total2);
+
+    const totalVal = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    totalVal.setAttribute('text-anchor', 'middle');
+    totalVal.setAttribute('dominant-baseline', 'middle');
+    totalVal.setAttribute('y', '14');
+    totalVal.setAttribute('fill', '#1B3A6B');
+    totalVal.setAttribute('font-size', '18');
+    totalVal.setAttribute('font-weight', '800');
+    totalVal.textContent = total.toFixed(0) + ' DT';
+    svg.appendChild(totalVal);
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
 }
 
 /* ── Form submit guard ── */

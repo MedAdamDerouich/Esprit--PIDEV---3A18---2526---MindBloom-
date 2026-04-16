@@ -159,6 +159,15 @@ class WalletController extends AbstractController
         return $this->json(['result' => $result]);
     }
 
+    #[Route('/wallet/ai/coach', name: 'app_wallet_ai_coach', methods: ['POST'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function aiCoach(WalletAIService $aiService): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        return $this->json($aiService->categorizeAndCoach($user));
+    }
+
     #[Route('/admin/wallets/{id}/toggle', name: 'app_admin_wallet_toggle', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
     public function adminToggle(

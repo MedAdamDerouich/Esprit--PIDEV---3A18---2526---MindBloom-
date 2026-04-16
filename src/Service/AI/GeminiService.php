@@ -21,24 +21,30 @@ class GeminiService
 
     /**
      * Sends a prompt to Gemini and returns the text response.
+     * When $jsonMode is true, Gemini is forced to return valid JSON only.
      */
-    public function ask(string $prompt, float $temperature = 0.7, int $maxTokens = 1024): string
+    public function ask(string $prompt, float $temperature = 0.7, int $maxTokens = 1024, bool $jsonMode = false): string
     {
         try {
+            $generationConfig = [
+                'temperature'     => $temperature,
+                'maxOutputTokens' => $maxTokens,
+            ];
+            if ($jsonMode) {
+                $generationConfig['responseMimeType'] = 'application/json';
+            }
+
             $response = $this->http->request('POST', self::API_URL . '?key=' . $this->apiKey, [
                 'json' => [
-                    'contents'        => [['parts' => [['text' => $prompt]]]],
-                    'generationConfig' => [
-                        'temperature'     => $temperature,
-                        'maxOutputTokens' => $maxTokens,
-                    ],
+                    'contents'         => [['parts' => [['text' => $prompt]]]],
+                    'generationConfig' => $generationConfig,
                 ],
             ]);
 
-            $data = $response->toArray();
+            $data = $response->toArray(false);
 
             return $data['candidates'][0]['content']['parts'][0]['text']
-                ?? 'Pas de réponse valide de l\'IA.';
+                ?? ('Pas de réponse valide de l\'IA. ' . json_encode($data));
 
         } catch (\Throwable $e) {
             return 'Erreur lors de l\'appel à l\'IA : ' . $e->getMessage();

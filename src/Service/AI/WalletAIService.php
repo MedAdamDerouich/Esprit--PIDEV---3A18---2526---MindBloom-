@@ -58,9 +58,183 @@ class WalletAIService
         return $this->gemini->ask($prompt, temperature: 0.7, maxTokens: 512);
     }
 
+    /**
+     * Smart Categorizer + Budget Coach.
+     * Classifies each recent expense into a category using Gemini,
+     * then produces a spending breakdown, a monthly budget plan, and
+     * actionable recommendations.
+     *
+     * Returns an associative array:
+     *   [
+     *     'categories'      => [ ['name' => 'Santé', 'amount' => 120.0, 'percent' => 42, 'color' => '#..'], ... ],
+     *     'totalSpending'   => 285.5,
+     *     'totalRecharges'  => 400.0,
+     *     'topCategory'     => 'Santé',
+     *     'recommendations' => ['tip 1', 'tip 2', 'tip 3'],
+     *     'summary'         => 'Texte encourageant...',
+     *     'healthScore'     => 78,   // 0..100
+     *     'error'           => null | string,
+     *   ]
+     */
+    public function categorizeAndCoach(User $user): array
+    {
+        $wallet       = $this->walletService->getWallet($user);
+        $transactions = $this->walletService->getTransactions($user);
+
+        if (!$wallet) {
+            return ['error' => 'Aucun portefeuille trouvé pour cet utilisateur.'];
+        }
+
+        // Filter expenses (payments/withdrawals) from the current month
+        $monthStart = new \DateTime('first day of this month midnight');
+        $expenses   = [];
+        $totalSpending  = 0.0;
+        $totalRecharges = 0.0;
+
+        foreach ($transactions as $tx) {
+            $date = $tx->getTransactionDate();
+            if (!$date || $date < $monthStart) continue;
+
+            if ($tx->getType() === Transaction::TYPE_RECHARGE) {
+                $totalRecharges += $tx->getAmount();
+            } else {
+                $totalSpending += $tx->getAmount();
+                $expenses[] = [
+                    'id'          => $tx->getId(),
+                    'amount'      => $tx->getAmount(),
+                    'description' => $tx->getDescription() ?? '',
+                    'date'        => $date->format('Y-m-d'),
+                ];
+            }
+        }
+
+        if (empty($expenses)) {
+            return [
+                'categories'      => [],
+                'totalSpending'   => 0.0,
+                'totalRecharges'  => $totalRecharges,
+                'topCategory'     => null,
+                'recommendations' => ['Aucune dépense ce mois-ci. Continuez à suivre vos recharges pour garder une trace claire.'],
+                'summary'         => 'Ton wallet est calme ce mois-ci — profites-en pour définir un budget pour tes prochaines séances.',
+                'healthScore'     => 100,
+                'error'           => null,
+            ];
+        }
+
+        $prompt = $this->buildCategorizerPrompt($user, $wallet, $expenses, $totalSpending, $totalRecharges);
+        $raw    = $this->gemini->ask($prompt, temperature: 0.3, maxTokens: 4096, jsonMode: true);
+
+        // Extract JSON block from model output
+        $json = $this->extractJson($raw);
+        if (!$json) {
+            return [
+                'error' => 'Réponse IA invalide. Détails : ' . mb_substr($raw, 0, 300),
+                'raw'   => $raw,
+            ];
+        }
+
+        // Normalize and add colors
+        $palette = ['#00C2C7', '#4A90E2', '#E63F8C', '#F47B20', '#4ECB71', '#9B59B6', '#F5C842', '#1B3A6B'];
+        $categories = [];
+        foreach (($json['categories'] ?? []) as $i => $c) {
+            $amount  = (float)($c['amount'] ?? 0);
+            $percent = $totalSpending > 0 ? (int) round(($amount / $totalSpending) * 100) : 0;
+            $categories[] = [
+                'name'    => (string)($c['name'] ?? 'Autre'),
+                'amount'  => round($amount, 2),
+                'percent' => $percent,
+                'color'   => $palette[$i % count($palette)],
+            ];
+        }
+
+        // Sort by amount desc
+        usort($categories, fn($a, $b) => $b['amount'] <=> $a['amount']);
+
+        return [
+            'categories'      => $categories,
+            'totalSpending'   => round($totalSpending, 2),
+            'totalRecharges'  => round($totalRecharges, 2),
+            'topCategory'     => $categories[0]['name'] ?? null,
+            'recommendations' => array_values(array_filter(
+                array_map('strval', $json['recommendations'] ?? []),
+                fn($r) => trim($r) !== ''
+            )),
+            'summary'         => (string)($json['summary'] ?? ''),
+            'healthScore'     => max(0, min(100, (int)($json['healthScore'] ?? 70))),
+            'error'           => null,
+        ];
+    }
+
     // ──────────────────────────────────────────────────────────────────────────
     // Prompt builders
     // ──────────────────────────────────────────────────────────────────────────
+
+    private function buildCategorizerPrompt(User $user, Wallet $wallet, array $expenses, float $totalSpending, float $totalRecharges): string
+    {
+        $lines = [];
+        foreach ($expenses as $e) {
+            $lines[] = sprintf('  - id=%s | %s | %.2f TND | "%s"',
+                $e['id'], $e['date'], $e['amount'], $e['description']);
+        }
+        $block = implode("\n", $lines);
+
+        return <<<PROMPT
+You are a financial coach for users of MindBloom, a mental wellness platform in Tunisia.
+Classify each expense into ONE of these categories:
+  - "Consultations"       (therapy sessions, psychologist bookings)
+  - "Tests psychologiques" (paid assessments, tests)
+  - "Produits bien-être"  (products, supplements, books)
+  - "Événements"          (workshops, retreats, events)
+  - "Abonnements"         (subscriptions, recurring)
+  - "Autre"               (anything that doesn't fit)
+
+User's current balance: {$wallet->getBalance()} TND
+This month — total spending: {$totalSpending} TND, total recharges: {$totalRecharges} TND
+
+Expenses to classify:
+{$block}
+
+Respond with ONLY a valid JSON object (no markdown, no code fences, no commentary), matching this exact schema:
+{
+  "categories": [
+    { "name": "string (one of the 6 categories)", "amount": number }
+  ],
+  "recommendations": [
+    "3 short actionable tips in French, each under 25 words"
+  ],
+  "summary": "2-3 warm sentences in French summarising the month + encouragement",
+  "healthScore": integer 0-100 (100 = excellent balance between recharges and spending, reasonable diversification)
+}
+
+Rules:
+- Aggregate amounts per category (do NOT list each transaction individually).
+- Include only categories with amount > 0.
+- Health score logic: penalize if spending > recharges, reward diversification, reward healthy balance.
+- Recommendations must reference concrete numbers from the data when possible.
+PROMPT;
+    }
+
+    /**
+     * Extract and decode the first valid JSON object from a text blob.
+     */
+    private function extractJson(string $text): ?array
+    {
+        $text = trim($text);
+        // Strip markdown code fences if present
+        if (str_starts_with($text, '```')) {
+            $text = preg_replace('/^```(?:json)?\s*/i', '', $text);
+            $text = preg_replace('/\s*```\s*$/', '', $text);
+        }
+        // Find the first { ... } block (greedy, balanced enough for flat JSON)
+        $start = strpos($text, '{');
+        $end   = strrpos($text, '}');
+        if ($start === false || $end === false || $end < $start) {
+            return null;
+        }
+        $json = substr($text, $start, $end - $start + 1);
+        $data = json_decode($json, true);
+        return is_array($data) ? $data : null;
+    }
 
     /**
      * @param Transaction[] $transactions

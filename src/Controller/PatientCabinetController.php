@@ -80,6 +80,7 @@ class PatientCabinetController extends AbstractController
         return $this->render('patient/reserver.html.twig', [
             'cabinet' => $cabinet,
             'groupedCreneaux' => $groupedCreneaux,
+            'groqApiKey' => $_ENV['GROQ_API_KEY'] ?? getenv('GROQ_API_KEY'),
         ]);
     }
 

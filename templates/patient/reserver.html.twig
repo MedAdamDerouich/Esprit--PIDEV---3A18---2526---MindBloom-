@@ -53,14 +53,22 @@
                 <a href="{{ path('app_patient_cabinets_index') }}" style="align-self:flex-start; text-decoration:none; color:#718096; font-size:18px; font-weight:bold; padding:5px; line-height:1;" title="Fermer">✕</a>
             </div>
 
-            {# DESCRIPTION #}
-            <div style="display:flex; flex-direction:column; gap:8px; margin-top:25px;">
-                <span style="font-weight:bold; color:#2D3748; font-size:13px;">À propos du cabinet</span>
-                <span id="cabinetDescription" style="color:#718096; font-size:13px; line-height:1.5;">
-                    {{ cabinet.description|default('Aucune description fournie.') }}
-                </span>
-            </div>
-
+{# DESCRIPTION #}
+<div style="display:flex; flex-direction:column; gap:8px; margin-top:25px;">
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+        <span style="font-weight:bold; color:#2D3748; font-size:13px;">À propos du cabinet</span>
+        <button id="btnTranslate" onclick="translateDescription()"
+            style="background:none; border:1px solid #4A90E2; color:#4A90E2; border-radius:8px; padding:3px 10px; font-size:11px; cursor:pointer;">
+            🌐 EN
+        </button>
+    </div>
+    <span id="cabinetDescription" style="color:#718096; font-size:13px; line-height:1.5;">
+        {{ cabinet.description|default('Aucune description fournie.') }}
+    </span>
+    <span id="translateStatus" style="font-size:11px; color:#A0AEC0; display:none;">
+        Traduction en cours...
+    </span>
+</div>
             {# SÉPARATEUR #}
             <hr style="border:0; border-top:1.5px solid #E2E8F0; margin:25px 0; opacity:1;">
 
@@ -138,6 +146,68 @@
     <!-- Script en bas -->
 
 <script>
+
+const originalDescription = document.getElementById('cabinetDescription')?.innerText;
+let isTranslated = false;
+let translatedCache = null;
+const GROQ_KEY = "{{ groqApiKey }}";
+
+async function translateDescription() {
+    const descEl = document.getElementById('cabinetDescription');
+    const statusEl = document.getElementById('translateStatus');
+    const btn = document.getElementById('btnTranslate');
+
+    // Toggle retour au français
+    if (isTranslated) {
+        descEl.innerText = originalDescription;
+        btn.innerText = '🌐 EN';
+        isTranslated = false;
+        return;
+    }
+
+    // Cache
+    if (translatedCache) {
+        descEl.innerText = translatedCache;
+        btn.innerText = '🌐 FR';
+        isTranslated = true;
+        return;
+    }
+
+    statusEl.style.display = 'block';
+    btn.disabled = true;
+
+    const prompt = `Translate this text into English. Return only one single version, no options, no explanation, just the translation:\n\n${originalDescription}`;
+
+    try {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${GROQ_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'llama-3.1-8b-instant',
+                messages: [{ role: 'user', content: prompt }],
+                max_tokens: 500
+            })
+        });
+
+        const data = await response.json();
+        console.log('Réponse Groq:', JSON.stringify(data)); // à supprimer après test
+        translatedCache = data.choices[0].message.content.trim();
+        descEl.innerText = translatedCache;
+        btn.innerText = '🌐 FR';
+        isTranslated = true;
+
+    } catch (err) {
+        console.error('Erreur Groq:', err);
+        statusEl.innerText = 'Erreur de traduction.';
+    } finally {
+        statusEl.style.display = 'none';
+        btn.disabled = false;
+    }
+}
+
 function initReserverScript() {
     const clickableCards = document.querySelectorAll('.creneau-card.clickable');
     const btnConfirmerPage = document.getElementById('btnConfirmerPage');

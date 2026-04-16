@@ -22,25 +22,30 @@
         </div>
     </div>
 
-    <!-- MESSAGES FLASH (CENTRED) -->
-    <div style="position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:9999; display:flex; flex-direction:column; gap:15px; pointer-events:none;">
-        {% for label, messages in app.flashes %}
-            {% for message in messages %}
-                <div style="padding:25px 40px; border-radius:15px; box-shadow:0 20px 50px rgba(0,0,0,0.2); {% if label == 'success' %}background:#E8F5E9; border:2px solid #5FBF9F; color:#2E7D32;{% else %}background:#FFF5F5; border:2px solid #FF4D4D; color:#C53030;{% endif %} font-weight:bold; font-size:18px; text-align:center; animation: fadeoutmsg 4s forwards;">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endfor %}
+    <!-- CUSTOM MODAL OVERLAY -->
+    <div id="customModalOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(3px);">
+        <div style="background:white; border-radius:20px; padding:30px; width:400px; text-align:center; box-shadow:0 25px 50px rgba(0,0,0,0.15); transform:scale(0.9); opacity:0; transition:all 0.3s; animation: modalPop 0.3s forwards;">
+            
+            <style>
+                @keyframes modalPop {
+                    to { transform:scale(1); opacity:1; }
+                }
+            </style>
+            
+            <!-- Icons -->
+            <div id="modalIconWarning" style="display:none; font-size:45px; margin-bottom:10px;">⚠️</div>
+            <div id="modalIconError" style="display:none; font-size:45px; margin-bottom:10px;">❌</div>
+            <div id="modalIconSuccess" style="display:none; font-size:45px; margin-bottom:10px;">✅</div>
+            
+            <h3 id="modalTitle" style="color:#2D3748; margin-top:0; font-weight:bold; font-size:22px;">Confirmation</h3>
+            <p id="modalMessage" style="color:#718096; font-size:15px; line-height:1.5; margin-bottom:25px;">Message ici</p>
+            
+            <div style="display:flex; justify-content:center; gap:15px;">
+                <button type="button" id="modalBtnCancel" style="display:none; background:#E2E8F0; color:#4A5568; border:none; padding:12px 25px; border-radius:12px; font-size:14px; font-weight:bold; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#CBD5E0'" onmouseout="this.style.background='#E2E8F0'">Annuler</button>
+                <button type="button" id="modalBtnConfirm" style="background:#4A90E2; color:white; border:none; padding:12px 25px; border-radius:12px; font-size:14px; font-weight:bold; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#3182CE'" onmouseout="this.style.background='#4A90E2'">Compris</button>
+            </div>
+        </div>
     </div>
-    <style>
-        @keyframes fadeoutmsg {
-            0% { opacity: 0; transform: translateY(20px); }
-            10% { opacity: 1; transform: translateY(0); }
-            80% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-20px); }
-        }
-    </style>
-
     <!-- LISTE DES RESERVATIONS -->
     <div id="reservationsContainer" style="display:flex; flex-direction:column; gap:20px; width:100%; max-width:850px;">
         {% if reservations is empty %}
@@ -112,18 +117,38 @@
                         {% if not isPast %}
                             <form action="{{ path('app_patient_reservations_toggle', {id: r.idReservation}) }}" method="post" style="margin:0;">
                                 {% if r.status.value == 'Confirmé' %}
-                                    <button type="submit" onclick="return confirm('Êtes-vous sûr de vouloir annuler cette réservation ? Le créneau deviendra disponible pour d\'autres patients.');" style="background:#FF4D4D; color:white; border-radius:8px; font-weight:600; font-size:12px; padding:6px 12px; border:none; cursor:pointer; min-width:85px; transition:0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Annuler</button>
+                                    <button type="button" class="btn-confirm-action" 
+                                            data-title="Confirmation d'annulation"
+                                            data-confirm="Êtes-vous sûr de vouloir annuler cette réservation ? Le créneau deviendra disponible pour d'autres patients." 
+                                            data-btn="Oui, annuler"
+                                            data-color="#FF4D4D"
+                                            style="background:#FF4D4D; color:white; border-radius:8px; font-weight:600; font-size:12px; padding:6px 12px; border:none; cursor:pointer; min-width:85px; transition:0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Annuler</button>
                                 {% else %}
-                                    <button type="submit" style="background:#5FBF9F; color:white; border-radius:8px; font-weight:600; font-size:12px; padding:6px 12px; border:none; cursor:pointer; min-width:85px; transition:0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Reconfirmer</button>
+                                    {% if r.creneau.isDisponible %}
+                                        <button type="button" class="btn-confirm-action" 
+                                                data-title="Reprise de rendez-vous"
+                                                data-confirm="Voulez-vous reconfirmer ce créneau ? Assurez-vous d'être disponible." 
+                                                data-btn="Oui, reconfirmer"
+                                                data-color="#5FBF9F"
+                                                style="background:#5FBF9F; color:white; border-radius:8px; font-weight:600; font-size:12px; padding:6px 12px; border:none; cursor:pointer; min-width:85px; transition:0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Reconfirmer</button>
+                                    {% else %}
+                                        <button type="button" onclick="window.showConfirmation(document.getElementById('delete-form-{{ r.idReservation }}'), 'Créneau indisponible', 'Désolé, ce créneau a déjà été réservé par un autre patient.\n\nVoulez-vous le supprimer de vos réservations ?', 'Oui, supprimer', '#FF4D4D')" 
+                                                style="background:#5FBF9F; color:white; border-radius:8px; font-weight:600; font-size:12px; padding:6px 12px; border:none; cursor:pointer; min-width:85px; transition:0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Reconfirmer</button>
+                                    {% endif %}
                                 {% endif %}
                             </form>
                         {% endif %}
 
                         {# Bouton Supprimer (Corbeille) - seulement si annulé #}
                         {% if r.status.value == 'Annulé' %}
-                            <form action="{{ path('app_patient_reservations_delete', {id: r.idReservation}) }}" method="post" style="margin:0;" title="Supprimer de l'historique">
-                                <button type="submit" onclick="return confirm('Voulez-vous supprimer définitivement cette réservation de votre historique ?');" style="background:transparent; color:#EF4444; border-radius:5px; display:flex; align-items:center; justify-content:center; width:26px; height:26px; border:1px solid #EF4444; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#FFE5E5'" onmouseout="this.style.background='transparent'">
-                                    <span style="font-size:14px; font-weight:bold;">✕</span>
+                            <form id="delete-form-{{ r.idReservation }}" action="{{ path('app_patient_reservations_delete', {id: r.idReservation}) }}" method="post" style="margin:0;" title="Supprimer de l'historique">
+                                <button type="button" class="btn-confirm-action" 
+                                        data-title="Suppression définitive"
+                                        data-confirm="Voulez-vous supprimer définitivement cette réservation de vos réservations  ?" 
+                                        data-btn="Oui, supprimer"
+                                        data-color="#EF4444"
+                                        style="background:transparent; color:#EF4444; border-radius:5px; display:flex; align-items:center; justify-content:center; width:26px; height:26px; border:1px solid #EF4444; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#FFE5E5'" onmouseout="this.style.background='transparent'">
+                                    <span style="font-size:14px; font-weight:bold; pointer-events:none;">✕</span>
                                 </button>
                             </form>
                         {% endif %}
@@ -144,10 +169,11 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    
+    // --- FILTRAGE DES CATEGORIES ---
     const filterBtns = document.querySelectorAll('.filter-btn');
     const cards = document.querySelectorAll('.reservation-card');
 
-    // Mettre à jour les compteurs sur les boutons
     const countTotal = cards.length;
     let countPassees = 0;
     let countConfirmes = 0;
@@ -166,7 +192,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     filterBtns.forEach(btn => {
         btn.addEventListener('click', function() {
-            // Styling actif/inactif
             filterBtns.forEach(b => {
                 b.style.background = '#E0E0E0';
                 b.style.color = '#333333';
@@ -177,21 +202,117 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active');
 
             const filter = this.getAttribute('data-filter');
-
-            // Filtrage des cartes
             cards.forEach(card => {
                 if (filter === 'tous') {
                     card.style.display = 'flex';
                 } else {
-                    if (card.classList.contains(filter)) {
-                        card.style.display = 'flex';
-                    } else {
-                        card.style.display = 'none';
-                    }
+                    card.style.display = card.classList.contains(filter) ? 'flex' : 'none';
                 }
             });
         });
     });
+
+    // --- MODAL & MESSAGES CONFIGURATION ---
+    const customModal = document.getElementById('customModalOverlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const btnCancel = document.getElementById('modalBtnCancel');
+    const btnConfirm = document.getElementById('modalBtnConfirm');
+    const iconWarning = document.getElementById('modalIconWarning');
+    const iconError = document.getElementById('modalIconError');
+    const iconSuccess = document.getElementById('modalIconSuccess');
+    
+    let pendingFormSubmit = null;
+
+    function showConfirmation(formElement, title, message, btnText, color) {
+        iconWarning.style.display = 'block';
+        iconError.style.display = 'none';
+        iconSuccess.style.display = 'none';
+        
+        modalTitle.innerText = title;
+        modalMessage.innerText = message;
+        
+        btnCancel.style.display = 'block';
+        btnConfirm.innerText = btnText;
+        btnConfirm.style.background = color;
+        
+        // Darken color slightly on hover by adjusting opacity styling inline
+        btnConfirm.onmouseover = () => btnConfirm.style.opacity = '0.8';
+        btnConfirm.onmouseout = () => btnConfirm.style.opacity = '1';
+        
+        pendingFormSubmit = formElement;
+        customModal.style.display = 'flex';
+    }
+
+    function showAlert(title, message, type) {
+        iconWarning.style.display = type === 'warning' ? 'block' : 'none';
+        iconError.style.display = type === 'error' ? 'block' : 'none';
+        iconSuccess.style.display = type === 'success' ? 'block' : 'none';
+        
+        modalTitle.innerText = title;
+        modalMessage.innerText = message;
+        
+        btnCancel.style.display = 'none';
+        btnConfirm.innerText = 'Compris';
+        
+        if (type === 'error') {
+            btnConfirm.style.background = '#FF4D4D';
+        } else if (type === 'success') {
+            btnConfirm.style.background = '#5FBF9F';
+        } else {
+            btnConfirm.style.background = '#4A90E2';
+        }
+        
+        btnConfirm.onmouseover = () => btnConfirm.style.opacity = '0.8';
+        btnConfirm.onmouseout = () => btnConfirm.style.opacity = '1';
+        
+        pendingFormSubmit = null;
+        customModal.style.display = 'flex';
+    }
+    
+    // Expose to global scope for inline onclick usage
+    window.showAlert = showAlert;
+    window.showConfirmation = showConfirmation;
+
+    btnCancel.addEventListener('click', () => {
+        customModal.style.display = 'none';
+        pendingFormSubmit = null;
+    });
+
+    btnConfirm.addEventListener('click', () => {
+        if (pendingFormSubmit) {
+            pendingFormSubmit.submit();
+        } else {
+            customModal.style.display = 'none';
+        }
+    });
+
+    // Hijack the data-confirm actions natively from buttons
+    document.querySelectorAll('.btn-confirm-action').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const formObj = this.closest('form');
+            const cTitle = this.getAttribute('data-title') || 'Confirmation';
+            const cMsg = this.getAttribute('data-confirm');
+            const cBtn = this.getAttribute('data-btn') || 'Oui';
+            const cCol = this.getAttribute('data-color') || '#FF4D4D';
+            
+            showConfirmation(formObj, cTitle, cMsg, cBtn, cCol);
+        });
+    });
+
+    // Server Flashes Display
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            {% if label == 'error' %}
+                showAlert('Erreur de réservation', '{{ message|e('js') }}', 'error');
+            {% elseif label == 'success' %}
+                showAlert('Action réussie', '{{ message|e('js') }}', 'success');
+            {% else %}
+                showAlert('Information', '{{ message|e('js') }}', 'warning');
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
 });
 </script>
 {% endblock %}

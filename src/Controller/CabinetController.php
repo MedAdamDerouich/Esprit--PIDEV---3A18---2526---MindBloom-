@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Cabinet;
-use App\Form\CabinetType;
 use App\Repository\CabinetRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -25,6 +24,7 @@ class CabinetController extends AbstractController
 
         return $this->render('psychologue/cabinet.html.twig', [
             'cabinet' => $cabinet,
+            // 'groqApiKey' => $_ENV['GROQ_API_KEY'] ?? getenv('GROQ_API_KEY'), 
         ]);
     }
 
@@ -43,38 +43,32 @@ class CabinetController extends AbstractController
         return $this->redirectToRoute('app_cabinet');
     }
 
-    #[Route('/psychologue/cabinet/editer', name: 'app_cabinet_editer', methods: ['GET', 'POST'])]
-    public function editer(Request $request, CabinetRepository $cabinetRepository): Response
+    #[Route('/psychologue/cabinet/editer', name: 'app_cabinet_editer')]
+    public function editer(Request $request, EntityManagerInterface $em, CabinetRepository $cabinetRepository): Response
     {
         $user = $this->getUser();
         $cabinet = $cabinetRepository->findOneBy(['psychologue' => $user]);
-        $isNew = false;
 
         if (!$cabinet) {
             $cabinet = new Cabinet();
             $cabinet->setPsychologue($user);
-            $isNew = true;
         }
 
-        // Créer le formulaire Symfony
-        $form = $this->createForm(CabinetType::class, $cabinet);
+        $form = $this->createForm(\App\Form\CabinetType::class, $cabinet);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if ($isNew) {
-                $cabinetRepository->addCabinet($cabinet);
-                $this->addFlash('success', 'Cabinet ajouté avec succès.');
-            } else {
-                $cabinetRepository->updateCabinet($cabinet);
-                $this->addFlash('success', 'Cabinet modifié avec succès.');
-            }
+            $em->persist($cabinet);
+            $em->flush();
 
+            $this->addFlash('success', 'Cabinet enregistré avec succès.');
             return $this->redirectToRoute('app_cabinet');
         }
 
         return $this->render('psychologue/ajout_cabinet.html.twig', [
             'form' => $form->createView(),
-            'cabinet' => $cabinet->getIdCabinet() ? $cabinet : null, // keep null if new for UI logic
+            'cabinet' => $cabinet->getIdCabinet() ? $cabinet : null,
+            'groqApiKey' => $_ENV['GROQ_API_KEY'] ?? getenv('GROQ_API_KEY'),
         ]);
     }
 }

@@ -30,112 +30,119 @@
             }
         </style>
         
-        <div style="padding:20px 25px;">
-            {# HEADER (Image + Infos + Close) #}
-            <div style="display:flex; gap:15px; align-items:center;">
-                {# Image #}
-                <div style="width:65px; height:65px; border-radius:50%; background:#E2E8F0; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
-                    {% if cabinet.psychologue and cabinet.psychologue.profileImage %}
-                        <img src="{{ asset('uploads/profiles/' ~ cabinet.psychologue.profileImage) }}" style="width:100%; height:100%; object-fit:cover;" />
-                    {% else %}
-                        <span style="font-size:30px; color:rgba(74,144,226,0.3);">👤</span>
-                    {% endif %}
-                </div>
-
-                {# Text Infos #}
-                <div style="display:flex; flex-direction:column; gap:2px; flex:1;">
-                    <span style="font-size:19px; font-weight:bold; color:#2D3748;">{{ cabinet.nomCabinet }}</span>
-                    <span style="font-size:14px; font-weight:bold; color:#4A90E2;">{% if cabinet.psychologue %}Dr. {{ cabinet.psychologue.fullName }}{% else %}Sans Nom{% endif %}</span>
-                    <span style="color:#718096; font-size:12px;">{{ cabinet.specialite }}</span>
-                </div>
-
-                {# Close Button #}
-                <a href="{{ path('app_patient_cabinets_index') }}" style="align-self:flex-start; text-decoration:none; color:#718096; font-size:18px; font-weight:bold; padding:5px; line-height:1;" title="Fermer">✕</a>
-            </div>
-
-{# DESCRIPTION #}
-<div style="display:flex; flex-direction:column; gap:8px; margin-top:25px;">
-    <div style="display:flex; align-items:center; justify-content:space-between;">
-        <span style="font-weight:bold; color:#2D3748; font-size:13px;">À propos du cabinet</span>
-        <button id="btnTranslate" onclick="translateDescription()"
-            style="background:none; border:1px solid #4A90E2; color:#4A90E2; border-radius:8px; padding:3px 10px; font-size:11px; cursor:pointer;">
-            🌐 EN
-        </button>
-    </div>
-    <span id="cabinetDescription" style="color:#718096; font-size:13px; line-height:1.5;">
-        {{ cabinet.description|default('Aucune description fournie.') }}
-    </span>
-    <span id="translateStatus" style="font-size:11px; color:#A0AEC0; display:none;">
-        Traduction en cours...
-    </span>
-</div>
-            {# SÉPARATEUR #}
-            <hr style="border:0; border-top:1.5px solid #E2E8F0; margin:25px 0; opacity:1;">
-
-            <div style="font-weight:bold; color:#2D3748; font-size:15px; margin-bottom:15px;">
-                📅 Créneaux disponibles
-            </div>
-           {# LISTE GROUPÉE PAR DATE #}
-        <div style="flex:1; max-height:280px; overflow-y:auto; padding:0 25px; display:flex; flex-direction:column; gap:15px;">
-            {% if groupedCreneaux is empty %}
-                <div style="text-align:center; padding:30px; color:#A0AEC0; font-size:14px;">
-                    Aucun créneau configuré par ce professionnel.
-                </div>
-            {% else %}
-                {% set now = date() %}
-                {% set todayKey = now|date('Y-m-d') %}
-                {% set currTime = now|date('H:i') %}
-
-                {% for group in groupedCreneaux %}
-                    <div style="display:flex; flex-direction:column; gap:10px;">
-                        {# Date header #}
-                        <div style="display:flex; align-items:center; gap:10px; padding-bottom:5px; border-bottom:1px solid #edf2f7;">
-                            <span style="font-weight:bold; color:#4A90E2; font-size:14px; opacity:0.75;">
-                                {% set joursFr = {'Mon':'Lundi','Tue':'Mardi','Wed':'Mercredi','Thu':'Jeudi','Fri':'Vendredi','Sat':'Samedi','Sun':'Dimanche'} %}
-                                {% set moisFr = {'Jan':'Janvier','Feb':'Février','Mar':'Mars','Apr':'Avril','May':'Mai','Jun':'Juin','Jul':'Juillet','Aug':'Août','Sep':'Septembre','Oct':'Octobre','Nov':'Novembre','Dec':'Décembre'} %}
-                                {{ joursFr[group.date|date('D')]|default(group.date|date('D')) }} {{ group.date|date('d') }} {{ moisFr[group.date|date('M')]|default(group.date|date('M')) }} {{ group.date|date('Y') }}
-                            </span>
-                        </div>
-
-                        {# Slots Grid for this date #}
-                        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;">
-                            {% for creneau in group.slots %}
-                                {% set dateKey = creneau.dateCreneau|date('Y-m-d') %}
-                                {% set timeCreneau = creneau.heureDebut|date('H:i') %}
-                                {% set isPast = (dateKey < todayKey) or (dateKey == todayKey and timeCreneau < currTime) %}
-                                {% set isClickable = (creneau.isDisponible and not isPast) %}
-
-                                <div class="creneau-card {% if isClickable %}clickable{% endif %}" data-id="{{ creneau.id }}"
-                                     style="background:{% if isClickable %}white{% else %}#F7FAFC{% endif %}; border:1.5px solid #E2E8F0; border-radius:12px; padding:8px 5px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; transition:all 0.2s; position:relative; overflow:hidden; {% if isClickable %}cursor:pointer;{% else %}opacity:0.6;{% endif %}">
-                                    
-                                    <span style="font-weight:bold; color:{% if isClickable %}#2D3748{% else %}#A0AEC0{% endif %}; font-size:13px;">
-                                        {{ creneau.heureDebut|date('H:i') }}
-                                    </span>
-                                    
-                                    {% if isPast %}
-                                        <span style="color:#A0AEC0; font-size:8px; font-weight:bold; text-transform:uppercase;">Passé</span>
-                                    {% elseif not creneau.isDisponible %}
-                                        <span style="color:#E53E3E; font-size:8px; font-weight:bold; text-transform:uppercase;">Indisponible</span>
-                                    {% else %}
-                                        <span style="color:#5FBF9F; font-size:8px; font-weight:bold; text-transform:uppercase;">Disponible</span>
-                                    {% endif %}
-
-                                    <span style="font-size:9px; color:#A0AEC0; font-weight:500;">
-                                        {{ creneau.dureeMinutes }} min
-                                    </span>
-                                </div>
-                            {% endfor %}
-                        </div>
+        {# WRAPPER GLOBAL DU MODAL #}
+        <div style="display:flex; flex-direction:column; flex:1; min-height:0; max-height: 90vh;">
+            
+            {# HEADER (Image + Infos + Close) & DESCRIPTION -- FIXE #}
+            <div style="padding:20px 25px 0 25px; flex-shrink:0;">
+                <div style="display:flex; gap:15px; align-items:center;">
+                    {# Image #}
+                    <div style="width:65px; height:65px; border-radius:50%; background:#E2E8F0; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+                        {% if cabinet.psychologue and cabinet.psychologue.profileImage %}
+                            <img src="{{ asset('uploads/profiles/' ~ cabinet.psychologue.profileImage) }}" style="width:100%; height:100%; object-fit:cover;" />
+                        {% else %}
+                            <span style="font-size:30px; color:rgba(74,144,226,0.3);">👤</span>
+                        {% endif %}
                     </div>
-                {% endfor %}
-            {% endif %}
-        </div>
 
-        {# FOOTER / VALIDATION LINK #}
-        <div style="padding:20px 25px;">
-            <a href="#" id="btnConfirmerPage" style="display:flex; align-items:center; justify-content:center; width:100%; height:45px; background:#CBD5E0; color:white; border-radius:10px; font-weight:bold; font-size:14px; text-decoration:none; pointer-events:none; transition:background 0.3s; cursor:not-allowed;">
-                Continuer vers la confirmation
-            </a>
+                    {# Text Infos #}
+                    <div style="display:flex; flex-direction:column; gap:2px; flex:1;">
+                        <span style="font-size:19px; font-weight:bold; color:#2D3748;">{{ cabinet.nomCabinet }}</span>
+                        <span style="font-size:14px; font-weight:bold; color:#4A90E2;">{% if cabinet.psychologue %}Dr. {{ cabinet.psychologue.fullName }}{% else %}Sans Nom{% endif %}</span>
+                        <span style="color:#718096; font-size:12px;">{{ cabinet.specialite }}</span>
+                    </div>
+
+                    {# Close Button #}
+                    <a href="{{ path('app_patient_cabinets_index') }}" style="align-self:flex-start; text-decoration:none; color:#718096; font-size:18px; font-weight:bold; padding:5px; line-height:1;" title="Fermer">✕</a>
+                </div>
+
+                {# DESCRIPTION #}
+                <div style="display:flex; flex-direction:column; gap:8px; margin-top:25px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                        <span style="font-weight:bold; color:#2D3748; font-size:13px;">À propos du cabinet</span>
+                        <button id="btnTranslate" onclick="translateDescription()"
+                            style="background:none; border:1px solid #4A90E2; color:#4A90E2; border-radius:8px; padding:3px 10px; font-size:11px; cursor:pointer;">
+                            🌐 EN
+                        </button>
+                    </div>
+                    <span id="cabinetDescription" style="color:#718096; font-size:13px; line-height:1.5;">
+                        {{ cabinet.description|default('Aucune description fournie.') }}
+                    </span>
+                    <span id="translateStatus" style="font-size:11px; color:#A0AEC0; display:none;">
+                        Traduction en cours...
+                    </span>
+                </div>
+
+                {# SÉPARATEUR #}
+                <hr style="border:0; border-top:1.5px solid #E2E8F0; margin:20px 0;">
+
+                <div style="font-weight:bold; color:#2D3748; font-size:15px; margin-bottom:10px;">
+                    📅 Créneaux disponibles
+                </div>
+            </div>
+
+            {# LISTE GROUPÉE PAR DATE -- SCROLLABLE #}
+            <div style="flex:1; overflow-y:auto; padding:0 25px 15px 25px; display:flex; flex-direction:column; gap:15px; position:relative;">
+                {% if groupedCreneaux is empty %}
+                    <div style="text-align:center; padding:30px; color:#A0AEC0; font-size:14px;">
+                        Aucun créneau configuré par ce professionnel.
+                    </div>
+                {% else %}
+                    {% set now = date() %}
+                    {% set todayKey = now|date('Y-m-d') %}
+                    {% set currTime = now|date('H:i') %}
+
+                    {% for group in groupedCreneaux %}
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            {# Date header #}
+                            <div style="display:flex; align-items:center; gap:10px; padding-bottom:5px; border-bottom:1px solid #edf2f7; position:sticky; top:0; background:#FAFAF8; z-index:5;">
+                                <span style="font-weight:bold; color:#4A90E2; font-size:14px; opacity:0.75;">
+                                    {% set joursFr = {'Mon':'Lundi','Tue':'Mardi','Wed':'Mercredi','Thu':'Jeudi','Fri':'Vendredi','Sat':'Samedi','Sun':'Dimanche'} %}
+                                    {% set moisFr = {'Jan':'Janvier','Feb':'Février','Mar':'Mars','Apr':'Avril','May':'Mai','Jun':'Juin','Jul':'Juillet','Aug':'Août','Sep':'Septembre','Oct':'Octobre','Nov':'Novembre','Dec':'Décembre'} %}
+                                    {{ joursFr[group.date|date('D')]|default(group.date|date('D')) }} {{ group.date|date('d') }} {{ moisFr[group.date|date('M')]|default(group.date|date('M')) }} {{ group.date|date('Y') }}
+                                </span>
+                            </div>
+
+                            {# Slots Grid for this date #}
+                            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;">
+                                {% for creneau in group.slots %}
+                                    {% set dateKey = creneau.dateCreneau|date('Y-m-d') %}
+                                    {% set timeCreneau = creneau.heureDebut|date('H:i') %}
+                                    {% set isPast = (dateKey < todayKey) or (dateKey == todayKey and timeCreneau < currTime) %}
+                                    {% set isClickable = (creneau.isDisponible and not isPast) %}
+
+                                    <div class="creneau-card {% if isClickable %}clickable{% endif %}" data-id="{{ creneau.id }}"
+                                         style="background:{% if isClickable %}white{% else %}#F7FAFC{% endif %}; border:1.5px solid {% if isClickable %}#E2E8F0{% else %}#E2E8F0{% endif %}; box-shadow: {% if isClickable %}0 2px 4px rgba(0,0,0,0.02){% else %}none{% endif %}; border-radius:12px; padding:8px 5px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; transition:all 0.2s; position:relative; overflow:hidden; {% if isClickable %}cursor:pointer;{% else %}opacity:0.6;{% endif %}">
+                                        
+                                        <span style="font-weight:bold; color:{% if isClickable %}#2D3748{% else %}#A0AEC0{% endif %}; font-size:13px; pointer-events: none;">
+                                            {{ creneau.heureDebut|date('H:i') }}
+                                        </span>
+                                        
+                                        {% if isPast %}
+                                            <span style="color:#A0AEC0; font-size:8px; font-weight:bold; text-transform:uppercase; pointer-events: none;">Passé</span>
+                                        {% elseif not creneau.isDisponible %}
+                                            <span style="color:#E53E3E; font-size:8px; font-weight:bold; text-transform:uppercase; pointer-events: none;">Indisponible</span>
+                                        {% else %}
+                                            <span style="color:#5FBF9F; font-size:8px; font-weight:bold; text-transform:uppercase; pointer-events: none;">Disponible</span>
+                                        {% endif %}
+
+                                        <span style="font-size:9px; color:#A0AEC0; font-weight:500; pointer-events: none;">
+                                            {{ creneau.dureeMinutes }} min
+                                        </span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            {# FOOTER / VALIDATION LINK -- FIXE #}
+            <div style="padding:15px 25px 20px 25px; flex-shrink:0; background:#FAFAF8; border-top:1px solid #edf2f7; z-index:10; box-shadow: 0 -4px 10px rgba(0,0,0,0.02);">
+                <a href="#" id="btnConfirmerPage" style="display:flex; align-items:center; justify-content:center; width:100%; height:45px; background:#CBD5E0; color:white; border-radius:10px; font-weight:bold; font-size:15px; text-decoration:none; pointer-events:none; transition:background 0.3s; cursor:not-allowed;">
+                    Continuer vers la confirmation
+                </a>
+            </div>
         </div>
 
     </div>
@@ -146,75 +153,81 @@
     <!-- Script en bas -->
 
 <script>
+(function() {
+    const originalDescription = document.getElementById('cabinetDescription')?.innerText;
+    let isTranslated = false;
+    let translatedCache = null;
+    const GROQ_KEY = "{{ groqApiKey }}";
 
-const originalDescription = document.getElementById('cabinetDescription')?.innerText;
-let isTranslated = false;
-let translatedCache = null;
-const GROQ_KEY = "{{ groqApiKey }}";
+    window.translateDescription = async function() {
+        const descEl = document.getElementById('cabinetDescription');
+        const statusEl = document.getElementById('translateStatus');
+        const btn = document.getElementById('btnTranslate');
 
-async function translateDescription() {
-    const descEl = document.getElementById('cabinetDescription');
-    const statusEl = document.getElementById('translateStatus');
-    const btn = document.getElementById('btnTranslate');
+        // Toggle retour au français
+        if (isTranslated) {
+            descEl.innerText = originalDescription;
+            btn.innerText = '🌐 EN';
+            isTranslated = false;
+            return;
+        }
 
-    // Toggle retour au français
-    if (isTranslated) {
-        descEl.innerText = originalDescription;
-        btn.innerText = '🌐 EN';
-        isTranslated = false;
-        return;
-    }
+        // Cache
+        if (translatedCache) {
+            descEl.innerText = translatedCache;
+            btn.innerText = '🌐 FR';
+            isTranslated = true;
+            return;
+        }
 
-    // Cache
-    if (translatedCache) {
-        descEl.innerText = translatedCache;
-        btn.innerText = '🌐 FR';
-        isTranslated = true;
-        return;
-    }
+        statusEl.style.display = 'block';
+        btn.disabled = true;
 
-    statusEl.style.display = 'block';
-    btn.disabled = true;
+        const prompt = `Translate this text into English. Return only one single version, no options, no explanation, just the translation:\n\n${originalDescription}`;
 
-    const prompt = `Translate this text into English. Return only one single version, no options, no explanation, just the translation:\n\n${originalDescription}`;
+        try {
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${GROQ_KEY}`
+                },
+                body: JSON.stringify({
+                    model: 'llama-3.1-8b-instant',
+                    messages: [{ role: 'user', content: prompt }],
+                    max_tokens: 500
+                })
+            });
 
-    try {
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${GROQ_KEY}`
-            },
-            body: JSON.stringify({
-                model: 'llama-3.1-8b-instant',
-                messages: [{ role: 'user', content: prompt }],
-                max_tokens: 500
-            })
+            const data = await response.json();
+            translatedCache = data.choices[0].message.content.trim();
+            descEl.innerText = translatedCache;
+            btn.innerText = '🌐 FR';
+            isTranslated = true;
+
+        } catch (err) {
+            console.error('Erreur Groq:', err);
+            statusEl.innerText = 'Erreur de traduction.';
+        } finally {
+            statusEl.style.display = 'none';
+            btn.disabled = false;
+        }
+    };
+
+    function initReserverScript() {
+        const clickableCards = document.querySelectorAll('.creneau-card.clickable');
+        const btnConfirmerPage = document.getElementById('btnConfirmerPage');
+
+        if (!btnConfirmerPage) return; // Sécurité si on navigue ailleurs
+
+        // ----- SÉLECTION CRÉNEAU -----
+        clickableCards.forEach(card => {
+            // Éviter d'ajouter plusieurs fois l'événement si le script repop
+            card.removeEventListener('click', selectCardHandler);
+            card.addEventListener('click', selectCardHandler);
         });
 
-        const data = await response.json();
-        console.log('Réponse Groq:', JSON.stringify(data)); // à supprimer après test
-        translatedCache = data.choices[0].message.content.trim();
-        descEl.innerText = translatedCache;
-        btn.innerText = '🌐 FR';
-        isTranslated = true;
-
-    } catch (err) {
-        console.error('Erreur Groq:', err);
-        statusEl.innerText = 'Erreur de traduction.';
-    } finally {
-        statusEl.style.display = 'none';
-        btn.disabled = false;
-    }
-}
-
-function initReserverScript() {
-    const clickableCards = document.querySelectorAll('.creneau-card.clickable');
-    const btnConfirmerPage = document.getElementById('btnConfirmerPage');
-
-    // ----- SÉLECTION CRÉNEAU -----
-    clickableCards.forEach(card => {
-        card.addEventListener('click', function() {
+        function selectCardHandler() {
             // Remove selection from all
             clickableCards.forEach(c => c.classList.remove('selected'));
             
@@ -226,67 +239,65 @@ function initReserverScript() {
             btnConfirmerPage.style.pointerEvents = 'auto';
             btnConfirmerPage.style.cursor = 'pointer';
             
-            // Set link target (we'll use this in the click event)
+            // Set link target
             const id = this.getAttribute('data-id');
             btnConfirmerPage.setAttribute('data-target-url', '/patient/reserver/creneau/' + id + '/confirmer-page');
-        });
-    });
-
-    // ----- LOGIQUE AJAX CONFIRMATION -----
-    btnConfirmerPage.addEventListener('click', function(e) {
-        e.preventDefault();
-        const url = this.getAttribute('data-target-url');
-        if (!url) return;
-
-        const modalContent = document.getElementById('modalContentWrapper');
-        if (!modalContent) {
-             window.location.href = url;
-             return;
         }
 
-        // Show spinner if possible
-        const spinner = document.getElementById('modalSpinner');
-        if (spinner) spinner.style.display = 'block';
-        modalContent.innerHTML = '';
+        // ----- LOGIQUE AJAX CONFIRMATION -----
+        btnConfirmerPage.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = this.getAttribute('data-target-url');
+            if (!url) return;
 
-        fetch(url)
-            .then(r => r.text())
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const confirmUI = doc.querySelector('div[style*="max-width:420px"]');
-                
-                if (confirmUI) {
-                    modalContent.appendChild(confirmUI);
+            const modalContent = document.getElementById('modalContentWrapper');
+            if (!modalContent) {
+                 window.location.href = url;
+                 return;
+            }
+
+            // Show spinner if possible
+            const spinner = document.getElementById('modalSpinner');
+            if (spinner) spinner.style.display = 'block';
+            modalContent.innerHTML = '';
+
+            fetch(url)
+                .then(r => r.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const confirmUI = doc.querySelector('div[style*="max-width:420px"]');
                     
-                    // Re-execute scripts
-                    const scripts = doc.querySelectorAll('script');
-                    scripts.forEach(s => {
-                        const newScript = document.createElement('script');
-                        newScript.text = s.text;
-                        document.body.appendChild(newScript);
-                    });
-                } else {
+                    if (confirmUI) {
+                        modalContent.appendChild(confirmUI);
+                        
+                        // Re-execute scripts
+                        const scripts = doc.querySelectorAll('script');
+                        scripts.forEach(s => {
+                            const newScript = document.createElement('script');
+                            newScript.text = s.text;
+                            document.body.appendChild(newScript);
+                        });
+                    } else {
+                        window.location.href = url;
+                    }
+                })
+                .catch(err => {
+                    console.error("Erreur de chargement confirmation:", err);
                     window.location.href = url;
-                }
-            })
-            .catch(err => {
-                console.error("Erreur de chargement confirmation:", err);
-                window.location.href = url;
-            })
-            .finally(() => {
-                if (spinner) spinner.style.display = 'none';
-            });
-    });
-}
+                })
+                .finally(() => {
+                    if (spinner) spinner.style.display = 'none';
+                });
+        });
+    }
 
-
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initReserverScript);
-} else {
-    initReserverScript();
-}
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initReserverScript);
+    } else {
+        initReserverScript();
+    }
+})();
 </script>
 
 {% endblock %}

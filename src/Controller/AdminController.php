@@ -18,7 +18,7 @@ class AdminController extends AbstractController
         return $this->render('admin/dashboard.html.twig', [
             'recentUsers' => $userRepository->findRecentUsers(8),
             'stats' => [
-                'users'        => $userRepository->count([]),
+                'users'        => $userRepository->count([]),//louay
                 'reservations' => 0,
                 'orders'       => 0,
                 'revenue'      => '0.00',

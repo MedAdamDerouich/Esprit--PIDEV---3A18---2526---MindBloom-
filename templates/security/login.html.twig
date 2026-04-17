@@ -288,6 +288,19 @@
     .auth-input-wrap:focus-within .auth-input-icon { color:#4A90E2; }
     .auth-field .auth-input:not(.auth-input-wrap .auth-input) { padding-left:14px; }
 
+    .auth-input--pwd { padding-right: 44px; }
+    .auth-pwd-toggle {
+      position:absolute; right:8px; top:50%; transform:translateY(-50%);
+      width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+      background:transparent; border:0; border-radius:8px;
+      color:#95A5A6; cursor:pointer; padding:0;
+      transition: color .15s, background .15s;
+    }
+    .auth-pwd-toggle:hover { color:#4A90E2; background:rgba(74,144,226,.08); }
+    .auth-pwd-toggle:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(74,144,226,.25); color:#4A90E2; }
+    .auth-pwd-toggle:active { transform:translateY(-50%) scale(.92); }
+    .auth-pwd-toggle[aria-pressed="true"] { color:#4A90E2; }
+
     .auth-options { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
     .auth-checkbox { display:flex; align-items:center; gap:7px; font-size:13px; color:#7F8C8D; cursor:pointer; user-select:none; font-weight:500; }
     .auth-checkbox input[type="checkbox"] { width:15px; height:15px; accent-color:#4A90E2; cursor:pointer; }
@@ -520,8 +533,12 @@
             <label for="password">Mot de passe</label>
             <div class="auth-input-wrap">
               <svg class="auth-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <input type="password" id="password" name="_password" class="auth-input"
+              <input type="password" id="password" name="_password" class="auth-input auth-input--pwd"
                      placeholder="Entrez votre mot de passe" autocomplete="current-password" required>
+              <button type="button" class="auth-pwd-toggle" id="togglePassword" aria-label="Afficher le mot de passe" aria-pressed="false" tabindex="0">
+                <svg class="auth-pwd-icon auth-pwd-icon--show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="auth-pwd-icon auth-pwd-icon--hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              </button>
             </div>
           </div>
 
@@ -530,7 +547,7 @@
               <input type="checkbox" name="_remember_me">
               <span>Se souvenir de moi</span>
             </label>
-            <a href="#" class="auth-link">Mot de passe oublié ?</a>
+            <a href="#" class="auth-link" id="openForgotPwd">Mot de passe oublié ?</a>
           </div>
 
           <div style="display:flex;justify-content:center;margin:6px 0 4px;">
@@ -683,6 +700,92 @@
   </div>{# /auth-right #}
 
 </div>{# /auth-root #}
+
+{# ═══ MODAL : Mot de passe oublié (3 étapes, port de ForgotPassword.fxml) ═══ #}
+<div id="fpModal" class="fp-modal" aria-hidden="true">
+  <div class="fp-backdrop" data-fp-close></div>
+  <div class="fp-dialog" role="dialog" aria-modal="true" aria-labelledby="fpTitle">
+    <button type="button" class="fp-close" data-fp-close aria-label="Fermer">×</button>
+    <div class="fp-header">
+      <h2 id="fpTitle">Mot de passe oublié</h2>
+      <div class="fp-steps">
+        <span class="fp-step-dot active" data-dot="1">1</span>
+        <span class="fp-step-line"></span>
+        <span class="fp-step-dot" data-dot="2">2</span>
+        <span class="fp-step-line"></span>
+        <span class="fp-step-dot" data-dot="3">3</span>
+      </div>
+    </div>
+
+    {# Étape 1 #}
+    <div class="fp-step" data-step="1">
+      <p class="fp-lead">Entrez l'adresse email associée à votre compte. Nous vous enverrons un code à 6 chiffres.</p>
+      <label for="fpEmail" class="fp-label">Email</label>
+      <input type="email" id="fpEmail" class="fp-input" placeholder="vous@exemple.com" autocomplete="email">
+      <div class="fp-msg" id="fpMsg1" hidden></div>
+      <button type="button" class="fp-btn fp-btn-primary" id="fpSendBtn">Envoyer le code</button>
+    </div>
+
+    {# Étape 2 #}
+    <div class="fp-step" data-step="2" hidden>
+      <p class="fp-lead" id="fpSentLabel">Un code a été envoyé.</p>
+      <label for="fpCode" class="fp-label">Code de vérification (6 chiffres)</label>
+      <input type="text" id="fpCode" class="fp-input fp-input-code" maxlength="6" inputmode="numeric" placeholder="••••••">
+      <div class="fp-msg" id="fpMsg2" hidden></div>
+      <div class="fp-row">
+        <button type="button" class="fp-btn fp-btn-ghost" id="fpResendBtn">Renvoyer</button>
+        <button type="button" class="fp-btn fp-btn-primary" id="fpVerifyBtn">Vérifier</button>
+      </div>
+    </div>
+
+    {# Étape 3 #}
+    <div class="fp-step" data-step="3" hidden>
+      <p class="fp-lead">Créez un nouveau mot de passe sécurisé.</p>
+      <label for="fpNew" class="fp-label">Nouveau mot de passe</label>
+      <input type="password" id="fpNew" class="fp-input" autocomplete="new-password">
+      <div class="fp-strength" id="fpStrength" hidden></div>
+      <label for="fpConfirm" class="fp-label">Confirmer le mot de passe</label>
+      <input type="password" id="fpConfirm" class="fp-input" autocomplete="new-password">
+      <div class="fp-msg" id="fpMsg3" hidden></div>
+      <button type="button" class="fp-btn fp-btn-primary" id="fpResetBtn">Réinitialiser</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.fp-modal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;font-family:'Nunito','Segoe UI',sans-serif;}
+.fp-modal.open{display:flex;}
+.fp-backdrop{position:absolute;inset:0;background:rgba(20,30,50,0.55);backdrop-filter:blur(4px);}
+.fp-dialog{position:relative;background:#fff;width:100%;max-width:440px;border-radius:20px;padding:32px 30px 26px;box-shadow:0 30px 80px rgba(0,0,0,0.25);animation:fpIn .28s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes fpIn{from{opacity:0;transform:translateY(20px) scale(0.96);}to{opacity:1;transform:translateY(0) scale(1);}}
+.fp-close{position:absolute;top:14px;right:16px;background:none;border:0;font-size:26px;line-height:1;color:#95a5a6;cursor:pointer;}
+.fp-close:hover{color:#2c3e50;}
+.fp-header{text-align:center;margin-bottom:22px;}
+.fp-header h2{margin:0 0 14px;font-size:22px;font-weight:800;color:#1B3A6B;letter-spacing:-0.01em;}
+.fp-steps{display:flex;align-items:center;justify-content:center;gap:6px;}
+.fp-step-dot{width:28px;height:28px;border-radius:50%;background:#e8edf2;color:#8a94a6;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .25s;}
+.fp-step-dot.active{background:linear-gradient(135deg,#4A90E2 0%,#2563EB 100%);color:#fff;box-shadow:0 4px 12px rgba(74,144,226,0.35);}
+.fp-step-dot.done{background:#4ECB71;color:#fff;}
+.fp-step-line{width:36px;height:2px;background:#e8edf2;}
+.fp-lead{color:#55606e;font-size:14px;line-height:1.6;margin:0 0 18px;}
+.fp-label{display:block;font-size:12px;font-weight:700;color:#1B3A6B;margin:0 0 6px;text-transform:uppercase;letter-spacing:0.04em;}
+.fp-input{width:100%;padding:12px 14px;border:1.5px solid #e1e7ef;border-radius:10px;font-size:15px;color:#2c3e50;background:#fafbfc;transition:all .2s;box-sizing:border-box;margin-bottom:14px;}
+.fp-input:focus{outline:none;border-color:#4A90E2;background:#fff;box-shadow:0 0 0 3px rgba(74,144,226,0.15);}
+.fp-input-code{text-align:center;font-size:24px;font-weight:800;letter-spacing:10px;font-family:monospace;}
+.fp-msg{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:14px;line-height:1.5;}
+.fp-msg.error{background:#fdecea;color:#c0392b;}
+.fp-msg.success{background:#eafaf1;color:#1e8449;}
+.fp-msg.warn{background:#fff8cd;color:#7d6608;}
+.fp-msg.info{background:#ebf5fb;color:#1a5276;}
+.fp-row{display:flex;gap:10px;}
+.fp-btn{padding:12px 20px;border-radius:10px;border:0;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;}
+.fp-btn-primary{flex:1;width:100%;background:linear-gradient(135deg,#4A90E2 0%,#2563EB 100%);color:#fff;box-shadow:0 4px 14px rgba(74,144,226,0.35);}
+.fp-btn-primary:hover{background:linear-gradient(135deg,#5aa0ec 0%,#4A90E2 100%);transform:translateY(-1px);box-shadow:0 6px 18px rgba(74,144,226,0.45);}
+.fp-btn-primary:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+.fp-btn-ghost{flex:0 0 auto;background:#f4f6f9;color:#55606e;}
+.fp-btn-ghost:hover{background:#e8edf2;}
+.fp-strength{font-size:12px;font-weight:600;margin:-8px 0 12px;}
+</style>
 {% endblock %}
 
 {% block javascripts %}
@@ -768,6 +871,22 @@
     });
   });
 
+  /* Password visibility toggle */
+  var pwdInput = document.getElementById('password');
+  var pwdToggle = document.getElementById('togglePassword');
+  if (pwdInput && pwdToggle) {
+    var iconShow = pwdToggle.querySelector('.auth-pwd-icon--show');
+    var iconHide = pwdToggle.querySelector('.auth-pwd-icon--hide');
+    pwdToggle.addEventListener('click', function(){
+      var visible = pwdInput.type === 'text';
+      pwdInput.type = visible ? 'password' : 'text';
+      pwdToggle.setAttribute('aria-pressed', visible ? 'false' : 'true');
+      pwdToggle.setAttribute('aria-label', visible ? 'Afficher le mot de passe' : 'Masquer le mot de passe');
+      iconShow.style.display = visible ? '' : 'none';
+      iconHide.style.display = visible ? 'none' : '';
+    });
+  }
+
   /* Input icon brightens when filled */
   document.querySelectorAll('.auth-input').forEach(function(input){
     input.addEventListener('input', function(){
@@ -820,5 +939,169 @@ document.addEventListener('DOMContentLoaded', function(){
   if(pw) pw.addEventListener('input',function(){updateBar(this.value);checkMatch();});
   if(pw2) pw2.addEventListener('input',checkMatch);
 });
+</script>
+
+{# ═══ Forgot-password modal logic (port de ForgotPasswordController.java) ═══ #}
+<script>
+(function(){
+  'use strict';
+  const modal = document.getElementById('fpModal');
+  const open  = document.getElementById('openForgotPwd');
+  if(!modal || !open) return;
+
+  const dots = modal.querySelectorAll('.fp-step-dot');
+  const steps = modal.querySelectorAll('.fp-step');
+  const msg1 = document.getElementById('fpMsg1');
+  const msg2 = document.getElementById('fpMsg2');
+  const msg3 = document.getElementById('fpMsg3');
+  const sentLabel = document.getElementById('fpSentLabel');
+
+  const emailInput   = document.getElementById('fpEmail');
+  const codeInput    = document.getElementById('fpCode');
+  const newInput     = document.getElementById('fpNew');
+  const confirmInput = document.getElementById('fpConfirm');
+  const strength     = document.getElementById('fpStrength');
+
+  const sendBtn   = document.getElementById('fpSendBtn');
+  const verifyBtn = document.getElementById('fpVerifyBtn');
+  const resendBtn = document.getElementById('fpResendBtn');
+  const resetBtn  = document.getElementById('fpResetBtn');
+
+  let verifiedEmail = null;
+
+  function showMsg(el, text, type){
+    el.textContent = text;
+    el.className = 'fp-msg ' + type;
+    el.hidden = false;
+  }
+  function hideMsg(el){ el.hidden = true; el.textContent = ''; }
+
+  function showStep(n){
+    steps.forEach(s => s.hidden = (+s.dataset.step !== n));
+    dots.forEach(d => {
+      const i = +d.dataset.dot;
+      d.classList.toggle('active', i === n);
+      d.classList.toggle('done',  i < n);
+    });
+    hideMsg(msg1); hideMsg(msg2); hideMsg(msg3);
+  }
+
+  function openModal(){
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden','false');
+    verifiedEmail = null;
+    emailInput.value = ''; codeInput.value = '';
+    newInput.value = ''; confirmInput.value = '';
+    strength.hidden = true;
+    showStep(1);
+    setTimeout(() => emailInput.focus(), 100);
+  }
+  function closeModal(){
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden','true');
+  }
+
+  open.addEventListener('click', e => { e.preventDefault(); openModal(); });
+  modal.querySelectorAll('[data-fp-close]').forEach(el => el.addEventListener('click', closeModal));
+  document.addEventListener('keydown', e => { if(e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+
+  async function post(url, data){
+    const body = new URLSearchParams(data);
+    const res = await fetch(url, { method: 'POST', body, headers: {'Accept': 'application/json'} });
+    let json = {};
+    try { json = await res.json(); } catch(e){}
+    return { ok: res.ok && json.ok, data: json };
+  }
+
+  // ── Étape 1 : envoi du code ──
+  sendBtn.addEventListener('click', async () => {
+    const email = emailInput.value.trim().toLowerCase();
+    if(!email){ showMsg(msg1, 'Veuillez entrer votre adresse email.', 'warn'); return; }
+    if(!/^[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}$/.test(email)){
+      showMsg(msg1, 'Adresse email invalide.', 'warn'); return;
+    }
+    sendBtn.disabled = true;
+    showMsg(msg1, 'Vérification en cours...', 'info');
+
+    const r = await post('{{ path('app_pwd_send_code') }}', { email });
+    sendBtn.disabled = false;
+    if(!r.ok){ showMsg(msg1, (r.data.message || 'Erreur.').replace(/[^\w\s.,!?:;@'\-àâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]/g,'').trim(), 'error'); return; }
+
+    verifiedEmail = email;
+    sentLabel.textContent = 'Un code a été envoyé à : ' + (r.data.masked || email);
+    showStep(2);
+    setTimeout(() => codeInput.focus(), 100);
+  });
+
+  // ── Étape 2 : vérification du code ──
+  codeInput.addEventListener('input', function(){
+    this.value = this.value.replace(/\D/g, '').slice(0, 6);
+  });
+  verifyBtn.addEventListener('click', async () => {
+    const code = codeInput.value.trim();
+    if(code.length !== 6){
+      showMsg(msg2, 'Le code doit contenir exactement 6 chiffres.', 'warn'); return;
+    }
+    verifyBtn.disabled = true;
+    const r = await post('{{ path('app_pwd_verify_code') }}', { email: verifiedEmail, code });
+    verifyBtn.disabled = false;
+    if(!r.ok){
+      showMsg(msg2, (r.data.message || 'Code incorrect ou expiré. Renvoyez un nouveau code.').replace(/[^\w\s.,!?:;@'\-àâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]/g,'').trim(), 'error');
+      codeInput.value = ''; codeInput.focus(); return;
+    }
+    showStep(3);
+    setTimeout(() => newInput.focus(), 100);
+  });
+
+  resendBtn.addEventListener('click', async () => {
+    if(!verifiedEmail){ showStep(1); return; }
+    showMsg(msg2, 'Renvoi en cours...', 'info');
+    const r = await post('{{ path('app_pwd_send_code') }}', { email: verifiedEmail });
+    if(!r.ok){ showMsg(msg2, (r.data.message || 'Erreur.').replace(/[^\w\s.,!?:;@'\-àâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]/g,'').trim(), 'error'); return; }
+    codeInput.value = '';
+    showMsg(msg2, 'Nouveau code envoyé.', 'success');
+  });
+
+  // ── Étape 3 : nouveau mot de passe ──
+  newInput.addEventListener('input', function(){
+    const v = this.value;
+    if(!v){ strength.hidden = true; return; }
+    strength.hidden = false;
+    let score = 0;
+    if(v.length >= 8) score++;
+    if(/[A-Z]/.test(v)) score++;
+    if(/[0-9]/.test(v)) score++;
+    if(/[!@#$%^&*()_+\-=\[\]]/.test(v)) score++;
+    const labels = [
+      {t:'Très faible', c:'#e74c3c'},
+      {t:'Très faible', c:'#e74c3c'},
+      {t:'Faible',      c:'#e67e22'},
+      {t:'Moyen',       c:'#f39c12'},
+      {t:'Fort',        c:'#27ae60'}
+    ];
+    const s = labels[score];
+    strength.textContent = s.t;
+    strength.style.color = s.c;
+  });
+
+  resetBtn.addEventListener('click', async () => {
+    const p = newInput.value, c = confirmInput.value;
+    if(!p || !c){ showMsg(msg3, 'Veuillez remplir les deux champs.', 'warn'); return; }
+    if(p.length < 6){ showMsg(msg3, 'Le mot de passe doit contenir au moins 6 caractères.', 'warn'); return; }
+    if(p !== c){
+      showMsg(msg3, 'Les mots de passe ne correspondent pas.', 'error');
+      confirmInput.value = ''; confirmInput.focus(); return;
+    }
+    resetBtn.disabled = true;
+    const r = await post('{{ path('app_pwd_reset') }}', {
+      email: verifiedEmail, code: codeInput.value.trim(), password: p, confirm: c
+    });
+    resetBtn.disabled = false;
+    if(!r.ok){ showMsg(msg3, (r.data.message || 'Erreur.').replace(/[^\w\s.,!?:;@'\-àâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]/g,'').trim(), 'error'); return; }
+
+    showMsg(msg3, 'Mot de passe réinitialisé avec succès.', 'success');
+    setTimeout(closeModal, 2000);
+  });
+})();
 </script>
 {% endblock %}

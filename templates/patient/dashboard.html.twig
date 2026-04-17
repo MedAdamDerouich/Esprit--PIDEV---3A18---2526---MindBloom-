@@ -35,12 +35,12 @@
 }
 
 #hero-canvas {
-    position: absolute;
+    position: fixed;
     top: 0; left: 0;
-    width: 100%; height: 100%;
+    width: 100vw; height: 100vh;
     display: block;
     pointer-events: none;
-    z-index: 1;
+    z-index: 0;
 }
 @media (prefers-reduced-motion: reduce) { #hero-canvas { display: none; } }
 
@@ -513,64 +513,14 @@ body.dark-mode .mb-event-reminder {
     border-color: #252B3E !important;
 }
 
-/* ═══════════════════════════════════════════════════
-   BUBBLES — floating background effect (full page)
-═══════════════════════════════════════════════════ */
-.ptdash-page { position: relative; }
-.ptdash-bubbles {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    pointer-events: none;
-    z-index: 0;
-}
-.ptdash-bubbles .bubble {
-    position: absolute;
-    bottom: -160px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%,
-                rgba(255,255,255,0.9) 0%,
-                rgba(0,194,199,0.35) 35%,
-                rgba(74,144,226,0.15) 70%,
-                transparent 100%);
-    opacity: 0;
-    animation: bubbleRise var(--dur, 18s) linear infinite;
-    animation-delay: var(--delay, 0s);
-    box-shadow: inset -3px -4px 8px rgba(0,0,0,0.06),
-                inset 2px 3px 6px rgba(255,255,255,0.4);
-}
-.ptdash-bubbles .bubble.pink   { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(230,63,140,0.3) 45%, transparent 100%); }
-.ptdash-bubbles .bubble.green  { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(78,203,113,0.3) 45%, transparent 100%); }
-.ptdash-bubbles .bubble.amber  { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(245,200,66,0.3) 45%, transparent 100%); }
-.ptdash-bubbles .bubble.purple { background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(155,89,182,0.3) 45%, transparent 100%); }
-
-@keyframes bubbleRise {
-    0%   { transform: translate(0, 0) scale(0.6); opacity: 0; }
-    10%  { opacity: 0.8; }
-    50%  { transform: translate(var(--sway, 40px), -55vh) scale(1); opacity: 0.6; }
-    90%  { opacity: 0.5; }
-    100% { transform: translate(0, -120vh) scale(1.1); opacity: 0; }
-}
-
-/* Keep content above bubbles */
+/* Keep content above the fixed particle canvas */
+.ptdash-page { position: relative; z-index: 1; }
 .ptdash-hero,
 .ptdash-stats,
 .ptdash-services,
 .ptdash-how,
 .ptdash-testi,
 .ptdash-cta-banner { position: relative; z-index: 1; }
-
-/* In dark mode, make bubbles glow slightly more */
-body.dark-mode .ptdash-bubbles .bubble {
-    mix-blend-mode: screen;
-    opacity: 0.65;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .ptdash-bubbles { display: none; }
-}
 
 /* ═══════════════════════════════════════════════════
    HOW IT WORKS — 3-step animated timeline
@@ -924,22 +874,6 @@ body.dark-mode .ptdash-testi::after  { background: linear-gradient(-90deg, #0F11
 {% block body %}
 <div class="ptdash-page">
 
-    {# ── Floating bubbles background ── #}
-    <div class="ptdash-bubbles" aria-hidden="true">
-        <span class="bubble"        style="left:4%;  width:90px;  height:90px;  --dur:22s; --delay:0s;   --sway:60px;"></span>
-        <span class="bubble pink"   style="left:12%; width:40px;  height:40px;  --dur:16s; --delay:2s;   --sway:-30px;"></span>
-        <span class="bubble green"  style="left:22%; width:70px;  height:70px;  --dur:25s; --delay:5s;   --sway:45px;"></span>
-        <span class="bubble"        style="left:32%; width:55px;  height:55px;  --dur:19s; --delay:1s;   --sway:-50px;"></span>
-        <span class="bubble amber"  style="left:42%; width:110px; height:110px; --dur:28s; --delay:3s;   --sway:70px;"></span>
-        <span class="bubble"        style="left:50%; width:35px;  height:35px;  --dur:14s; --delay:6s;   --sway:-25px;"></span>
-        <span class="bubble purple" style="left:58%; width:80px;  height:80px;  --dur:23s; --delay:4s;   --sway:40px;"></span>
-        <span class="bubble"        style="left:66%; width:60px;  height:60px;  --dur:20s; --delay:8s;   --sway:-55px;"></span>
-        <span class="bubble green"  style="left:74%; width:100px; height:100px; --dur:26s; --delay:2s;   --sway:50px;"></span>
-        <span class="bubble pink"   style="left:82%; width:45px;  height:45px;  --dur:17s; --delay:7s;   --sway:-35px;"></span>
-        <span class="bubble"        style="left:90%; width:70px;  height:70px;  --dur:21s; --delay:3s;   --sway:35px;"></span>
-        <span class="bubble amber"  style="left:96%; width:30px;  height:30px;  --dur:15s; --delay:9s;   --sway:-20px;"></span>
-    </div>
-
     {# ── Upcoming Event Notification (10 seconds) ── #}
     {% if next_event %}
         <div id="mb-event-reminder" class="mb-event-reminder">
@@ -1006,10 +940,11 @@ body.dark-mode .ptdash-testi::after  { background: linear-gradient(-90deg, #0F11
         </script>
     {% endif %}
 
+    {# ── Full-page particle background (three.js) ── #}
+    <canvas id="hero-canvas"></canvas>
+
     {# ── Hero Section ── #}
     <div class="ptdash-hero">
-        <canvas id="hero-canvas"></canvas>
-
         <div class="ptdash-hero-content">
             <span class="ptdash-badge">✨ Votre bien-être mental compte</span>
             <span class="ptdash-title">
@@ -1350,8 +1285,7 @@ body.dark-mode .ptdash-testi::after  { background: linear-gradient(-90deg, #0F11
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     var canvas  = document.getElementById('hero-canvas');
-    var section = document.querySelector('.ptdash-hero');
-    if (!canvas || !section) return;
+    if (!canvas) return;
 
     /* ── Renderer ── */
     var renderer = new THREE.WebGLRenderer({
@@ -1364,7 +1298,7 @@ body.dark-mode .ptdash-testi::after  { background: linear-gradient(-90deg, #0F11
     camera.position.set(0, 0, 8);
 
     /* ── Particles — logo palette ── */
-    var COUNT = 140;
+    var COUNT = 260;
     var COLORS = [
         new THREE.Color(0x00C2C7), // cyan
         new THREE.Color(0x4ECB71), // green
@@ -1374,7 +1308,7 @@ body.dark-mode .ptdash-testi::after  { background: linear-gradient(-90deg, #0F11
         new THREE.Color(0x9B59B6), // purple
         new THREE.Color(0x1B3A6B), // navy
     ];
-    var FW = 16, FH = 10, FD = 6;
+    var FW = 24, FH = 32, FD = 8;
 
     var geo = new THREE.BufferGeometry();
     var pos = new Float32Array(COUNT * 3);
@@ -1421,23 +1355,20 @@ body.dark-mode .ptdash-testi::after  { background: linear-gradient(-90deg, #0F11
 
     /* ── Mouse parallax ── */
     var pTarget = {x:0,y:0}, pCurr = {x:0,y:0};
-    section.addEventListener('mousemove', function(e) {
-        var r = section.getBoundingClientRect();
-        pTarget.x =  (((e.clientX-r.left)/r.width)*2-1) * 0.6;
-        pTarget.y = -(((e.clientY-r.top)/r.height)*2-1) * 0.6;
+    window.addEventListener('mousemove', function(e) {
+        pTarget.x =  ((e.clientX/window.innerWidth)*2-1) * 0.6;
+        pTarget.y = -((e.clientY/window.innerHeight)*2-1) * 0.6;
     });
-    section.addEventListener('mouseleave', function() { pTarget.x=0; pTarget.y=0; });
 
     /* ── Resize ── */
     function onResize() {
-        var w = section.clientWidth, h = section.clientHeight;
+        var w = window.innerWidth, h = window.innerHeight;
         renderer.setSize(w,h,false);
         camera.aspect = w/h;
         camera.updateProjectionMatrix();
     }
     onResize();
-    var ro = new ResizeObserver(onResize);
-    ro.observe(section);
+    window.addEventListener('resize', onResize);
 
     /* ── Animate ── */
     var clock = new THREE.Clock();
@@ -1468,7 +1399,8 @@ body.dark-mode .ptdash-testi::after  { background: linear-gradient(-90deg, #0F11
 
     window.addEventListener('pagehide', function() {
         if (rafId) cancelAnimationFrame(rafId);
-        ro.disconnect(); renderer.dispose(); geo.dispose(); mat.dispose(); sprite.dispose();
+        window.removeEventListener('resize', onResize);
+        renderer.dispose(); geo.dispose(); mat.dispose(); sprite.dispose();
     });
 })();
 </script>

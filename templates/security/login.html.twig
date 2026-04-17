@@ -14,27 +14,29 @@
 
     /* ═══ LAYOUT ═══════════════════════════════════════════ */
     .auth-root {
-      display: flex;
+      position: relative;
       width: 100vw;
       height: 100vh;
       overflow: hidden;
       font-family: 'Nunito', 'Segoe UI', sans-serif;
     }
 
-    /* ── Left botanical panel (fixed, always visible) ── */
+    /* ── Left botanical panel — slides across the viewport ── */
     .auth-left {
-      width: 44%;
-      min-width: 360px;
+      position: absolute;
+      top: 0; left: 0;
+      width: 50%;
       height: 100vh;
-      flex-shrink: 0;
-      position: relative;
+      z-index: 5;
       background: linear-gradient(160deg, #EEF4FF 0%, #E8F5F0 45%, #F0EEFF 100%);
       display: flex;
       align-items: stretch;
       justify-content: center;
       overflow: hidden;
-      transition: background 0.9s ease;
+      transition: transform 0.9s cubic-bezier(0.77, 0, 0.18, 1), background 0.9s ease;
+      will-change: transform;
     }
+    .auth-root.show-register .auth-left { transform: translateX(100%); }
 
     /* Ambient blobs */
     .auth-left::before {
@@ -86,51 +88,45 @@
       justify-content: space-between;
     }
 
-    /* ── Right form zone (clips the sliding cards) ── */
+    /* ── Form zone fills the whole viewport; cards live in the un-covered half ── */
     .auth-right {
-      flex: 1;
-      min-width: 0;
-      height: 100vh;
-      position: relative;
-      overflow: hidden;
-      background: #F9F7F2;
-    }
-
-    /* ── Two overlapping form cards ── */
-    .auth-form-card {
       position: absolute;
       inset: 0;
+      height: 100vh;
+      overflow: hidden;
+      background: #F9F7F2;
+      z-index: 1;
+    }
+
+    /* ── Two form cards pinned to left or right half, swap via opacity ── */
+    .auth-form-card {
+      position: absolute;
+      top: 0;
+      width: 50%;
+      height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 32px 48px;
+      padding: 16px 32px;
       overflow-y: auto;
-      transform: translateX(0);
+      scrollbar-width: thin;
       opacity: 1;
-      transition:
-        transform 0.62s cubic-bezier(0.65, 0, 0.35, 1),
-        opacity   0.45s cubic-bezier(0.65, 0, 0.35, 1);
-      will-change: transform, opacity;
+      transition: opacity 0.6s ease 0.25s;
+      will-change: opacity;
       pointer-events: auto;
     }
 
-    /* Register card starts off-screen to the right */
-    .auth-form-card--register {
-      transform: translateX(100%);
-      opacity: 0;
-      pointer-events: none;
-    }
+    /* Login sits in the RIGHT half (panel covers the left by default) */
+    .auth-form-card--login    { right: 0; }
+    /* Register sits in the LEFT half (panel will slide right to reveal it) */
+    .auth-form-card--register { left: 0;  opacity: 0; pointer-events: none; transition-delay: 0s; }
 
-    /* ── When switching to register ── */
-    .auth-root.show-register .auth-form-card--login {
-      transform: translateX(-100%);
-      opacity: 0;
-      pointer-events: none;
-    }
-    .auth-root.show-register .auth-form-card--register {
-      transform: translateX(0);
-      opacity: 1;
-      pointer-events: auto;
+    .auth-root.show-register .auth-form-card--login    { opacity: 0; pointer-events: none; transition-delay: 0s; }
+    .auth-root.show-register .auth-form-card--register { opacity: 1; pointer-events: auto; transition-delay: 0.35s; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .auth-left      { transition: none !important; }
+      .auth-form-card { transition: opacity 0.2s linear !important; }
     }
 
     /* ── Botanical panel: subtle accent shift on register ── */
@@ -245,25 +241,27 @@
     /* ── Card inner ── */
     .auth-card {
       background: #fff;
-      border-radius: 20px;
-      padding: 44px 40px;
-      width: 100%; max-width: 420px;
+      border-radius: 18px;
+      padding: 26px 30px;
+      width: 100%; max-width: 400px;
       border: 1px solid #EAEAEA;
       box-shadow:
         0 0 0 1px rgba(0,0,0,.03),
         0 4px 20px rgba(0,0,0,.06),
         0 20px 50px rgba(74,144,226,.07);
     }
-    .auth-card--wide { max-width: 520px; padding: 40px 38px; }
+    .auth-card--wide { max-width: 500px; padding: 22px 30px 20px; }
+    .auth-form-card--login > .auth-card { margin: auto 0; }
+    .auth-form-card--register > .auth-card { margin: auto 0; }
 
-    .auth-card__header { margin-bottom: 28px; }
-    .auth-card__header h2 { font-size:28px; font-weight:800; color:#2C3E50; letter-spacing:-.4px; margin:0 0 6px; line-height:1.15; }
+    .auth-card__header { margin-bottom: 16px; }
+    .auth-card__header h2 { font-size:22px; font-weight:800; color:#2C3E50; letter-spacing:-.4px; margin:0 0 3px; line-height:1.15; }
     .auth-card__header h2 em { font-style:italic; color:#4A90E2; }
-    .auth-card__header p { font-size:13px; color:#7F8C8D; margin:0; font-weight:500; }
+    .auth-card__header p { font-size:12px; color:#7F8C8D; margin:0; font-weight:500; }
 
     /* ── Fields ── */
-    .auth-field { margin-bottom: 18px; }
-    .auth-field label { display:block; font-size:11px; font-weight:700; color:#2C3E50; margin-bottom:6px; text-transform:uppercase; letter-spacing:.6px; }
+    .auth-field { margin-bottom: 12px; }
+    .auth-field label { display:block; font-size:10px; font-weight:700; color:#2C3E50; margin-bottom:4px; text-transform:uppercase; letter-spacing:.6px; }
 
     .auth-input-wrap { position:relative; display:flex; align-items:center; }
     .auth-input-icon { position:absolute; left:14px; color:#b0bec5; pointer-events:none; flex-shrink:0; transition:color .2s; }
@@ -271,9 +269,9 @@
     .auth-input {
       width:100%; background:#F8F9FA;
       border: 1.5px solid #DEE2E6;
-      border-radius: 11px;
-      padding: 13px 14px 13px 42px;
-      font-size:14px; font-family:'Nunito','Segoe UI',sans-serif;
+      border-radius: 10px;
+      padding: 10px 12px 10px 38px;
+      font-size:13px; font-family:'Nunito','Segoe UI',sans-serif;
       font-weight:500; color:#2C3E50;
       transition: border-color .2s, box-shadow .2s, background .2s, transform .18s;
       outline: none;
@@ -301,7 +299,7 @@
     .auth-pwd-toggle:active { transform:translateY(-50%) scale(.92); }
     .auth-pwd-toggle[aria-pressed="true"] { color:#4A90E2; }
 
-    .auth-options { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .auth-options { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
     .auth-checkbox { display:flex; align-items:center; gap:7px; font-size:13px; color:#7F8C8D; cursor:pointer; user-select:none; font-weight:500; }
     .auth-checkbox input[type="checkbox"] { width:15px; height:15px; accent-color:#4A90E2; cursor:pointer; }
     .auth-link { font-size:13px; color:#4A90E2; font-weight:600; text-decoration:none; transition:color .15s; }
@@ -310,8 +308,8 @@
     /* ── Buttons ── */
     .auth-btn {
       width:100%; background:linear-gradient(135deg,#4A90E2 0%,#2563EB 100%);
-      color:#fff; border:none; border-radius:11px;
-      padding:14px 24px; font-size:15px; font-weight:700;
+      color:#fff; border:none; border-radius:10px;
+      padding:11px 22px; font-size:14px; font-weight:700;
       font-family:'Nunito','Segoe UI',sans-serif;
       cursor:pointer; transition:all .2s;
       box-shadow:0 4px 16px rgba(74,144,226,.3);
@@ -336,7 +334,7 @@
     .auth-btn--google:hover { background:#F4F8FF; border-color:#C5DDF8; box-shadow:0 2px 10px rgba(74,144,226,.10); color:#2C3E50; text-decoration:none; }
 
     /* ── Divider ── */
-    .auth-divider { position:relative; text-align:center; margin:24px 0 18px; }
+    .auth-divider { position:relative; text-align:center; margin:14px 0 10px; }
     .auth-divider::before { content:''; position:absolute; top:50%; left:0; right:0; height:1px; background:#E0E0E0; }
     .auth-divider span { position:relative; background:#fff; padding:0 14px; font-size:11px; color:#95A5A6; font-weight:600; text-transform:uppercase; letter-spacing:.8px; }
 
@@ -357,8 +355,8 @@
       font-family:'Nunito','Segoe UI',sans-serif;
       transform-style:preserve-3d;
     }
-    .auth-role:hover { border-color:#a8c8f0; color:#4A90E2; background:rgba(74,144,226,.05); transform:perspective(400px) rotateY(-5deg) translateY(-2px); }
-    .auth-role.selected { border-color:#4A90E2; background:rgba(74,144,226,.08); color:#4A90E2; box-shadow:0 0 0 3px rgba(74,144,226,.1); transform:perspective(400px) rotateY(0) translateY(-1px); }
+    .auth-role:hover { border-color:#a8c8f0; color:#4A90E2; background:rgba(74,144,226,.05); }
+    .auth-role.selected { border-color:#4A90E2; background:rgba(74,144,226,.08); color:#4A90E2; box-shadow:0 0 0 3px rgba(74,144,226,.1); }
     .auth-role svg { flex-shrink:0; }
 
     /* Form errors */
@@ -390,8 +388,10 @@
     /* ── Responsive ── */
     @media (max-width:960px) {
       .auth-left { display:none; }
-      .auth-right { width:100%; }
-      .auth-form-card { padding:24px 20px; }
+      .auth-form-card { width:100%; left:0; right:0; padding:24px 20px; }
+      .auth-form-card--register { opacity:0; }
+      .auth-root.show-register .auth-form-card--login { opacity:0; }
+      .auth-root.show-register .auth-form-card--register { opacity:1; }
     }
     @media (max-width:480px) {
       .auth-card { padding:24px 16px; }
@@ -403,9 +403,6 @@
       .auth-form-card, .auth-left { transition:none !important; }
       .stem-path, .leaf-shape, .petal, .spore, .plant-group,
       .auth-brand-block img, .auth-form-card--login .auth-card { animation:none !important; }
-      .auth-form-card--register { opacity:1 !important; transform:none !important; display:none; }
-      .auth-root.show-register .auth-form-card--login { display:none; }
-      .auth-root.show-register .auth-form-card--register { display:flex !important; opacity:1 !important; transform:none !important; }
       .auth-input:focus { animation:none; }
       .auth-role:hover,.auth-role.selected { transform:none !important; }
     }
@@ -604,7 +601,7 @@
         {{ form_start(registrationForm, {action: path('app_register'), method: 'post', attr: {style: 'display:flex;flex-direction:column;gap:0;'}}) }}
           {{ form_widget(registrationForm.roles, {attr: {id: 'roleInput', value: 'PATIENT'}}) }}
 
-          <div class="auth-field" style="margin-bottom:16px;">
+          <div class="auth-field" style="margin-bottom:10px;">
             <label>Je suis un(e)</label>
             <div class="auth-role-selector">
               <div class="auth-role selected" onclick="selectRole('PATIENT', this)">
@@ -618,7 +615,7 @@
             </div>
           </div>
 
-          <div class="row g-3">
+          <div class="row g-2">
             <div class="col-12">
               <div class="auth-field" style="margin-bottom:0;">
                 <label>Nom complet <span style="color:#f87171;">*</span></label>
@@ -681,7 +678,7 @@
             </div>
           </div>
 
-          <button type="submit" class="auth-btn" style="margin-top:24px;">
+          <button type="submit" class="auth-btn" style="margin-top:14px;">
             Créer mon compte
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
@@ -856,22 +853,7 @@
     });
   }
 
-  /* Card 3D tilt */
-  document.querySelectorAll('.auth-card').forEach(function(card){
-    card.addEventListener('mousemove', function(e){
-      var r  = card.getBoundingClientRect();
-      var nx = ((e.clientX - r.left) / r.width)  * 2 - 1;
-      var ny = ((e.clientY - r.top)  / r.height) * 2 - 1;
-      card.style.transition = 'transform 0.08s ease-out,box-shadow 0.15s';
-      card.style.transform  = 'perspective(900px) rotateX('+(-ny*2.5)+'deg) rotateY('+(nx*2.5)+'deg)';
-    });
-    card.addEventListener('mouseleave', function(){
-      card.style.transition = 'transform 0.5s cubic-bezier(0.22,1,0.36,1),box-shadow 0.3s';
-      card.style.transform  = 'perspective(900px) rotateX(0) rotateY(0)';
-    });
-  });
-
-  /* Password visibility toggle */
+/* Password visibility toggle */
   var pwdInput = document.getElementById('password');
   var pwdToggle = document.getElementById('togglePassword');
   if (pwdInput && pwdToggle) {

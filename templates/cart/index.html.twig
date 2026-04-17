@@ -2,10 +2,35 @@
 
 {% block title %}Mon Panier - MindBloom{% endblock %}
 
+{% block stylesheets %}
+<style>
+    .smaller { font-size: 0.85rem; }
+    .transition-all { transition: all 0.2s ease; }
+    .hover-shadow-sm:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-color: #4A90E2 !important; background: white !important; }
+</style>
+{% endblock %}
+
 {% block body %}
 <div class="container py-5">
     <div class="row">
         <div class="col-lg-8">
+            <!-- AI Recommendations Section (Top & Compact) -->
+            <div id="ai-recommendations-section" style="display:none;" class="mb-4">
+                <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden border-start border-primary border-4">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary bg-opacity-10 text-primary p-2 rounded-3 me-2">
+                                <i class="bi bi-stars"></i>
+                            </div>
+                            <h6 class="fw-bold mb-0">Recommandations pour compléter votre santé</h6>
+                        </div>
+                        <div class="row g-3" id="recommendations-container">
+                            <!-- Items loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="mb-4">
                 <a href="{{ path('app_produit_index') }}" class="btn btn-link text-muted p-0 text-decoration-none">
                     <i class="bi bi-arrow-left me-1"></i> Continuer mes achats
@@ -106,9 +131,80 @@
                     <small class="text-muted"><i class="bi bi-shield-check me-1"></i> Paiement sécurisé & confidentialité garantie</small>
                 </div>
             </div>
+
+            <!-- AI Assistant Section -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mt-4 bg-primary bg-opacity-10 border-start border-primary border-4 animate__animated animate__fadeIn">
+                <h6 class="fw-bold mb-3 d-flex align-items-center">
+                    <i class="bi bi-robot me-2 text-primary fs-4"></i> Assistant IA MindBloom
+                </h6>
+                <div id="ai-content" class="small text-dark mb-3 lh-base">
+                    Besoin de conseils ? Notre IA peut analyser vos produits pour vous donner des astuces santé personnalisées.
+                </div>
+                <button id="btn-ai-cart" class="btn btn-sm btn-primary rounded-pill px-4 shadow-sm" onclick="loadAiCartInsights()">
+                    <i class="bi bi-stars me-1"></i> Demander des conseils
+                </button>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadAiRecommendations();
+});
+
+function loadAiRecommendations() {
+    const container = document.getElementById('recommendations-container');
+    const section = document.getElementById('ai-recommendations-section');
+    
+    fetch("{{ path('app_cart_ai_recommendations') }}")
+        .then(response => response.json())
+        .then(products => {
+            if (products.length > 0) {
+                section.style.display = 'block';
+                container.innerHTML = products.map(p => `
+                    <div class="col-md-4">
+                        <div class="d-flex align-items-center p-2 rounded-3 border bg-light bg-opacity-50 h-100 transition-all hover-shadow-sm">
+                            <img src="/uploads/produits/${p.image || 'default.png'}" 
+                                 class="rounded-3 me-2" 
+                                 style="width: 50px; height: 50px; object-fit: cover;"
+                                 onerror="this.src='https://placehold.co/100x100?text=P'">
+                            <div class="flex-grow-1 min-width-0">
+                                <h6 class="mb-0 text-truncate small fw-bold">${p.nom}</h6>
+                                <div class="text-primary smaller fw-bold">${parseFloat(p.prix).toFixed(2)} DT</div>
+                            </div>
+                            <a href="/produit/${p.id}" class="btn btn-sm btn-primary rounded-circle p-1 ms-2 shadow-sm animate__animated animate__pulse animate__infinite" title="Détails">
+                                <i class="bi bi-plus-circle" style="font-size: 0.9rem;"></i>
+                            </a>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        });
+}
+
+function loadAiCartInsights() {
+    const btn = document.getElementById('btn-ai-cart');
+    const content = document.getElementById('ai-content');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analyse...';
+    content.innerHTML = '<div class="text-center py-2"><div class="spinner-grow text-primary spinner-grow-sm"></div></div>';
+
+    fetch("{{ path('app_cart_ai') }}")
+        .then(response => response.text())
+        .then(data => {
+            content.innerHTML = '<div class="animate__animated animate__fadeIn">' + data.replace(/\n/g, '<br>') + '</div>';
+            btn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i> Actualiser les conseils';
+            btn.disabled = false;
+        })
+        .catch(err => {
+            content.innerHTML = "Désolé, impossible de contacter l'IA pour le moment.";
+            btn.innerHTML = 'Réessayer';
+            btn.disabled = false;
+        });
+}
+</script>
 
 <script>
 function validateCartUpdate(form, maxStock) {

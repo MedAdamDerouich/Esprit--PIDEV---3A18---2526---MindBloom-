@@ -42,11 +42,13 @@ class ProduitController extends AbstractController
 
         $produits = $qb->getQuery()->getResult();
 
+        $lowStockProducts = array_filter($produits, fn($p) => $p->getQuantite() <= $p->getStockSeuil());
+
         // Calculate Stats
         $stats = [
             'total' => count($produits),
             'outOfStock' => 0,
-            'lowStock' => 0,
+            'lowStock' => count($lowStockProducts),
             'totalValue' => 0
         ];
 
@@ -54,8 +56,6 @@ class ProduitController extends AbstractController
             $stats['totalValue'] += ($p->getQuantite() * $p->getPrix());
             if ($p->getQuantite() == 0) {
                 $stats['outOfStock']++;
-            } elseif ($p->getQuantite() <= 10) {
-                $stats['lowStock']++;
             }
         }
 
@@ -63,7 +63,9 @@ class ProduitController extends AbstractController
             'produits' => $produits,
             'q' => $q,
             'tri' => $tri,
-            'stats' => $stats
+            'stats' => $stats,
+            'lowStockCount' => count($lowStockProducts),
+            'lowStockItems' => $lowStockProducts
         ]);
     }
 

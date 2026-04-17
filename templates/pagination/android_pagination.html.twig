@@ -1,0 +1,56 @@
+{% if pageCount > 1 %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination pagination-md justify-content-center">
+            {% if previous is defined %}
+                <li class="page-item">
+                    <a class="page-link border-0 shadow-sm rounded-pill px-4 mx-1" 
+                       href="{{ path(route, query|merge({(pageParameterName): previous})) }}"
+                       style="color: #4A90E2; background-color: white; text-decoration: none;">
+                        <i class="bi bi-chevron-left me-1"></i> Précédent
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link border-0 shadow-sm rounded-pill px-4 mx-1" style="color: #ccc; background-color: white;">
+                        <i class="bi bi-chevron-left me-1"></i> Précédent
+                    </span>
+                </li>
+            {% endif %}
+
+            {% for page in pagesInRange %}
+                {% if page != current %}
+                    <li class="page-item">
+                        <a class="page-link border-0 shadow-sm rounded-circle mx-1 text-muted" 
+                           href="{{ path(route, query|merge({(pageParameterName): page})) }}"
+                           style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background-color: white; text-decoration: none;">
+                            {{ page }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item active">
+                        <span class="page-link border-0 shadow-sm rounded-circle mx-1 text-white" 
+                              style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background-color: #4A90E2;">
+                            {{ page }}
+                        </span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if next is defined %}
+                <li class="page-item">
+                    <a class="page-link border-0 shadow-sm rounded-pill px-4 mx-1" 
+                       href="{{ path(route, query|merge({(pageParameterName): next})) }}"
+                       style="color: #4A90E2; background-color: white; text-decoration: none;">
+                        Suivant <i class="bi bi-chevron-right ms-1"></i>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link border-0 shadow-sm rounded-pill px-4 mx-1" style="color: #ccc; background-color: white;">
+                        Suivant <i class="bi bi-chevron-right ms-1"></i>
+                    </span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}

@@ -7,6 +7,10 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<!-- Leaflet Geocoder (Search plugin) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-10">
@@ -25,11 +29,14 @@
                                 <label class="form-label fw-bold small text-uppercase">Point de livraison</label>
                                 <p class="small text-muted mb-2"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Cliquez sur la carte pour choisir votre adresse exacte</p>
                                 <div id="map" style="height: 250px; width: 100%; border-radius: 12px; margin-bottom: 10px; z-index: 1;"></div>
-                                <textarea name="adresse" id="checkoutAdresse" class="form-control rounded-3 border-0 bg-light py-3 shadow-none mt-2" rows="2" required placeholder="L'adresse sélectionnée s'affichera ici (min 10 caractères)..." minlength="10"></textarea>
+                                <div class="position-relative">
+                                    <textarea name="adresse" id="checkoutAdresse" class="form-control rounded-3 border bg-light py-3 pt-4 shadow-none mt-2" rows="2" required placeholder="L'adresse sélectionnée s'affichera ici (min 10 caractères)..." minlength="10" oninput="validateField(this, 10)"></textarea>
+                                    <small id="adresseError" class="text-danger d-none position-absolute" style="bottom: -20px; left: 0; font-size: 11px;">L'adresse doit faire au moins 10 caractères et être précise.</small>
+                                </div>
                             </div>
-                            
+
                             <div class="mb-5">
-                                <label class="form-label fw-bold small text-uppercase mb-3">Mode de paiement</label>
+                                <label class="form-label fw-bold small text-uppercase">Mode de paiement</label>
                                 <div class="row g-3">
 
                                     {# ── Wallet ── #}
@@ -117,7 +124,7 @@
                                 <span class="h5 fw-bold text-primary">{{ total|number_format(2, ',', ' ') }} DT</span>
                             </div>
                             
-                            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm mb-3">
+                            <button type="submit" id="submitOrderBtn" class="btn btn-primary btn-lg w-100 rounded-pill shadow-sm mb-3" disabled style="opacity:0.5;">
                                 Confirmer la commande
                             </button>
                         </form>
@@ -133,25 +140,35 @@
 </div>
 
 <script>
+function validateField(el, minLen) {
+    const errorEl = document.getElementById(el.id + 'Error');
+    if (el.value.length < minLen) {
+        el.classList.add('is-invalid');
+        errorEl?.classList.remove('d-none');
+    } else {
+        el.classList.remove('is-invalid');
+        el.classList.add('is-valid');
+        errorEl?.classList.add('d-none');
+    }
+    checkFormValidity();
+}
+
+function checkFormValidity() {
+    const btn = document.getElementById('submitOrderBtn');
+    const addr = document.getElementById('checkoutAdresse').value.trim();
+    
+    const isValid = addr.length >= 10;
+    btn.disabled = !isValid;
+    btn.style.opacity = isValid ? '1' : '0.5';
+}
+
 function validateCheckout() {
     const addr = document.getElementById('checkoutAdresse').value.trim();
     
     if (addr.length < 10) {
-        alert("Contrôle de Saisie : Veuillez entrer une adresse complète, d'au moins 10 caractères.");
+        alert("L'adresse est trop courte.");
         return false;
     }
-    
-    const radios = document.getElementsByName('paiement');
-    let paymentSelected = false;
-    for (const radio of radios) {
-        if (radio.checked) { paymentSelected = true; break; }
-    }
-    
-    if (!paymentSelected) {
-        alert("Contrôle de Saisie : Veuillez sélectionner un mode de paiement valide.");
-        return false;
-    }
-    
     return true;
 }
 
@@ -169,6 +186,28 @@ document.addEventListener("DOMContentLoaded", function() {
 
     var marker = L.marker([36.8065, 10.1815], {draggable: true}).addTo(map);
 
+    // Add Geocoder Search bar
+    var geocoder = L.Control.geocoder({
+        defaultMarkGeocode: false,
+        placeholder: "Rechercher une adresse...",
+        errorMessage: "Adresse non trouvée."
+    })
+    .on('markgeocode', function(e) {
+        var bbox = e.geocode.bbox;
+        var poly = L.polygon([
+            bbox.getSouthEast(),
+            bbox.getNorthEast(),
+            bbox.getNorthWest(),
+            bbox.getSouthWest()
+        ]);
+        map.fitBounds(poly.getBounds());
+        
+        var latlng = e.geocode.center;
+        marker.setLatLng(latlng);
+        document.getElementById('checkoutAdresse').value = e.geocode.name;
+    })
+    .addTo(map);
+
     function updateAddress(lat, lng) {
         document.getElementById('checkoutAdresse').value = 'Recherche de l\'adresse en cours...';
         fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`)
@@ -176,8 +215,10 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(data => {
                 if (data && data.display_name) {
                     document.getElementById('checkoutAdresse').value = data.display_name;
+                    checkFormValidity();
                 } else {
                     document.getElementById('checkoutAdresse').value = `${lat}, ${lng}`;
+                    checkFormValidity();
                 }
             })
             .catch(() => {

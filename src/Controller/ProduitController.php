@@ -17,12 +17,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ProduitController extends AbstractController
 {
     #[Route('', name: 'app_produit_index', methods: ['GET'])]
-    public function index(ProduitRepository $produitRepository, Request $request): Response
+    public function index(ProduitRepository $produitRepository, Request $request, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
         $query = $request->query->get('q');
-        $page = $request->query->getInt('page', 1);
-        $limit = 6;
-
+        
         $qb = $produitRepository->createQueryBuilder('p');
 
         if ($query) {
@@ -30,20 +28,15 @@ class ProduitController extends AbstractController
                ->setParameter('q', '%' . $query . '%');
         }
 
-        $allProduits = $qb->getQuery()->getResult();
-        $totalProduits = count($allProduits);
-        $maxPages = ceil($totalProduits / $limit);
-
-        $qb->setFirstResult(($page - 1) * $limit)
-           ->setMaxResults($limit);
-        
-        $produits = $qb->getQuery()->getResult();
+        $pagination = $paginator->paginate(
+            $qb, /* query NOT result */
+            $request->query->getInt('page', 1), /*page number*/
+            6 /*limit per page*/
+        );
 
         return $this->render('produit/index.html.twig', [
-            'produits' => $produits,
+            'pagination' => $pagination,
             'searchTerm' => $query,
-            'currentPage' => $page,
-            'maxPages' => $maxPages
         ]);
     }
 

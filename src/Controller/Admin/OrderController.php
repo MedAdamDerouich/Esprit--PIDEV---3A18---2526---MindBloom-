@@ -17,10 +17,14 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class OrderController extends AbstractController
 {
     #[Route('', name: 'app_admin_order_index', methods: ['GET'])]
-    public function index(FactureRepository $factureRepository, \Symfony\Component\HttpFoundation\Request $request): Response
+    public function index(FactureRepository $factureRepository, \App\Repository\ProduitRepository $produitRepository, \Symfony\Component\HttpFoundation\Request $request): Response
     {
         $q = $request->query->get('q');
         
+        // Stock Alert Logic
+        $allProducts = $produitRepository->findAll();
+        $lowStockProducts = array_filter($allProducts, fn($p) => $p->getQuantite() <= $p->getStockSeuil());
+
         if ($q) {
             $qb = $factureRepository->createQueryBuilder('f')
                 ->leftJoin('f.user', 'u')
@@ -51,8 +55,20 @@ class OrderController extends AbstractController
         return $this->render('admin/order/index.html.twig', [
             'factures' => $factures,
             'totalValue' => $totalValue,
-            'q' => $q
+            'q' => $q,
+            'lowStockCount' => count($lowStockProducts),
+            'lowStockItems' => $lowStockProducts
         ]);
+    }
+
+    #[Route('/ai-stock', name: 'app_admin_stock_ai', methods: ['GET'])]
+    public function aiStockAnalysis(\App\Service\GeminiService $geminiService, \App\Repository\ProduitRepository $produitRepository): Response
+    {
+        $allProducts = $produitRepository->findAll();
+        $lowStockProducts = array_filter($allProducts, fn($p) => $p->getQuantite() <= $p->getStockSeuil());
+        
+        $insights = $geminiService->getStockAnalysis($lowStockProducts);
+        return new Response($insights);
     }
 
     #[Route('/patients', name: 'app_admin_order_customers', methods: ['GET'])]
@@ -221,5 +237,33 @@ class OrderController extends AbstractController
         }
 
         return $this->redirectToRoute('app_admin_order_index');
+    }
+    #[Route('/ai-analyse', name: 'app_admin_order_ai', methods: ['GET'])]
+    public function aiAnalytics(\App\Service\GeminiService $geminiService, FactureRepository $factureRepository): Response
+    {
+        $factures = $factureRepository->findAll();
+        if (empty($factures)) {
+            return new Response("Pas de données suffisantes pour une analyse IA.");
+        }
+        
+        $insights = $geminiService->getOrderAnalytics($factures);
+        return new Response($insights);
+    }
+
+    #[Route('/ai-analyse/pdf', name: 'app_admin_order_ai_pdf', methods: ['GET'])]
+    public function aiAnalyticsPdf(\App\Service\GeminiService $geminiService, \App\Service\PdfService $pdfService, FactureRepository $factureRepository): Response
+    {
+        $factures = $factureRepository->findAll();
+        if (empty($factures)) {
+            return new Response("Pas de données.");
+        }
+        
+        $insights = $geminiService->getOrderAnalytics($factures);
+        $pdfContent = $pdfService->generateAiReportPdf($insights);
+
+        return new Response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="rapport-ia-mindbloom.pdf"'
+        ]);
     }
 }

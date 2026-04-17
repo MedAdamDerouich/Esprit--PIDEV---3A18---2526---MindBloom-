@@ -4,159 +4,328 @@
 
 {% block body %}
 <div class="container py-5">
-    <div class="mb-4">
-        <a href="{{ path('app_produit_index') }}" class="btn btn-link text-muted p-0 text-decoration-none">
-            <i class="bi bi-arrow-left me-1"></i> Retour à la boutique
-        </a>
-    </div>
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4 animate__animated animate__fadeIn">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ path('app_produit_index') }}" class="text-decoration-none text-muted"><i class="bi bi-house-door me-1"></i> Boutique</a></li>
+            <li class="breadcrumb-item active text-mindbloom fw-bold" aria-current="page">{{ produit.nom }}</li>
+        </ol>
+    </nav>
 
     <div class="row g-5">
-        <div class="col-md-6">
-            <div class="bg-white rounded-4 shadow-sm p-2 overflow-hidden sticky-top" style="top: 2rem;">
-                {% if produit.image %}
-                    <img src="{{ asset('uploads/produits/' ~ produit.image) }}" class="img-fluid rounded-3 w-100" alt="{{ produit.nom }}">
-                {% else %}
-                    <div class="bg-light d-flex align-items-center justify-content-center rounded-3" style="min-height: 400px;">
-                        <i class="bi bi-box text-muted display-1 opacity-25"></i>
-                    </div>
-                {% endif %}
+        <!-- Left Column: Product Image -->
+        <div class="col-lg-6 animate__animated animate__fadeInLeft">
+            <div class="product-image-container glass-card rounded-5 p-3 sticky-top" style="top: 2rem; z-index: 10;">
+                <div class="position-relative overflow-hidden rounded-4 shadow-sm bg-white">
+                    {% if produit.image %}
+                        <img src="{{ asset('uploads/produits/' ~ produit.image) }}" 
+                             class="img-fluid w-100 product-main-img" 
+                             alt="{{ produit.nom }}"
+                             style="transition: transform 0.5s ease;">
+                    {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="min-height: 500px;">
+                            <i class="bi bi-image text-muted display-1 opacity-25"></i>
+                        </div>
+                    {% endif %}
+                    
+                    {% if produit.quantite <= 5 and produit.quantite > 0 %}
+                        <div class="position-absolute top-0 start-0 m-3">
+                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm">
+                                <i class="bi bi-lightning-fill me-1"></i> Stock Faible
+                            </span>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
         
-        <div class="col-md-6">
-            <div class="product-info mb-5">
-                <h1 class="display-6 fw-bold mb-3">{{ produit.nom }}</h1>
-                <div class="d-flex align-items-center mb-4">
-                    <div class="text-warning me-3 fs-5">
+        <!-- Right Column: Product Detail -->
+        <div class="col-lg-6 animate__animated animate__fadeInRight">
+            <div class="product-details-content ps-lg-4">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge bg-mindbloom-soft text-mindbloom px-3 py-2 rounded-pill fw-bold">PRODUIT CERTIFIÉ</span>
+                    <div class="text-warning fs-5">
                         {% set avg = produit.averageRating %}
                         {% for i in 1..5 %}
                             <i class="bi bi-star{{ i <= avg ? '-fill' : (i - 0.5 <= avg ? '-half' : '') }}"></i>
                         {% endfor %}
+                        <span class="ms-2 text-muted small">({{ produit.feedbacks|length }})</span>
                     </div>
-                    <span class="text-muted">{{ produit.feedbacks|length }} avis d'utilisateurs</span>
                 </div>
-                
-                <h3 class="fw-bold mb-4 text-primary">{{ produit.prix|number_format(2, ',', ' ') }} DT</h3>
-                
-                <div class="mb-4">
-                    <h5 class="fw-bold mb-2">Description</h5>
-                    <p class="text-muted lh-lg">{{ produit.description|nl2br }}</p>
-                </div>
-                
-                <div class="mb-4">
-                    <p class="small">
-                        {% if produit.quantite > 0 %}
-                            <span class="text-success"><i class="bi bi-check-circle me-1"></i> En stock ({{ produit.quantite }} disponibles)</span>
-                        {% else %}
-                            <span class="text-danger"><i class="bi bi-x-circle me-1"></i> Rupture de stock</span>
-                        {% endif %}
-                    </p>
-                </div>
-                
-                <div class="d-grid gap-2">
-                    <form action="{{ path('app_cart_add', {id: produit.id}) }}" method="POST" class="d-flex gap-2" onsubmit="return validateAddToCart(this, {{ produit.quantite }});">
-                        <input type="number" name="quantite" id="addQuantite" value="1" min="1" max="{{ produit.quantite }}" class="form-control rounded-pill px-4 shadow-none" style="width: 100px;" {{ produit.quantite == 0 ? 'disabled' : '' }} required>
-                        <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm flex-grow-1" {{ produit.quantite == 0 ? 'disabled' : '' }}>
-                            <i class="bi bi-cart-plus me-2"></i> Ajouter au panier
-                        </button>
-                    </form>
-                    
-                    <script>
-                    function validateAddToCart(form, maxStock) {
-                        const qtyStr = form.quantite.value;
-                        const qty = parseInt(qtyStr, 10);
-                        
-                        if (!qtyStr || isNaN(qty) || qty <= 0) {
-                            alert("Contrôle de Saisie : Veuillez entrer une quantité valide supérieure à 0.");
-                            return false;
-                        }
-                        if (qty > maxStock) {
-                            alert("Contrôle de Saisie : La quantité demandée (" + qty + ") dépasse le stock disponible (" + maxStock + ").");
-                            return false;
-                        }
-                        return true;
-                    }
-                    </script>
-                    <a href="{{ path('app_produit_feedback_new', {'id': produit.id}) }}" class="btn btn-outline-dark btn-lg rounded-pill px-5 shadow-sm mt-2">
-                        <i class="bi bi-pencil-square me-2"></i> Laisser un avis
-                    </a>
-                </div>
-            </div>
 
-            <hr class="my-5">
-
-            <div class="feedbacks-section" id="avis">
-                <h4 class="fw-bold mb-4">Avis des clients</h4>
+                <h1 class="display-5 fw-extra-bold mb-3 text-dark">{{ produit.nom }}</h1>
                 
-                <div class="feedback-list">
-                    {% for feedback in produit.feedbacks|sort((a, b) => b.dateFeedback <=> a.dateFeedback) %}
-                        {% set isOwner = app.user and feedback.user and feedback.user.id == app.user.id %}
-                        <div class="card border-0 shadow-sm rounded-4 mb-4 feedback-item">
-                            <div class="card-body p-4">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                            {{ (feedback.user ? (feedback.user.fullName|first|upper) : 'U') }}
-                                        </div>
-                                        <div>
-                                            <h6 class="mb-0 fw-bold d-flex align-items-center">
-                                                {{ feedback.user ? feedback.user.fullName : 'Utilisateur supprimé' }}
-                                                {% if isOwner %}
-                                                    <span class="badge bg-primary-subtle text-primary ms-2" style="font-size: 10px;">VOUS</span>
-                                                {% endif %}
-                                            </h6>
-                                            <small class="text-muted">{{ feedback.dateFeedback|date('d/m/Y') }}</small>
-                                        </div>
-                                    </div>
-                                    <div class="text-warning">
-                                        {% for i in 1..5 %}
-                                            <i class="bi bi-star{{ i <= feedback.note ? '-fill' : '' }}"></i>
-                                        {% endfor %}
-                                    </div>
+                <div class="price-tag mb-4">
+                    <span class="h2 fw-bold text-mindbloom">{{ produit.prix|number_format(2, ',', ' ') }} <small class="h5">DT</small></span>
+                </div>
+
+                <div class="description-section mb-5 p-4 bg-light rounded-4 border-start border-mindbloom border-4 shadow-sm">
+                    <h5 class="fw-bold mb-3 d-flex align-items-center">
+                        <i class="bi bi-info-circle text-mindbloom me-2"></i> Description
+                    </h5>
+                    <p class="text-muted lh-lg mb-0" style="font-size: 1.05rem;">{{ produit.description|nl2br }}</p>
+                </div>
+
+                <div class="stock-status mb-4 d-flex align-items-center">
+                    {% if produit.quantite > 0 %}
+                        <div class="pulse-green me-2"></div>
+                        <span class="text-success fw-semibold"><i class="bi bi-check-circle-fill me-1"></i> {{ produit.quantite }} en stock</span>
+                    {% else %}
+                        <div class="pulse-red me-2"></div>
+                        <span class="text-danger fw-semibold"><i class="bi bi-x-circle-fill me-1"></i> Rupture de stock</span>
+                    {% endif %}
+                </div>
+
+                <!-- Purchase Card -->
+                <div class="purchase-card glass-card rounded-5 p-4 mb-5 border border-white shadow-lg">
+                    <form action="{{ path('app_cart_add', {id: produit.id}) }}" method="POST" onsubmit="return validateAddToCart(this, {{ produit.quantite }});">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-sm-4">
+                                <label class="form-label small fw-bold text-muted mb-1 ms-2">QUANTITÉ</label>
+                                <div class="quantity-input-group d-flex align-items-center bg-white rounded-pill px-2 py-1 shadow-sm border">
+                                    <button type="button" class="btn btn-link text-mindbloom p-2 shadow-none" onclick="decrementQty()"><i class="bi bi-dash-circle-fill mt-1 fs-5"></i></button>
+                                    <input type="number" name="quantite" id="addQuantite" value="1" min="1" max="{{ produit.quantite }}" 
+                                           class="form-control border-0 text-center fw-bold shadow-none" 
+                                           style="font-size: 1.1rem;"
+                                           {{ produit.quantite == 0 ? 'disabled' : '' }} required>
+                                    <button type="button" class="btn btn-link text-mindbloom p-2 shadow-none" onclick="incrementQty({{ produit.quantite }})"><i class="bi bi-plus-circle-fill mt-1 fs-5"></i></button>
                                 </div>
-                                <p class="mb-0 text-muted">{{ feedback.commentaire|nl2br }}</p>
-                                
-                                {% if isOwner %}
-                                    <div class="mt-3 text-end d-flex justify-content-end gap-3 border-top pt-2">
-                                        <a href="{{ path('app_produit_feedback_edit', {id: feedback.id}) }}" class="btn btn-sm btn-link text-primary p-0 text-decoration-none small">
-                                            <i class="bi bi-pencil-square me-1"></i> Modifier mon avis
-                                        </a>
-                                        <form action="{{ path('app_produit_feedback_delete', {id: feedback.id}) }}" method="post" onsubmit="return confirm('Supprimer votre avis ?');">
-                                            <button class="btn btn-sm btn-link text-danger p-0 text-decoration-none small">
-                                                <i class="bi bi-trash me-1"></i> Supprimer mon avis
-                                            </button>
-                                        </form>
-                                    </div>
-                                {% elseif is_granted('ROLE_ADMIN') %}
-                                <div class="mt-3 text-end border-top pt-2">
-                                    <form action="{{ path('app_admin_feedback_delete', {'id': feedback.id}) }}" method="post" onsubmit="return confirm('Supprimer ce feedback ?');">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_feedback' ~ feedback.id) }}">
-                                        <button class="btn btn-sm btn-link text-danger p-0 text-decoration-none small">
-                                            <i class="bi bi-trash me-1"></i> Supprimer (Admin)
-                                        </button>
-                                    </form>
-                                </div>
-                                {% endif %}
+                            </div>
+                            <div class="col-sm-8 pt-4">
+                                <button type="submit" class="btn btn-mindbloom btn-lg rounded-pill w-100 py-3 fw-bold shadow-lg transform-hover" {{ produit.quantite == 0 ? 'disabled' : '' }}>
+                                    {% if produit.quantite > 0 %}
+                                        <i class="bi bi-cart-plus-fill me-2"></i> AJOUTER AU PANIER
+                                    {% else %}
+                                        <i class="bi bi-x-circle me-2"></i> RUPTURE DE STOCK
+                                    {% endif %}
+                                </button>
                             </div>
                         </div>
-                    {% else %}
-                        <div class="text-center py-5 bg-light rounded-4">
-                            <p class="text-muted mb-0">Aucun avis pour ce produit pour le moment.</p>
-                        </div>
-                    {% endfor %}
+                    </form>
+                    
+                    <a href="{{ path('app_produit_feedback_new', {'id': produit.id}) }}" class="btn btn-outline-mindbloom btn-lg rounded-pill w-100 mt-3 py-2 fw-semibold">
+                        <i class="bi bi-pencil-square me-2"></i> Laisser un avis client
+                    </a>
+                </div>
+
+                <div class="trust-icons d-flex justify-content-between p-3 border rounded-4 bg-white opacity-75 small">
+                    <div class="text-center"><i class="bi bi-shield-check text-success d-block fs-4 mb-1"></i> Sécurisé</div>
+                    <div class="text-center"><i class="bi bi-truck text-mindbloom d-block fs-4 mb-1"></i> Livraison Express</div>
+                    <div class="text-center"><i class="bi bi-arrow-repeat text-info d-block fs-4 mb-1"></i> Retours Faciles</div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="mt-5 pt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold d-flex align-items-center">
+                <i class="bi bi-chat-left-heart-fill text-mindbloom me-3 fs-2"></i> Avis des clients
+            </h3>
+            <span class="badge bg-light text-dark border px-3 py-2 rounded-pill">{{ produit.feedbacks|length }} commentaires</span>
+        </div>
+        
+        <div class="row feedback-grid">
+            {% for feedback in produit.feedbacks|sort((a, b) => b.dateFeedback <=> a.dateFeedback) %}
+                {% set isOwner = app.user and feedback.user and feedback.user.id == app.user.id %}
+                <div class="col-md-6 mb-4 animate__animated animate__fadeInUp" style="animation-delay: {{ loop.index0 * 0.1 }}s;">
+                    <div class="card border-0 shadow-sm rounded-5 feedback-card h-100 overflow-hidden">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-box rounded-circle shadow-sm me-3 d-flex align-items-center justify-content-center text-white" 
+                                         style="width: 50px; height: 50px; background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);">
+                                        {{ (feedback.user ? (feedback.user.fullName|first|upper) : 'U') }}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">
+                                            {{ feedback.user ? feedback.user.fullName : 'Utilisateur MindBloom' }}
+                                            {% if isOwner %}
+                                                <span class="badge bg-mindbloom-soft text-mindbloom ms-2 small">VOUS</span>
+                                            {% endif %}
+                                        </h6>
+                                        <small class="text-muted"><i class="bi bi-calendar3 me-1"></i> {{ feedback.dateFeedback|date('d M Y') }}</small>
+                                    </div>
+                                </div>
+                                <div class="rating-display text-warning">
+                                    {% for i in 1..5 %}
+                                        <i class="bi bi-star{{ i <= feedback.note ? '-fill' : '' }}"></i>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="feedback-content p-3 bg-light rounded-4 position-relative">
+                                <i class="bi bi-quote position-absolute top-0 start-0 m-2 opacity-25 fs-1"></i>
+                                <p class="mb-0 text-dark ps-3">{{ feedback.commentaire|nl2br }}</p>
+                            </div>
+                            
+                            {% if isOwner or is_granted('ROLE_ADMIN') %}
+                                <div class="mt-3 text-end d-flex justify-content-end gap-2">
+                                    {% if isOwner %}
+                                        <a href="{{ path('app_produit_feedback_edit', {id: feedback.id}) }}" class="btn btn-sm btn-light rounded-pill border px-3">
+                                            <i class="bi bi-pencil me-1"></i> Modifier
+                                        </a>
+                                        <form action="{{ path('app_produit_feedback_delete', {id: feedback.id}) }}" method="post" onsubmit="return confirm('Supprimer votre avis ?');">
+                                            <button class="btn btn-sm btn-light text-danger rounded-pill border px-3">
+                                                <i class="bi bi-trash me-1"></i> Supprimer
+                                            </button>
+                                        </form>
+                                    {% elseif is_granted('ROLE_ADMIN') %}
+                                        <form action="{{ path('app_admin_feedback_delete', {'id': feedback.id}) }}" method="post" onsubmit="return confirm('Action Admin: Supprimer ce feedback ?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_feedback' ~ feedback.id) }}">
+                                            <button class="btn btn-sm btn-danger-soft text-danger rounded-pill px-3">
+                                                <i class="bi bi-shield-lock me-1"></i> Supprimer (Admin)
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12">
+                    <div class="text-center py-5 bg-white rounded-5 shadow-sm border border-dashed">
+                        <i class="bi bi-chat-dots text-muted opacity-25 display-1 d-block mb-3"></i>
+                        <h5 class="text-muted">Aucun avis pour le moment</h5>
+                        <p class="text-muted small">Soyez le premier à partager votre expérience !</p>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
     </div>
 </div>
 
 <style>
-.feedback-item {
-    transition: transform 0.2s ease;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --mindbloom-color: #4A90E2;
+    --mindbloom-dark: #357ABD;
+    --mindbloom-soft: #e7f1ff;
 }
-.feedback-item:hover {
-    transform: scale(1.01);
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8fafc;
 }
-.bg-primary-subtle { background-color: #e7f1ff; }
+
+.fw-extra-bold { font-weight: 800; }
+.text-mindbloom { color: var(--mindbloom-color); }
+.bg-mindbloom-soft { background-color: var(--mindbloom-soft); }
+.border-mindbloom { border-color: var(--mindbloom-color) !important; }
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.product-image-container:hover .product-main-img {
+    transform: scale(1.05);
+}
+
+.btn-mindbloom {
+    background: linear-gradient(135deg, var(--mindbloom-color) 0%, var(--mindbloom-dark) 100%);
+    color: white !important;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-mindbloom:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(74, 144, 226, 0.3);
+}
+
+.btn-mindbloom:disabled {
+    background: #e2e8f0 !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn-outline-mindbloom {
+    border: 2px solid var(--mindbloom-color);
+    color: var(--mindbloom-color);
+    background: transparent;
+}
+
+.btn-outline-mindbloom:hover {
+    background-color: var(--mindbloom-color);
+    color: white;
+}
+
+.pulse-green {
+    width: 12px;
+    height: 12px;
+    background: #28a745;
+    border-radius: 50%;
+    box-shadow: 0 0 0 rgba(40, 167, 69, 0.4);
+    animation: pulse 2s infinite;
+}
+
+.pulse-red {
+    width: 12px;
+    height: 12px;
+    background: #dc3545;
+    border-radius: 50%;
+    box-shadow: 0 0 0 rgba(220, 53, 69, 0.4);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+.feedback-card {
+    transition: all 0.3s ease;
+}
+
+.feedback-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+.btn-danger-soft {
+    background-color: #fee2e2;
+}
+
+.quantity-input-group input::-webkit-outer-spin-button,
+.quantity-input-group input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
 </style>
+
+<script>
+function incrementQty(max) {
+    const input = document.getElementById('addQuantite');
+    if (parseInt(input.value) < max) {
+        input.value = parseInt(input.value) + 1;
+    }
+}
+
+function decrementQty() {
+    const input = document.getElementById('addQuantite');
+    if (parseInt(input.value) > 1) {
+        input.value = parseInt(input.value) - 1;
+    }
+}
+
+function validateAddToCart(form, maxStock) {
+    const qty = parseInt(form.quantite.value, 10);
+    if (isNaN(qty) || qty <= 0) {
+        alert("Veuillez entrer une quantité valide.");
+        return false;
+    }
+    if (qty > maxStock) {
+        alert("Stock insuffisant : maximum " + maxStock + " disponibles.");
+        return false;
+    }
+    return true;
+}
+</script>
 {% endblock %}

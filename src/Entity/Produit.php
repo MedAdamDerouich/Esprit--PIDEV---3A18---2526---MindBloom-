@@ -41,6 +41,10 @@ class Produit
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
+    #[ORM\Column(options: ["default" => 10])]
+    #[Assert\PositiveOrZero(message: 'Le seuil de stock ne peut pas être négatif')]
+    private ?int $stockSeuil = 10;
+
     #[ORM\OneToMany(mappedBy: 'produit', targetEntity: Feedback::class, orphanRemoval: true)]
     private Collection $feedbacks;
 
@@ -123,6 +127,18 @@ class Produit
     public function setImage(?string $image): static
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+    public function getStockSeuil(): ?int
+    {
+        return $this->stockSeuil;
+    }
+
+    public function setStockSeuil(int $stockSeuil): static
+    {
+        $this->stockSeuil = $stockSeuil;
 
         return $this;
     }

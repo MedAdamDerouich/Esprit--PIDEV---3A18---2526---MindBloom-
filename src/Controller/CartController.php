@@ -124,4 +124,46 @@ class CartController extends AbstractController
         }
         return new Response((string)$count);
     }
+    #[Route('/ai-conseils', name: 'app_cart_ai', methods: ['GET'])]
+    public function aiInsights(\App\Service\GeminiService $geminiService, CommandeRepository $commandeRepository): Response
+    {
+        $cartItems = $commandeRepository->findCartByUser($this->getUser());
+        if (empty($cartItems)) {
+            return new Response("Ajoutez des produits au panier pour recevoir des conseils personnalisés.");
+        }
+
+        // Format items for the service
+        $itemsData = array_map(fn($item) => ['produit' => $item->getProduit()], $cartItems);
+        
+        $insights = $geminiService->getCartInsights($itemsData);
+        return new Response($insights);
+    }
+    #[Route('/ai-recommandations', name: 'app_cart_ai_recommendations', methods: ['GET'])]
+    public function aiRecommendations(\App\Service\GeminiService $geminiService, \App\Repository\ProduitRepository $produitRepository, CommandeRepository $commandeRepository): Response
+    {
+        $cartItems = $commandeRepository->findCartByUser($this->getUser());
+        if (empty($cartItems)) {
+            return $this->json(['recommandations' => []]);
+        }
+
+        $allProducts = $produitRepository->findAll();
+        $recommendationNames = $geminiService->getProductRecommendations($cartItems, $allProducts);
+        
+        $recommendedProducts = [];
+        if (isset($recommendationNames['recommandations'])) {
+            foreach ($recommendationNames['recommandations'] as $name) {
+                $p = $produitRepository->findOneBy(['nom' => $name]);
+                if ($p) {
+                    $recommendedProducts[] = [
+                        'id' => $p->getId(),
+                        'nom' => $p->getNom(),
+                        'prix' => $p->getPrix(),
+                        'image' => $p->getImage(),
+                    ];
+                }
+            }
+        }
+
+        return $this->json($recommendedProducts);
+    }
 }

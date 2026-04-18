@@ -19,13 +19,16 @@
                     <tr>
                         <th class="ps-4 py-3 border-0">Client</th>
                         <th class="py-3 border-0">Note</th>
+                        <th class="py-3 border-0">Sentiment IA</th>
                         <th class="py-3 border-0">Commentaire</th>
                         <th class="py-3 border-0">Date</th>
                         <th class="py-3 border-0 pe-4 text-end">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for feedback in feedbacks %}
+                    {% for feedbackData in feedbacks %}
+                        {% set feedback = feedbackData.entity %}
+                        {% set sentiment = feedbackData.sentiment %}
                         <tr>
                             <td class="ps-4 py-4 border-0">
                                 <div class="d-flex align-items-center">
@@ -43,6 +46,11 @@
                                         <i class="bi bi-star{{ i <= feedback.note ? '-fill' : '' }}"></i>
                                     {% endfor %}
                                 </div>
+                            </td>
+                            <td class="py-4 border-0">
+                                <span class="badge rounded-pill {% if sentiment.label == 'positive' %}bg-success{% elseif sentiment.label == 'negative' %}bg-danger{% else %}bg-secondary{% endif %} bg-opacity-10 {% if sentiment.label == 'positive' %}text-success{% elseif sentiment.label == 'negative' %}text-danger{% else %}text-secondary{% endif %} px-3 py-2">
+                                    {{ sentiment.getEmoji }} {{ sentiment.label|capitalize }} ({{ sentiment.score }}%)
+                                </span>
                             </td>
                             <td class="py-4 border-0 small text-muted">
                                 {{ feedback.commentaire|slice(0, 50) }}{{ feedback.commentaire|length > 50 ? '...' : '' }}

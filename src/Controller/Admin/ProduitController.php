@@ -157,11 +157,31 @@ class ProduitController extends AbstractController
     }
 
     #[Route('/{id}/feedbacks', name: 'app_admin_produit_feedbacks', methods: ['GET'])]
-    public function feedbacks(Produit $produit): Response
+    public function feedbacks(Produit $produit, \App\Service\SentimentService $sentimentService): Response
     {
+        $feedbacks = $produit->getFeedbacks();
+        
+        // 1. On prépare la liste pour le batch
+        $commentMap = [];
+        foreach ($feedbacks as $f) {
+            $commentMap[$f->getId()] = $f->getCommentaire() ?? '';
+        }
+
+        // 2. Un seul appel API pour tout analyser d'un coup !
+        $sentimentResults = $sentimentService->analyzeBatch($commentMap);
+
+        // 3. On prépare les données pour Twig
+        $analyzedFeedbacks = [];
+        foreach ($feedbacks as $f) {
+            $analyzedFeedbacks[] = [
+                'entity' => $f,
+                'sentiment' => $sentimentResults[$f->getId()] ?? new \App\Service\SentimentResult('neutral', 0)
+            ];
+        }
+
         return $this->render('admin/produit/feedbacks.html.twig', [
             'produit' => $produit,
-            'feedbacks' => $produit->getFeedbacks(),
+            'feedbacks' => $analyzedFeedbacks,
         ]);
     }
 

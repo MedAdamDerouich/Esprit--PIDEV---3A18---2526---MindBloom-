@@ -50,20 +50,39 @@ class ProduitController extends AbstractController
 
     #[Route('/{id}/avis/nouveau', name: 'app_produit_feedback_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_USER')]
-    public function addFeedback(Produit $produit, Request $request, EntityManagerInterface $entityManager): Response
+    public function addFeedback(
+        Produit $produit, 
+        Request $request, 
+        EntityManagerInterface $entityManager,
+        \App\Service\ModerationService $moderation,
+        \App\Service\SentimentService $sentiment
+    ): Response
     {
         $feedback = new Feedback();
         $form = $this->createForm(FeedbackType::class, $feedback);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Bad word filter
             $comment = $feedback->getCommentaire();
-            if ($comment) {
-                // censor the word 'louay'
-                $comment = str_ireplace('louay', '****', $comment);
-                $feedback->setCommentaire($comment);
+            
+            // ÉTAPE 1 — Modération OpenAI
+            $moderationResult = $moderation->moderate($comment);
+            if ($moderationResult->flagged) {
+                $this->addFlash('error', 'Avis refusé (Contenu inapproprié) : ' . $moderationResult->getReason());
+                return $this->redirectToRoute('app_produit_show', ['id' => $produit->getId()]);
             }
+
+            // ÉTAPE 2 — Sentiment HuggingFace (seulement si non-flaggé)
+            $sentimentResult = $sentiment->analyze($comment);
+            $sentimentMsg = sprintf('Sentiment : %s %s (%d%%)', 
+                $sentimentResult->getEmoji(), 
+                $sentimentResult->label, 
+                $sentimentResult->score
+            );
+
+            // Censure basique résiduelle
+            $comment = str_ireplace('louay', '****', $comment);
+            $feedback->setCommentaire($comment);
 
             $feedback->setProduit($produit);
             $feedback->setUser($this->getUser());
@@ -72,7 +91,7 @@ class ProduitController extends AbstractController
             $entityManager->persist($feedback);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Votre avis a été ajouté avec succès !');
+            $this->addFlash('success', 'Votre avis a été ajouté ! — ' . $sentimentMsg);
 
             return $this->redirectToRoute('app_produit_show', ['id' => $produit->getId()]);
         }

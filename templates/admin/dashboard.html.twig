@@ -2,228 +2,185 @@
 {% block title %}Tableau de bord — MindBloom{% endblock %}
 
 {% block stylesheets %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+:root {
+    --blue:    #2563EB;
+    --blue-lt: #EFF6FF;
+    --blue-mid:#4A90E2;
+    --green:   #059669;
+    --green-lt:#ECFDF5;
+    --teal:    #0891B2;
+    --teal-lt: #ECFEFF;
+    --orange:  #D97706;
+    --orange-lt:#FFFBEB;
+    --red:     #DC2626;
+    --red-lt:  #FEF2F2;
+    --purple:  #7C3AED;
+    --purple-lt:#F5F3FF;
+    --ink:     #0F172A;
+    --ink-mid: #475569;
+    --ink-lt:  #94A3B8;
+    --border:  #E2E8F0;
+    --surface: #FFFFFF;
+    --bg:      #F8FAFC;
+    --radius:  14px;
+    --shadow:  0 1px 3px rgba(15,23,42,.06), 0 4px 16px rgba(15,23,42,.04);
+    --shadow-md: 0 4px 6px rgba(15,23,42,.07), 0 10px 30px rgba(15,23,42,.06);
+}
+
+* { font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
+
+.admin-content { background: var(--bg); min-height: 100vh; }
+
 /* ── Top bar ── */
 .dash-topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 32px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #EFEFEF;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 28px 32px 0; margin-bottom: 28px;
+}
+.dash-topbar-left { display: flex; flex-direction: column; gap: 2px; }
+.dash-topbar-eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--blue);
 }
 .dash-topbar h1 {
-    font-size: 22px;
-    font-weight: 700;
-    color: #1a1a2e;
-    margin: 0 0 4px;
+    font-size: 24px; font-weight: 800; color: var(--ink); margin: 0; line-height: 1.2;
 }
-.dash-topbar .date {
-    font-size: 12px;
-    color: #aaa;
-    font-weight: 400;
+.dash-topbar-date { font-size: 12px; color: var(--ink-lt); margin-top: 2px; font-family: 'DM Mono', monospace; }
+.dash-topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-admin-badge {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 40px; padding: 6px 14px 6px 8px;
+    box-shadow: var(--shadow);
 }
-.dash-topbar .admin-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.topbar-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue-mid), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; overflow: hidden; flex-shrink: 0;
 }
-.dash-topbar .admin-info .name {
-    font-size: 13px;
-    font-weight: 600;
-    color: #333;
-    text-align: right;
-}
-.dash-topbar .admin-info .role {
-    font-size: 11px;
-    color: #aaa;
-    text-align: right;
-}
+.topbar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.topbar-admin-name { font-size: 12px; font-weight: 600; color: var(--ink); }
+.topbar-admin-role { font-size: 10px; color: var(--ink-lt); }
 
-/* ── Numbers strip ── */
-.numbers-strip {
-    display: flex;
-    background: white;
-    border: 1px solid #EFEFEF;
-    border-radius: 10px;
-    margin-bottom: 28px;
-    overflow: hidden;
+/* ── KPI strip ── */
+.kpi-strip {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 0; margin: 0 32px 24px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
 }
-.num-block {
-    flex: 1;
-    padding: 22px 28px;
-    border-right: 1px solid #F3F3F3;
+.kpi-block {
+    padding: 22px 24px; border-right: 1px solid var(--border);
+    position: relative; overflow: hidden;
 }
-.num-block:last-child { border-right: none; }
-.num-block .n {
-    font-size: 32px;
-    font-weight: 800;
-    color: #1a1a2e;
-    line-height: 1;
-    margin-bottom: 6px;
+.kpi-block:last-child { border-right: none; }
+.kpi-block::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: transparent; transition: background .2s;
 }
-.num-block .l {
-    font-size: 12px;
-    color: #999;
+.kpi-block:hover::before { background: linear-gradient(90deg, var(--blue-mid), var(--blue)); }
+.kpi-label { font-size: 11px; font-weight: 600; color: var(--ink-lt); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px; }
+.kpi-val {
+    font-size: 30px; font-weight: 800; color: var(--ink); line-height: 1;
+    font-family: 'DM Sans', sans-serif; letter-spacing: -1px;
 }
-.num-block .n.green  { color: #27ae60; }
-.num-block .n.blue   { color: #4A90E2; }
-.num-block .n.teal   { color: #5FBF9F; }
-.num-block .n.orange { color: #E67E22; }
+.kpi-val.blue   { color: var(--blue); }
+.kpi-val.green  { color: var(--green); }
+.kpi-val.teal   { color: var(--teal); }
+.kpi-val.orange { color: var(--orange); }
+.kpi-sub { font-size: 11px; color: var(--ink-lt); margin-top: 6px; }
 
-/* ── Module stat cards ── */
+/* ── Module grid ── */
 .module-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 28px;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; margin: 0 32px 24px;
 }
 .mod-card {
-    background: white;
-    border: 1px solid #EFEFEF;
-    border-radius: 12px;
-    padding: 20px 22px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    transition: box-shadow 0.2s, transform 0.2s;
-    text-decoration: none;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px 20px;
+    display: flex; align-items: center; gap: 14px;
+    text-decoration: none; transition: transform .2s, box-shadow .2s, border-color .2s;
+    box-shadow: var(--shadow);
 }
 .mod-card:hover {
-    box-shadow: 0 6px 20px rgba(0,0,0,0.07);
-    transform: translateY(-2px);
+    transform: translateY(-2px); box-shadow: var(--shadow-md);
+    border-color: #CBD5E1;
 }
 .mod-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    flex-shrink: 0;
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px; flex-shrink: 0;
 }
-.mod-body .mod-count {
-    font-size: 26px;
-    font-weight: 800;
-    color: #1a1a2e;
-    line-height: 1;
-    margin-bottom: 4px;
+.mod-count {
+    font-size: 24px; font-weight: 800; color: var(--ink); line-height: 1;
+    margin-bottom: 3px; letter-spacing: -.5px;
 }
-.mod-body .mod-label {
-    font-size: 12px;
-    color: #999;
-    font-weight: 500;
+.mod-label { font-size: 11px; color: var(--ink-lt); font-weight: 500; }
+
+/* ── Role breakdown ── */
+.role-section {
+    margin: 0 32px 24px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px;
+    display: flex; align-items: center; gap: 28px; box-shadow: var(--shadow);
+}
+.role-section-title { font-size: 12px; font-weight: 700; color: var(--ink-lt); white-space: nowrap; text-transform: uppercase; letter-spacing: .6px; min-width: 80px; }
+.rb-wrap { flex: 1; }
+.rb-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+.rb-name { font-size: 12px; color: var(--ink-mid); font-weight: 500; }
+.rb-count { font-size: 12px; font-weight: 700; color: var(--ink); font-family: 'DM Mono', monospace; }
+.rb-track { height: 5px; background: #F1F5F9; border-radius: 10px; overflow: hidden; }
+.rb-fill { height: 100%; border-radius: 10px; transition: width 1.2s cubic-bezier(.34,1.56,.64,1); }
+.role-cta {
+    flex-shrink: 0; padding: 8px 18px;
+    background: linear-gradient(135deg, var(--blue-mid), var(--blue));
+    color: #fff; border-radius: 8px; font-size: 12px; font-weight: 600;
+    text-decoration: none; white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(37,99,235,.3);
+    transition: box-shadow .2s, transform .2s;
+}
+.role-cta:hover { box-shadow: 0 4px 14px rgba(37,99,235,.4); transform: translateY(-1px); }
+
+/* ── Analytics section ── */
+.analytics-grid {
+    display: grid; grid-template-columns: 1.6fr 1fr;
+    gap: 16px; margin: 0 32px 32px;
+}
+.analytics-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow);
+}
+.analytics-card-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 24px;
+}
+.analytics-card-title { font-size: 14px; font-weight: 700; color: var(--ink); margin: 0 0 2px; }
+.analytics-card-sub   { font-size: 11px; color: var(--ink-lt); }
+.analytics-badge {
+    font-size: 10px; font-weight: 700; padding: 3px 8px;
+    border-radius: 6px; background: var(--blue-lt); color: var(--blue);
+    text-transform: uppercase; letter-spacing: .4px;
 }
 
-/* ── Middle columns ── */
-.mid-right {
-    background: white;
-    border: 1px solid #EFEFEF;
-    border-radius: 10px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
+/* Donut legend */
+.donut-wrap { display: flex; align-items: center; gap: 28px; }
+.donut-canvas { flex-shrink: 0; }
+.donut-legend { display: flex; flex-direction: column; gap: 16px; flex: 1; }
+.dl-row { display: flex; align-items: center; gap: 10px; }
+.dl-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dl-label { font-size: 12px; color: var(--ink-mid); flex: 1; font-weight: 500; }
+.dl-val { font-size: 20px; font-weight: 800; color: var(--ink); font-family: 'DM Mono', monospace; letter-spacing: -0.5px; }
+.dl-pct { font-size: 10px; color: var(--ink-lt); font-weight: 600; }
 
-/* ── Role bars ── */
-.role-bar-row { display: flex; flex-direction: column; gap: 4px; }
-.role-bar-row .rb-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-}
-.role-bar-row .rb-name { font-size: 13px; color: #444; font-weight: 500; }
-.role-bar-row .rb-count { font-size: 13px; font-weight: 700; color: #1a1a2e; }
-.role-bar-track {
-    height: 6px;
-    background: #F3F3F3;
-    border-radius: 10px;
-    overflow: hidden;
-}
-.role-bar-fill {
-    height: 100%;
-    border-radius: 10px;
-    transition: width 1s ease;
-}
-
-/* ── Recent users table ── */
-.recent-wrap {
-    background: white;
-    border: 1px solid #EFEFEF;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 28px;
-}
-.recent-wrap .rw-header {
-    padding: 16px 24px;
-    border-bottom: 1px solid #F3F3F3;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.recent-wrap .rw-header h6 {
-    font-size: 13px;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
-}
-.recent-wrap .rw-header a {
-    font-size: 12px;
-    color: #4A90E2;
-    text-decoration: none;
-}
-.rw-table { width: 100%; border-collapse: collapse; }
-.rw-table thead th {
-    padding: 10px 24px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #bbb;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    background: #FAFAFA;
-    border-bottom: 1px solid #F3F3F3;
-    text-align: left;
-}
-.rw-table tbody td {
-    padding: 14px 24px;
-    font-size: 13px;
-    color: #444;
-    border-bottom: 1px solid #F9F9F9;
-    vertical-align: middle;
-}
-.rw-table tbody tr:last-child td { border-bottom: none; }
-.rw-table tbody tr:hover td { background: #FAFCFF; }
-.rw-table tbody tr.clickable-row { cursor: pointer; }
-.rw-table tbody tr.clickable-row:focus td { background: #FAFCFF; }
-
-.u-name { font-weight: 600; color: #1a1a2e; font-size: 13px; }
-.u-username { font-size: 11px; color: #bbb; }
-
-/* status pill — simple text, no bold background */
-.pill {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-}
-.pill-green  { background: #eafaf1; color: #27ae60; }
-.pill-grey   { background: #F3F3F3; color: #999; }
-.pill-blue   { background: #eaf2fb; color: #4A90E2; }
-.pill-teal   { background: #eafaf5; color: #5FBF9F; }
-.pill-red    { background: #fdecea; color: #e74c3c; }
-
-.edit-link {
-    font-size: 12px;
-    color: #4A90E2;
-    text-decoration: none;
-    padding: 4px 12px;
-    border: 1px solid #d4e8f7;
-    border-radius: 6px;
-}
-.edit-link:hover { background: #eaf2fb; }
+/* pill */
+.pill { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+.pill-green  { background:var(--green-lt);  color:var(--green); }
+.pill-grey   { background:#F1F5F9; color:var(--ink-lt); }
+.pill-blue   { background:var(--blue-lt);   color:var(--blue); }
+.pill-teal   { background:var(--teal-lt);   color:var(--teal); }
+.pill-red    { background:var(--red-lt);    color:var(--red); }
 </style>
 {% endblock %}
 
@@ -233,235 +190,169 @@
 
     <div class="admin-content" style="flex:1;">
 
-        {# Top bar #}
+        {# ── Top bar ── #}
         <div class="dash-topbar">
-            <div>
+            <div class="dash-topbar-left">
+                <span class="dash-topbar-eyebrow">MindBloom Admin</span>
                 <h1>Tableau de bord</h1>
-                <span class="date">{{ "now"|date("d/m/Y") }}</span>
+                <span class="dash-topbar-date">{{ "now"|date("l d/m/Y") }}</span>
             </div>
-            <div class="admin-info">
-                <div>
-                    <div class="name">{{ app.user.fullName }}</div>
-                    <div class="role">Administrateur</div>
-                </div>
-                <div class="mb-avatar" style="width:38px;height:38px;font-size:14px;">
-                    {% if app.user.profileImage %}
-                        <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}" alt="">
-                    {% else %}
-                        {{ app.user.fullName|first|upper }}
-                    {% endif %}
+            <div class="dash-topbar-right">
+                <div class="topbar-admin-badge">
+                    <div class="topbar-avatar">
+                        {% if app.user.profileImage %}
+                            <img src="{{ asset('uploads/profiles/' ~ app.user.profileImage) }}" alt="">
+                        {% else %}
+                            {{ app.user.fullName|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="topbar-admin-name">{{ app.user.fullName }}</div>
+                        <div class="topbar-admin-role">Administrateur</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        {# Numbers strip #}
-        <div class="numbers-strip">
-            <div class="num-block">
-                <div class="n" data-count="{{ stats.users }}">0</div>
-                <div class="l">Utilisateurs au total</div>
+        {# ── KPI strip ── #}
+        <div class="kpi-strip">
+            <div class="kpi-block">
+                <div class="kpi-label">Utilisateurs</div>
+                <div class="kpi-val" data-count="{{ stats.users }}">0</div>
+                <div class="kpi-sub">comptes enregistrés</div>
             </div>
-            <div class="num-block">
-                <div class="n green" data-count="{{ stats.active }}">0</div>
-                <div class="l">Comptes actifs</div>
+            <div class="kpi-block">
+                <div class="kpi-label">Actifs</div>
+                <div class="kpi-val green" data-count="{{ stats.active }}">0</div>
+                <div class="kpi-sub">comptes actifs</div>
             </div>
-            <div class="num-block">
-                <div class="n blue" data-count="{{ stats.psychologues }}">0</div>
-                <div class="l">Psychologues</div>
+            <div class="kpi-block">
+                <div class="kpi-label">Psychologues</div>
+                <div class="kpi-val blue" data-count="{{ stats.psychologues }}">0</div>
+                <div class="kpi-sub">praticiens inscrits</div>
             </div>
-            <div class="num-block">
-                <div class="n teal" data-count="{{ stats.cabinets ?? 0 }}">0</div>
-                <div class="l">Cabinets</div>
+            <div class="kpi-block">
+                <div class="kpi-label">Cabinets</div>
+                <div class="kpi-val teal" data-count="{{ stats.cabinets ?? 0 }}">0</div>
+                <div class="kpi-sub">cabinets référencés</div>
             </div>
-            <div class="num-block">
-                <div class="n orange" data-count="{{ stats.revenue }}" data-suffix=" DT" data-decimals="2">0</div>
-                <div class="l">Total en wallets</div>
+            <div class="kpi-block">
+                <div class="kpi-label">Wallets</div>
+                <div class="kpi-val orange" data-count="{{ stats.revenue }}" data-suffix=" DT" data-decimals="2">0</div>
+                <div class="kpi-sub">solde cumulé</div>
             </div>
         </div>
 
-        {# Module stat cards grid #}
+        {# ── Module cards ── #}
         <div class="module-grid">
-
             <a href="{{ path('app_admin_produit_index') }}" class="mod-card">
-                <div class="mod-icon" style="background:#FFF3E0;"><i class="bi bi-bag"></i></div>
-                <div class="mod-body">
-                    <div class="mod-count" style="color:#E67E22;" data-count="{{ stats.produits }}">0</div>
-                    <div class="mod-label">Produits</div>
-                </div>
+                <div class="mod-icon" style="background:#FFF7ED;"><i class="bi bi-bag" style="color:#D97706;"></i></div>
+                <div><div class="mod-count" style="color:#D97706;" data-count="{{ stats.produits }}">0</div><div class="mod-label">Produits</div></div>
             </a>
-
             <a href="#" class="mod-card">
-                <div class="mod-icon" style="background:#E8F5E9;"><i class="bi bi-calendar-event"></i></div>
-                <div class="mod-body">
-                    <div class="mod-count" style="color:#27ae60;" data-count="{{ stats.evenements }}">0</div>
-                    <div class="mod-label">Événements</div>
-                </div>
+                <div class="mod-icon" style="background:#ECFDF5;"><i class="bi bi-calendar-event" style="color:#059669;"></i></div>
+                <div><div class="mod-count" style="color:#059669;" data-count="{{ stats.evenements }}">0</div><div class="mod-label">Événements</div></div>
             </a>
-
             <a href="{{ path('app_admin_cabinets') }}" class="mod-card">
-                <div class="mod-icon" style="background:#E3F2FD;"><i class="bi bi-hospital"></i></div>
-                <div class="mod-body">
-                    <div class="mod-count" style="color:#4A90E2;" data-count="{{ stats.cabinets }}">0</div>
-                    <div class="mod-label">Cabinets</div>
-                </div>
+                <div class="mod-icon" style="background:#EFF6FF;"><i class="bi bi-hospital" style="color:#2563EB;"></i></div>
+                <div><div class="mod-count" style="color:#2563EB;" data-count="{{ stats.cabinets }}">0</div><div class="mod-label">Cabinets</div></div>
             </a>
-
             <a href="{{ path('app_admin_order_index') }}" class="mod-card">
-                <div class="mod-icon" style="background:#F3E5F5;"><i class="bi bi-box-seam"></i></div>
-                <div class="mod-body">
-                    <div class="mod-count" style="color:#8E44AD;" data-count="{{ stats.commandes }}">0</div>
-                    <div class="mod-label">Commandes</div>
-                </div>
+                <div class="mod-icon" style="background:#F5F3FF;"><i class="bi bi-box-seam" style="color:#7C3AED;"></i></div>
+                <div><div class="mod-count" style="color:#7C3AED;" data-count="{{ stats.commandes }}">0</div><div class="mod-label">Commandes</div></div>
             </a>
-
             <a href="#" class="mod-card">
-                <div class="mod-icon" style="background:#E0F7FA;"><i class="bi bi-clipboard-data"></i></div>
-                <div class="mod-body">
-                    <div class="mod-count" style="color:#00ACC1;" data-count="{{ stats.tests }}">0</div>
-                    <div class="mod-label">Tests</div>
-                </div>
+                <div class="mod-icon" style="background:#ECFEFF;"><i class="bi bi-clipboard-data" style="color:#0891B2;"></i></div>
+                <div><div class="mod-count" style="color:#0891B2;" data-count="{{ stats.tests }}">0</div><div class="mod-label">Tests</div></div>
             </a>
-
             <a href="{{ path('app_admin_wallets') }}" class="mod-card">
-                <div class="mod-icon" style="background:#E8F5E9;"><i class="bi bi-wallet2"></i></div>
-                <div class="mod-body">
-                    <div class="mod-count" style="color:#5FBF9F;" data-count="{{ stats.revenue }}" data-suffix=" DT" data-decimals="2">0</div>
-                    <div class="mod-label">DT en wallets</div>
-                </div>
+                <div class="mod-icon" style="background:#ECFDF5;"><i class="bi bi-wallet2" style="color:#059669;"></i></div>
+                <div><div class="mod-count" style="color:#059669;" data-count="{{ stats.revenue }}" data-suffix=" DT" data-decimals="0">0</div><div class="mod-label">DT en wallets</div></div>
             </a>
-
             <a href="{{ path('app_admin_cabinets') }}" class="mod-card">
-                <div class="mod-icon" style="background:#FFF8E1;"><i class="bi bi-calendar-check"></i></div>
-                <div class="mod-body">
-                    <div class="mod-count" style="color:#F39C12;" data-count="{{ stats.reservations }}">0</div>
-                    <div class="mod-label">Réservations</div>
-                </div>
+                <div class="mod-icon" style="background:#FFFBEB;"><i class="bi bi-calendar-check" style="color:#D97706;"></i></div>
+                <div><div class="mod-count" style="color:#D97706;" data-count="{{ stats.reservations }}">0</div><div class="mod-label">Réservations</div></div>
             </a>
-
             <a href="{{ path('app_admin_users') }}" class="mod-card">
-                <div class="mod-icon" style="background:#FDECEA;"><i class="bi bi-people"></i></div>
-                <div class="mod-body">
-                    <div class="mod-count" style="color:#E74C3C;" data-count="{{ stats.suspended }}">0</div>
-                    <div class="mod-label">Comptes suspendus</div>
-                </div>
+                <div class="mod-icon" style="background:#FEF2F2;"><i class="bi bi-people" style="color:#DC2626;"></i></div>
+                <div><div class="mod-count" style="color:#DC2626;" data-count="{{ stats.suspended }}">0</div><div class="mod-label">Suspendus</div></div>
             </a>
-
         </div>
 
-        {# Role breakdown — full width #}
-        <div class="mid-right mb-3" style="flex-direction:row;align-items:center;gap:32px;padding:20px 28px;">
-            <div style="font-size:13px;font-weight:600;color:#333;white-space:nowrap;min-width:90px;">
-                Répartition<br><span style="font-size:11px;color:#bbb;font-weight:400;">par rôle</span>
-            </div>
-
+        {# ── Role breakdown ── #}
+        <div class="role-section">
+            <div class="role-section-title">Rôles</div>
             {% set total = stats.users > 0 ? stats.users : 1 %}
-
-            <div style="flex:1;">
-                <div class="rb-top mb-1">
-                    <span class="rb-name">Patients</span>
-                    <span class="rb-count">{{ stats.patients }}</span>
-                </div>
-                <div class="role-bar-track">
-                    <div class="role-bar-fill" style="width:{{ ((stats.patients/total)*100)|round }}%;background:#5FBF9F;"></div>
-                </div>
+            <div class="rb-wrap">
+                <div class="rb-top"><span class="rb-name">Patients</span><span class="rb-count">{{ stats.patients }}</span></div>
+                <div class="rb-track"><div class="rb-fill" style="width:0%;background:#059669;" data-width="{{ ((stats.patients/total)*100)|round }}"></div></div>
             </div>
-
-            <div style="flex:1;">
-                <div class="rb-top mb-1">
-                    <span class="rb-name">Psychologues</span>
-                    <span class="rb-count">{{ stats.psychologues }}</span>
-                </div>
-                <div class="role-bar-track">
-                    <div class="role-bar-fill" style="width:{{ ((stats.psychologues/total)*100)|round }}%;background:#4A90E2;"></div>
-                </div>
+            <div class="rb-wrap">
+                <div class="rb-top"><span class="rb-name">Psychologues</span><span class="rb-count">{{ stats.psychologues }}</span></div>
+                <div class="rb-track"><div class="rb-fill" style="width:0%;background:#2563EB;" data-width="{{ ((stats.psychologues/total)*100)|round }}"></div></div>
             </div>
-
-            <div style="flex:1;">
-                <div class="rb-top mb-1">
-                    <span class="rb-name">Admins</span>
-                    <span class="rb-count">{{ stats.admins }}</span>
-                </div>
-                <div class="role-bar-track">
-                    <div class="role-bar-fill" style="width:{{ ((stats.admins/total)*100)|round }}%;background:#E67E22;"></div>
-                </div>
+            <div class="rb-wrap">
+                <div class="rb-top"><span class="rb-name">Admins</span><span class="rb-count">{{ stats.admins }}</span></div>
+                <div class="rb-track"><div class="rb-fill" style="width:0%;background:#D97706;" data-width="{{ ((stats.admins/total)*100)|round }}"></div></div>
             </div>
-
-            <div style="border-left:1px solid #F3F3F3;padding-left:28px;flex-shrink:0;">
-                <a href="{{ path('app_admin_users') }}"
-                   style="display:block;padding:10px 20px;background:#4A90E2;color:white;
-                          border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;
-                          text-align:center;white-space:nowrap;">
-                    Voir tous les utilisateurs
-                </a>
-            </div>
+            <a href="{{ path('app_admin_users') }}" class="role-cta">Gérer les utilisateurs →</a>
         </div>
 
-        {# Recent users #}
-        <div class="recent-wrap">
-            <div class="rw-header">
-                <h6>Derniers inscrits</h6>
-                <a href="{{ path('app_admin_users') }}">Voir tous →</a>
+        {# ── Analytics ── #}
+        <div class="analytics-grid">
+
+            {# Line chart #}
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <div>
+                        <div class="analytics-card-title">Croissance des inscriptions</div>
+                        <div class="analytics-card-sub">Nouveaux comptes sur les 6 derniers mois</div>
+                    </div>
+                    <span class="analytics-badge">6 mois</span>
+                </div>
+                <canvas id="chartRegistrations" height="130"></canvas>
             </div>
-            <table class="rw-table">
-                <thead>
-                    <tr>
-                        <th>Nom</th>
-                        <th>Email</th>
-                        <th>Rôle</th>
-                        <th>Statut</th>
-                        <th>Inscrit le</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in recentUsers ?? [] %}
-                    <tr class="clickable-row"
-                        onclick="window.location='{{ path('app_admin_user_show', {id: user.id}) }}'"
-                        tabindex="0"
-                        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location='{{ path('app_admin_user_show', {id: user.id}) }}';}">
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="mb-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">
-                                    {% if user.profileImage %}
-                                        <img src="{{ asset('uploads/profiles/' ~ user.profileImage) }}" alt="">
-                                    {% else %}
-                                        {{ user.fullName|first|upper }}
-                                    {% endif %}
-                                </div>
-                                <div>
-                                    <div class="u-name">{{ user.fullName }}</div>
-                                    <div class="u-username">@{{ user.username }}</div>
-                                </div>
+
+            {# Donut chart #}
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <div>
+                        <div class="analytics-card-title">Répartition des rôles</div>
+                        <div class="analytics-card-sub">Distribution de la communauté</div>
+                    </div>
+                    <span class="analytics-badge">Live</span>
+                </div>
+                <div class="donut-wrap">
+                    <canvas id="chartRoles" width="150" height="150" class="donut-canvas"></canvas>
+                    <div class="donut-legend">
+                        <div class="dl-row">
+                            <span class="dl-dot" style="background:#059669;"></span>
+                            <span class="dl-label">Patients</span>
+                            <div style="text-align:right;">
+                                <div class="dl-val" data-count="{{ stats.patients }}">0</div>
+                                <div class="dl-pct">{{ total > 0 ? ((stats.patients/total)*100)|round : 0 }}%</div>
                             </div>
-                        </td>
-                        <td style="color:#999;">{{ user.email }}</td>
-                        <td>
-                            {% if 'ROLE_ADMIN' in user.roles %}
-                                <span class="pill pill-red">Admin</span>
-                            {% elseif 'ROLE_PSYCHOLOGUE' in user.roles %}
-                                <span class="pill pill-blue">Psychologue</span>
-                            {% else %}
-                                <span class="pill pill-teal">Patient</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if user.status == 'ACTIVE' %}
-                                <span class="pill pill-green">Actif</span>
-                            {% else %}
-                                <span class="pill pill-grey">Suspendu</span>
-                            {% endif %}
-                        </td>
-                        <td style="color:#bbb;font-size:12px;">
-                            {{ user.createdAt ? user.createdAt|date('d/m/Y') : '—' }}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" style="text-align:center;color:#ccc;padding:32px;font-size:13px;">
-                            Aucun utilisateur pour le moment.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        </div>
+                        <div class="dl-row">
+                            <span class="dl-dot" style="background:#2563EB;"></span>
+                            <span class="dl-label">Psychologues</span>
+                            <div style="text-align:right;">
+                                <div class="dl-val" data-count="{{ stats.psychologues }}">0</div>
+                                <div class="dl-pct">{{ total > 0 ? ((stats.psychologues/total)*100)|round : 0 }}%</div>
+                            </div>
+                        </div>
+                        <div class="dl-row">
+                            <span class="dl-dot" style="background:#D97706;"></span>
+                            <span class="dl-label">Admins</span>
+                            <div style="text-align:right;">
+                                <div class="dl-val" data-count="{{ stats.admins }}">0</div>
+                                <div class="dl-pct">{{ total > 0 ? ((stats.admins/total)*100)|round : 0 }}%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </div>
@@ -469,28 +360,126 @@
 {% endblock %}
 
 {% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
+/* ── Counter animation ── */
 function animateCounter(el) {
     var target   = parseFloat(el.dataset.count) || 0;
     var suffix   = el.dataset.suffix || '';
     var decimals = parseInt(el.dataset.decimals || '0');
-    var duration = 1200;
+    var duration = 1100;
     var start    = null;
     var ease     = function(t) { return 1 - Math.pow(1 - t, 3); };
     function step(ts) {
         if (!start) start = ts;
-        var progress = Math.min((ts - start) / duration, 1);
-        var value    = target * ease(progress);
+        var p = Math.min((ts - start) / duration, 1);
+        var v = target * ease(p);
         el.textContent = decimals > 0
-            ? value.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + suffix
-            : Math.round(value) + suffix;
-        if (progress < 1) requestAnimationFrame(step);
+            ? v.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + suffix
+            : Math.round(v) + suffix;
+        if (p < 1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
 }
+
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('[data-count]').forEach(function(el) {
-        animateCounter(el);
+
+    /* counters */
+    document.querySelectorAll('[data-count]').forEach(function(el) { animateCounter(el); });
+
+    /* role bars */
+    setTimeout(function() {
+        document.querySelectorAll('.rb-fill[data-width]').forEach(function(el) {
+            el.style.width = el.dataset.width + '%';
+        });
+    }, 200);
+
+    /* ── Line chart ── */
+    var labels = {{ monthlyLabels|raw }};
+    var data   = {{ monthlyData|raw }};
+
+    new Chart(document.getElementById('chartRegistrations'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Inscriptions',
+                data: data,
+                borderColor: '#2563EB',
+                backgroundColor: function(ctx) {
+                    var g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 200);
+                    g.addColorStop(0, 'rgba(37,99,235,0.12)');
+                    g.addColorStop(1, 'rgba(37,99,235,0.00)');
+                    return g;
+                },
+                borderWidth: 2,
+                pointBackgroundColor: '#2563EB',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                tension: 0.45,
+                fill: true,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0F172A',
+                    titleColor: '#94A3B8',
+                    bodyColor: '#fff',
+                    bodyFont: { weight: '700', size: 14 },
+                    padding: 10,
+                    cornerRadius: 8,
+                    displayColors: false,
+                    callbacks: { label: function(c) { return c.parsed.y + ' inscription' + (c.parsed.y > 1 ? 's' : ''); } }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0, color: '#94A3B8', font: { size: 11, family: 'DM Mono' } },
+                    grid: { color: '#F1F5F9', drawBorder: false }
+                },
+                x: {
+                    ticks: { color: '#94A3B8', font: { size: 11 } },
+                    grid: { display: false }
+                }
+            },
+            animation: { duration: 1000, easing: 'easeOutQuart' }
+        }
+    });
+
+    /* ── Donut chart ── */
+    new Chart(document.getElementById('chartRoles'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Patients', 'Psychologues', 'Admins'],
+            datasets: [{
+                data: [{{ stats.patients }}, {{ stats.psychologues }}, {{ stats.admins }}],
+                backgroundColor: ['#059669', '#2563EB', '#D97706'],
+                borderWidth: 3,
+                borderColor: '#ffffff',
+                hoverOffset: 8,
+            }]
+        },
+        options: {
+            responsive: false,
+            cutout: '72%',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0F172A',
+                    titleColor: '#94A3B8',
+                    bodyColor: '#fff',
+                    bodyFont: { weight: '700', size: 13 },
+                    padding: 10, cornerRadius: 8, displayColors: false,
+                }
+            },
+            animation: { duration: 900, easing: 'easeOutQuart' }
+        }
     });
 });
 </script>

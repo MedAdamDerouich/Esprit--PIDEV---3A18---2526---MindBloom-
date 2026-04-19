@@ -27,8 +27,11 @@ class AdminController extends AbstractController
         \App\Repository\CommandeRepository $commandeRepository,
         \App\Repository\TestRepository $testRepository
     ): Response {
+        $monthly = $userRepository->getMonthlyRegistrations();
+
         return $this->render('admin/dashboard.html.twig', [
-            'recentUsers' => $userRepository->findRecentUsers(8),
+            'monthlyLabels' => json_encode(array_column($monthly, 'month')),
+            'monthlyData'   => json_encode(array_column($monthly, 'total')),
             'stats' => [
                 'users'        => $userRepository->count([]),
                 'patients'     => $userRepository->countByRole(User::ROLE_PATIENT),

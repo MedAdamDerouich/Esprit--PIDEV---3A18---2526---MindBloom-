@@ -34,7 +34,7 @@ services:
 
     App\Service\EvenementAiService:
         arguments:
-            $geminiApiKey: '%env(default::GEMINI_API_KEY)%'
+            $geminiApiKey: '%env(default::GEMINI_API_KEY_WALLET)%'
 
     Symfony\Component\Security\Http\Authenticator\FormLoginAuthenticator:
         alias: security.authenticator.form_login.main

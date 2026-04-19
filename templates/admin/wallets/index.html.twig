@@ -1,137 +1,901 @@
 {% extends 'base.html.twig' %}
-{% block title %}Wallets — MindBloom Admin{% endblock %}
+{% block title %}Gestion des Wallets — MindBloom Admin{% endblock %}
 
 {% block body %}
 <div class="d-flex">
     {{ include('admin/_sidebar.html.twig') }}
 
-    <div class="admin-content" style="flex:1;">
-        <div class="mb-page-header">
-            <h1>💰 Wallets</h1>
-            <p>Gérez les portefeuilles des utilisateurs</p>
+    <div class="admin-content" style="flex:1;min-height:100vh;background:#F4F6F9;">
+
+        {# ── Header ── #}
+        <div class="aw-header">
+            <div class="aw-header-left">
+                <div class="aw-header-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M16 12a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/><path d="M2 10h20"/></svg>
+                </div>
+                <div>
+                    <h1 class="aw-title">Gestion des Wallets</h1>
+                    <p class="aw-subtitle">Gérez les portefeuilles, analysez les risques et rechargez les comptes</p>
+                </div>
+            </div>
+            <button class="aw-btn-create" onclick="openCreateModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Nouveau Wallet
+            </button>
         </div>
 
-        <div class="mb-card" style="padding:0;overflow:hidden;">
-            <table class="mb-table">
-                <thead>
-                    <tr>
-                        <th>Utilisateur</th>
-                        <th>Email</th>
-                        <th>Solde</th>
-                        <th>Dernière recharge</th>
-                        <th>Statut</th>
-                        <th style="text-align:right;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for wallet in wallets %}
-                    <tr>
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="mb-avatar" style="width:34px;height:34px;font-size:13px;">
-                                    {{ wallet.user.fullName|first|upper }}
-                                </div>
-                                <span style="font-weight:600;">{{ wallet.user.fullName }}</span>
-                            </div>
-                        </td>
-                        <td style="color:var(--text-mid);">{{ wallet.user.email }}</td>
-                        <td style="font-weight:700;color:var(--text-dark);">
-                            {{ wallet.balance|number_format(2, '.', ' ') }} DT
-                        </td>
-                        <td style="color:var(--text-mid);font-size:13px;">
-                            {{ wallet.lastRechargeDate ? wallet.lastRechargeDate|date('d/m/Y') : '—' }}
-                        </td>
-                        <td>
-                            {% if wallet.status == 'ACTIVE' %}
-                                <span class="mb-badge mb-badge-green">● Actif</span>
-                            {% else %}
-                                <span class="mb-badge mb-badge-gray">● Inactif</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="d-flex gap-2 justify-content-end">
-                                <a href="{{ path('app_admin_wallets', {wallet: wallet.id}) }}"
-                                   class="btn-mb-outline"
-                                   style="padding:6px 12px;font-size:12px;border-radius:8px;text-decoration:none;">
-                                    Voir transactions
-                                </a>
-                                <form method="post"
-                                      action="{{ path('app_admin_wallet_toggle', {id: wallet.id}) }}">
-                                    <input type="hidden" name="_token"
-                                           value="{{ csrf_token('toggle-wallet-' ~ wallet.id) }}">
-                                    <input type="hidden" name="selected_wallet_id"
-                                           value="{{ selectedWallet ? selectedWallet.id : '' }}">
-                                    <button type="submit"
-                                            class="{{ wallet.status == 'ACTIVE' ? 'btn-mb-danger' : 'btn-mb-teal' }}"
-                                            style="padding:6px 12px;font-size:12px;border-radius:8px;">
-                                        {{ wallet.status == 'ACTIVE' ? '🚫 Désactiver' : '✅ Activer' }}
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
+        {# ── Flash messages ── #}
+        {% for msg in app.flashes('success') %}
+            <div class="aw-flash aw-flash-success">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                {{ msg }}
+            </div>
+        {% endfor %}
+        {% for msg in app.flashes('error') %}
+            <div class="aw-flash aw-flash-error">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                {{ msg }}
+            </div>
+        {% endfor %}
+
+        {# ── Stats row ── #}
+        <div class="aw-stats">
+            <div class="aw-stat-card">
+                <div class="aw-stat-icon" style="background:linear-gradient(135deg,#4A90E2,#2563EB);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/></svg>
+                </div>
+                <div>
+                    <div class="aw-stat-value" data-count="{{ wallets|length }}" data-suffix="">0</div>
+                    <div class="aw-stat-label">Wallets total</div>
+                </div>
+            </div>
+            <div class="aw-stat-card">
+                <div class="aw-stat-icon" style="background:linear-gradient(135deg,#27AE60,#1e8449);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                    <div class="aw-stat-value" data-count="{{ activeCount }}" data-suffix="">0</div>
+                    <div class="aw-stat-label">Actifs</div>
+                </div>
+            </div>
+            <div class="aw-stat-card">
+                <div class="aw-stat-icon" style="background:linear-gradient(135deg,#E74C3C,#c0392b);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                </div>
+                <div>
+                    <div class="aw-stat-value" data-count="{{ inactiveCount }}" data-suffix="">0</div>
+                    <div class="aw-stat-label">Inactifs</div>
+                </div>
+            </div>
+            <div class="aw-stat-card">
+                <div class="aw-stat-icon" style="background:linear-gradient(135deg,#8E44AD,#6C3483);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <div>
+                    <div class="aw-stat-value" data-count="{{ totalBalance }}" data-suffix=" DT" data-decimals="2">0</div>
+                    <div class="aw-stat-label">Solde cumulé</div>
+                </div>
+            </div>
+        </div>
+
+        {# ── Search bar ── #}
+        <div class="aw-search-wrap">
+            <svg class="aw-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#95A5A6" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="aw-search" type="text" class="aw-search" placeholder="Rechercher par nom, email, ID…">
+        </div>
+
+        {# ── Wallet cards list ── #}
+        <div id="aw-list">
+            {% for wallet in wallets %}
+            {% set user = wallet.user %}
+            <div class="aw-card" data-search="{{ (user.fullName ~ ' ' ~ user.email ~ ' ' ~ wallet.id)|lower }}">
+                {# Avatar #}
+                <div class="aw-avatar">
+                    {% if user.profileImage %}
+                        <img src="{{ asset('uploads/profiles/' ~ user.profileImage) }}" alt="">
                     {% else %}
-                    <tr>
-                        <td colspan="6" style="text-align:center;color:var(--text-mid);padding:40px;">
-                            Aucun wallet trouvé
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        <span>{{ user.fullName|first|upper }}</span>
+                    {% endif %}
+                </div>
+
+                {# User info #}
+                <div class="aw-user-info">
+                    <div class="aw-user-name">{{ user.fullName }}</div>
+                    <div class="aw-user-email">{{ user.email }}</div>
+                    <div class="aw-wallet-meta">
+                        <span class="aw-wallet-id">#{{ wallet.id }}</span>
+                        <span class="aw-status-badge {{ wallet.status == 'ACTIVE' ? 'aw-badge-active' : 'aw-badge-inactive' }}">
+                            {{ wallet.status == 'ACTIVE' ? 'Actif' : 'Inactif' }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="aw-divider"></div>
+
+                {# Balance #}
+                <div class="aw-balance-section">
+                    <div class="aw-section-label">SOLDE ACTUEL</div>
+                    <div class="aw-balance-value">{{ wallet.balance|number_format(2, '.', ' ') }} <span>DT</span></div>
+                </div>
+
+                <div class="aw-divider"></div>
+
+                {# Last recharge #}
+                <div class="aw-recharge-section">
+                    <div class="aw-section-label">DERNIÈRE RECHARGE</div>
+                    <div class="aw-recharge-date">{{ wallet.lastRechargeDate ? wallet.lastRechargeDate|date('d/m/Y') : '—' }}</div>
+                </div>
+
+                {# Actions #}
+                <div class="aw-actions">
+                    {# AI Fraud Shield #}
+                    <button class="aw-btn-ai" onclick="runFraudAnalysis({{ wallet.id }}, '{{ user.fullName|e('js') }}')" title="Analyse IA Fraud Shield">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        Analyse IA
+                    </button>
+
+                    {# History #}
+                    <button class="aw-btn-outline" onclick="loadHistory({{ wallet.id }}, '{{ user.fullName|e('js') }}')" title="Historique des transactions">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Historique
+                    </button>
+
+                    {# Toggle status #}
+                    <form method="post" action="{{ path('app_admin_wallet_toggle', {id: wallet.id}) }}" style="display:inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('toggle-wallet-' ~ wallet.id) }}">
+                        <button type="submit" class="{{ wallet.status == 'ACTIVE' ? 'aw-btn-danger' : 'aw-btn-success' }}" title="{{ wallet.status == 'ACTIVE' ? 'Désactiver' : 'Activer' }}">
+                            {% if wallet.status == 'ACTIVE' %}
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                                Désactiver
+                            {% else %}
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                                Activer
+                            {% endif %}
+                        </button>
+                    </form>
+
+                    {# Recharge #}
+                    <button class="aw-btn-recharge" onclick="openRecharge({{ wallet.id }}, '{{ user.fullName|e('js') }}', {{ wallet.balance }}, '{{ csrf_token('admin-recharge-' ~ wallet.id) }}')" title="Recharger le wallet">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/></svg>
+                        Recharger
+                    </button>
+
+                    {# Delete #}
+                    <form method="post" action="{{ path('app_admin_wallet_delete', {id: wallet.id}) }}" onsubmit="return confirm('Supprimer le wallet de {{ user.fullName|e('js') }} ?')" style="display:inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete-wallet-' ~ wallet.id) }}">
+                        <button type="submit" class="aw-btn-icon-danger" title="Supprimer">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div class="aw-empty">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#BDC3C7" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/></svg>
+                <p>Aucun wallet trouvé.</p>
+            </div>
+            {% endfor %}
         </div>
 
-        <div class="mb-card mt-4">
-            {% if selectedWallet %}
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 style="margin:0;font-weight:700;">
-                        Transactions de {{ selectedWallet.user.fullName }}
-                    </h5>
-                    <span class="mb-badge mb-badge-gray">{{ selectedTransactions|length }} opération(s)</span>
-                </div>
+    </div>{# /admin-content #}
+</div>
 
-                {% if selectedTransactions is empty %}
-                    <div style="text-align:center;padding:24px;color:var(--text-mid);">
-                        Aucune transaction pour ce wallet.
-                    </div>
-                {% else %}
-                    <table class="mb-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                                <th style="text-align:right;">Montant</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for tx in selectedTransactions %}
-                                <tr>
-                                    <td style="color:var(--text-mid);font-size:13px;">
-                                        {{ tx.transactionDate|date('d/m/Y à H:i') }}
-                                    </td>
-                                    <td>
-                                        <span class="mb-badge {{ tx.type == 'RECHARGE' ? 'mb-badge-teal' : 'mb-badge-gray' }}">
-                                            {{ tx.type }}
-                                        </span>
-                                    </td>
-                                    <td style="color:var(--text-mid);">
-                                        {{ tx.description ?? '—' }}
-                                    </td>
-                                    <td style="text-align:right;font-weight:700;color:var(--text-dark);">
-                                        {{ tx.type == 'RECHARGE' ? '+' : '-' }}{{ tx.amount|number_format(2, '.', ' ') }} DT
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% endif %}
-            {% else %}
-                <div style="text-align:center;padding:24px;color:var(--text-mid);">
-                    Sélectionnez un wallet pour afficher ses transactions.
+{# ════════════════════════ MODALS ════════════════════════ #}
+
+{# ── AI Fraud Shield modal ── #}
+<div id="modal-fraud" class="aw-modal-backdrop" style="display:none;" onclick="closeModal('modal-fraud')">
+    <div class="aw-modal" onclick="event.stopPropagation()">
+        <button class="aw-modal-close" onclick="closeModal('modal-fraud')">&times;</button>
+
+        {# Loading state #}
+        <div id="fraud-loading">
+            <div class="aw-modal-ai-header">
+                <div class="aw-modal-ai-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 </div>
-            {% endif %}
+                <div>
+                    <div class="aw-modal-ai-title">AI Fraud Shield</div>
+                    <div id="fraud-loading-name" class="aw-modal-ai-sub">Analyse en cours…</div>
+                </div>
+            </div>
+            <div class="aw-spinner-wrap">
+                <div class="aw-spinner"></div>
+                <p class="aw-spinner-text">Gemini examine les transactions et le profil…</p>
+            </div>
+        </div>
+
+        {# Result state #}
+        <div id="fraud-result" style="display:none;">
+            <div class="aw-modal-ai-header">
+                <div class="aw-modal-ai-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <div>
+                    <div class="aw-modal-ai-title">AI Fraud Shield</div>
+                    <div id="fraud-result-name" class="aw-modal-ai-sub"></div>
+                </div>
+            </div>
+
+            {# Risk level badge #}
+            <div class="aw-risk-row">
+                <div class="aw-risk-badge-wrap">
+                    <div id="fraud-level-badge" class="aw-risk-level"></div>
+                    <div class="aw-risk-label">Niveau de risque</div>
+                </div>
+                <div class="aw-risk-score-wrap">
+                    <div class="aw-risk-score-track">
+                        <div id="fraud-score-bar" class="aw-risk-score-fill"></div>
+                    </div>
+                    <div id="fraud-score-text" class="aw-risk-score-text"></div>
+                </div>
+            </div>
+
+            {# Report text #}
+            <div id="fraud-report-box" class="aw-fraud-report"></div>
+
+            <button class="aw-btn-ai" style="width:100%;justify-content:center;margin-top:8px;" onclick="closeModal('modal-fraud')">Fermer</button>
+        </div>
+
+        {# Error state #}
+        <div id="fraud-error" style="display:none;">
+            <div class="aw-error-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E74C3C" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span id="fraud-error-text"></span>
+            </div>
         </div>
     </div>
 </div>
+
+{# ── History modal ── #}
+<div id="modal-history" class="aw-modal-backdrop" style="display:none;" onclick="closeModal('modal-history')">
+    <div class="aw-modal aw-modal-wide" onclick="event.stopPropagation()">
+        <button class="aw-modal-close" onclick="closeModal('modal-history')">&times;</button>
+        <div id="history-loading">
+            <div class="aw-spinner-wrap" style="padding:48px 0;">
+                <div class="aw-spinner" style="border-top-color:#4A90E2;"></div>
+                <p class="aw-spinner-text">Chargement des transactions…</p>
+            </div>
+        </div>
+        <div id="history-content" style="display:none;">
+            <div class="aw-modal-hist-header">
+                <div>
+                    <div class="aw-modal-hist-title" id="hist-user-name"></div>
+                    <div class="aw-modal-hist-sub" id="hist-user-email"></div>
+                </div>
+                <div class="aw-hist-balance-chip" id="hist-balance"></div>
+            </div>
+            <div id="hist-table-wrap"></div>
+        </div>
+        <div id="history-error" style="display:none;">
+            <div class="aw-error-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E74C3C" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span id="history-error-text"></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Recharge modal ── #}
+<div id="modal-recharge" class="aw-modal-backdrop" style="display:none;" onclick="closeModal('modal-recharge')">
+    <div class="aw-modal aw-modal-sm" onclick="event.stopPropagation()">
+        <button class="aw-modal-close" onclick="closeModal('modal-recharge')">&times;</button>
+        <div class="aw-recharge-modal-header">
+            <div class="aw-recharge-modal-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/></svg>
+            </div>
+            <div>
+                <div class="aw-modal-ai-title">Recharger le Wallet</div>
+                <div id="recharge-modal-name" class="aw-modal-ai-sub"></div>
+            </div>
+        </div>
+        <div class="aw-recharge-balance-info">
+            <span>Solde actuel :</span>
+            <strong id="recharge-current-balance"></strong>
+        </div>
+        <div id="recharge-result-msg" style="display:none;" class="aw-flash aw-flash-success"></div>
+        <form id="recharge-form">
+            <input type="hidden" id="recharge-wallet-id">
+            <input type="hidden" id="recharge-csrf">
+            <div class="aw-form-group">
+                <label class="aw-form-label">Montant à créditer (DT)</label>
+                <input type="number" id="recharge-amount" class="aw-form-input" min="1" max="10000" step="0.01" placeholder="ex: 50.00">
+            </div>
+            <div class="aw-quick-amounts">
+                <button type="button" onclick="setRechargeAmount(10)">+10</button>
+                <button type="button" onclick="setRechargeAmount(25)">+25</button>
+                <button type="button" onclick="setRechargeAmount(50)">+50</button>
+                <button type="button" onclick="setRechargeAmount(100)">+100</button>
+            </div>
+            <button type="submit" class="aw-btn-recharge" style="width:100%;justify-content:center;margin-top:16px;" id="recharge-submit-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Créditer le wallet
+            </button>
+        </form>
+    </div>
+</div>
+
+{# ── Create wallet modal ── #}
+<div id="modal-create" class="aw-modal-backdrop" style="display:none;" onclick="closeModal('modal-create')">
+    <div class="aw-modal aw-modal-sm" onclick="event.stopPropagation()">
+        <button class="aw-modal-close" onclick="closeModal('modal-create')">&times;</button>
+        <div class="aw-recharge-modal-header" style="--icon-bg:linear-gradient(135deg,#27AE60,#1e8449);">
+            <div class="aw-recharge-modal-icon" style="background:linear-gradient(135deg,#27AE60,#1e8449);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+            <div>
+                <div class="aw-modal-ai-title">Créer un Wallet</div>
+                <div class="aw-modal-ai-sub">Assigner à un utilisateur sans wallet</div>
+            </div>
+        </div>
+        <form method="post" action="{{ path('app_admin_wallet_create') }}" style="margin-top:20px;">
+            <input type="hidden" name="_token" value="{{ csrf_token('admin-create-wallet') }}">
+            <div class="aw-form-group">
+                <label class="aw-form-label">Utilisateur</label>
+                <select name="user_id" class="aw-form-input" required>
+                    <option value="">-- Sélectionner --</option>
+                    {% for u in usersWithoutWallet %}
+                        <option value="{{ u.id }}">{{ u.fullName }} ({{ u.email }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="aw-btn-success" style="width:100%;justify-content:center;margin-top:8px;">
+                Créer le wallet
+            </button>
+        </form>
+    </div>
+</div>
+
+{# ════════════════════════ STYLES ════════════════════════ #}
+<style>
+:root {
+    --aw-blue:    #4A90E2;
+    --aw-blue2:   #2563EB;
+    --aw-purple:  #8E44AD;
+    --aw-green:   #27AE60;
+    --aw-red:     #E74C3C;
+    --aw-orange:  #F39C12;
+    --aw-text:    #2C3E50;
+    --aw-mid:     #7F8C8D;
+    --aw-light:   #F4F6F9;
+    --aw-border:  #E8ECEF;
+    --aw-white:   #FFFFFF;
+    --aw-radius:  14px;
+    --aw-shadow:  0 2px 16px rgba(0,0,0,.07);
+}
+
+/* ─── Page header ─── */
+.aw-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 32px 0;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.aw-header-left { display:flex; align-items:center; gap:16px; }
+.aw-header-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--aw-blue), var(--aw-blue2));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(74,144,226,.35);
+}
+.aw-title { font-size:22px; font-weight:800; color:var(--aw-text); margin:0; }
+.aw-subtitle { font-size:13px; color:var(--aw-mid); margin:2px 0 0; }
+
+/* ─── Buttons ─── */
+.aw-btn-create {
+    display: flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--aw-blue), var(--aw-blue2));
+    color: #fff; border: none; border-radius: 10px;
+    padding: 10px 18px; font-size: 13px; font-weight: 700;
+    cursor: pointer; box-shadow: 0 3px 12px rgba(74,144,226,.4);
+    transition: transform .15s, box-shadow .15s;
+}
+.aw-btn-create:hover { transform:translateY(-1px); box-shadow: 0 6px 18px rgba(74,144,226,.45); }
+
+.aw-btn-ai {
+    display: flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, #8E44AD, #6C3483);
+    color: #fff; border: none; border-radius: 20px;
+    padding: 7px 14px; font-size: 11px; font-weight: 700;
+    cursor: pointer; box-shadow: 0 3px 10px rgba(142,68,173,.35);
+    transition: transform .15s, box-shadow .15s; white-space:nowrap;
+}
+.aw-btn-ai:hover { transform:translateY(-1px); box-shadow: 0 5px 16px rgba(142,68,173,.45); }
+
+.aw-btn-outline {
+    display: flex; align-items: center; gap: 6px;
+    background: #F8F9FA; color: #34495E;
+    border: 1px solid var(--aw-border); border-radius: 8px;
+    padding: 7px 12px; font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: background .15s; white-space:nowrap;
+}
+.aw-btn-outline:hover { background: var(--aw-border); }
+
+.aw-btn-danger {
+    display: flex; align-items: center; gap: 6px;
+    background: #FDEDEC; color: var(--aw-red);
+    border: 1px solid #F5B7B1; border-radius: 8px;
+    padding: 7px 12px; font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: background .15s; white-space:nowrap;
+}
+.aw-btn-danger:hover { background: #F5B7B1; }
+
+.aw-btn-success {
+    display: flex; align-items: center; gap: 6px;
+    background: #EAFAF1; color: var(--aw-green);
+    border: 1px solid #A9DFBF; border-radius: 8px;
+    padding: 7px 12px; font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: background .15s; white-space:nowrap;
+}
+.aw-btn-success:hover { background: #A9DFBF; }
+
+.aw-btn-recharge {
+    display: flex; align-items: center; gap: 6px;
+    background: #EBF5FF; color: var(--aw-blue);
+    border: 1px solid #AED6F1; border-radius: 8px;
+    padding: 7px 12px; font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: background .15s; white-space:nowrap;
+}
+.aw-btn-recharge:hover { background: #AED6F1; }
+
+.aw-btn-icon-danger {
+    background: #FDEDEC; color: var(--aw-red);
+    border: 1px solid #F5B7B1; border-radius: 8px;
+    padding: 7px 9px; font-size: 11px; cursor: pointer;
+    display:flex; align-items:center;
+    transition: background .15s;
+}
+.aw-btn-icon-danger:hover { background: #F5B7B1; }
+
+/* ─── Flash messages ─── */
+.aw-flash {
+    display: flex; align-items: center; gap: 10px;
+    margin: 16px 32px 0; padding: 12px 16px;
+    border-radius: 10px; font-size: 13px; font-weight: 600;
+}
+.aw-flash-success { background: #EAFAF1; color: #1E8449; border:1px solid #A9DFBF; }
+.aw-flash-error   { background: #FDEDEC; color: #922B21; border:1px solid #F1948A; }
+
+/* ─── Stats ─── */
+.aw-stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px; padding: 24px 32px 0;
+}
+.aw-stat-card {
+    background: var(--aw-white); border-radius: 14px;
+    padding: 18px 20px; display: flex; align-items: center; gap: 14px;
+    box-shadow: var(--aw-shadow); border: 1px solid var(--aw-border);
+}
+.aw-stat-icon {
+    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+}
+.aw-stat-value { font-size: 20px; font-weight: 800; color: var(--aw-text); line-height:1.1; }
+.aw-stat-label { font-size: 11px; color: var(--aw-mid); font-weight: 600; margin-top:2px; }
+
+/* ─── Search ─── */
+.aw-search-wrap {
+    position: relative; margin: 20px 32px 0;
+}
+.aw-search-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    pointer-events: none;
+}
+.aw-search {
+    width: 100%; padding: 11px 16px 11px 40px;
+    border: 1px solid var(--aw-border); border-radius: 12px;
+    font-size: 13px; color: var(--aw-text); background: var(--aw-white);
+    box-shadow: var(--aw-shadow); outline: none; box-sizing: border-box;
+    transition: border-color .2s, box-shadow .2s;
+}
+.aw-search:focus { border-color: var(--aw-blue); box-shadow: 0 0 0 3px rgba(74,144,226,.15); }
+
+/* ─── Wallet cards ─── */
+#aw-list { padding: 20px 32px 32px; display:flex; flex-direction:column; gap:12px; }
+
+.aw-card {
+    background: var(--aw-white); border-radius: var(--aw-radius);
+    border: 1px solid var(--aw-border); box-shadow: var(--aw-shadow);
+    padding: 18px 22px; display: flex; align-items: center; gap: 18px;
+    flex-wrap: wrap; transition: box-shadow .25s ease, transform .25s cubic-bezier(.34,1.56,.64,1);
+}
+.aw-card:hover { box-shadow: 0 12px 40px rgba(0,0,0,.13); transform: translateY(-2px) scale(1.012); }
+
+.aw-avatar {
+    width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--aw-blue), var(--aw-blue2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; font-weight: 700; color: #fff; overflow: hidden;
+    border: 2px solid #E8F4FD;
+}
+.aw-avatar img { width:100%; height:100%; object-fit:cover; }
+
+.aw-user-info { min-width: 180px; flex:1; }
+.aw-user-name  { font-size:15px; font-weight:700; color:var(--aw-text); }
+.aw-user-email { font-size:12px; color:var(--aw-mid); margin-top:2px; }
+.aw-wallet-meta { display:flex; align-items:center; gap:8px; margin-top:5px; }
+.aw-wallet-id   { font-size:11px; color:#BDC3C7; font-weight:700; }
+.aw-status-badge {
+    font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px;
+}
+.aw-badge-active   { background:#EAFAF1; color:#1E8449; }
+.aw-badge-inactive { background:#FDEDEC; color:#922B21; }
+
+.aw-divider {
+    width: 1px; height: 44px; background: var(--aw-border);
+    flex-shrink: 0;
+}
+
+.aw-balance-section, .aw-recharge-section { min-width: 120px; }
+.aw-section-label { font-size:10px; font-weight:700; color:var(--aw-mid); letter-spacing:.5px; }
+.aw-balance-value {
+    font-size:20px; font-weight:800; color:#27AE60; margin-top:3px;
+}
+.aw-balance-value span { font-size:13px; }
+.aw-recharge-date { font-size:13px; font-weight:600; color:var(--aw-text); margin-top:3px; }
+
+.aw-actions {
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-left:auto;
+}
+
+.aw-empty {
+    text-align:center; padding:64px; color:var(--aw-mid);
+}
+.aw-empty p { font-size:14px; margin-top:12px; }
+
+/* ─── Modals ─── */
+.aw-modal-backdrop {
+    position:fixed; inset:0; background:rgba(30,30,40,.45);
+    backdrop-filter:blur(4px); z-index:1000;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+}
+.aw-modal {
+    background:var(--aw-white); border-radius:20px;
+    width:100%; max-width:540px; max-height:90vh; overflow-y:auto;
+    padding:32px; box-shadow:0 24px 64px rgba(0,0,0,.2);
+    position:relative; animation:aw-pop .22s cubic-bezier(.34,1.56,.64,1);
+}
+.aw-modal-wide { max-width:680px; }
+.aw-modal-sm   { max-width:420px; }
+.aw-modal-close {
+    position:absolute; top:16px; right:18px;
+    background:none; border:none; font-size:22px; color:var(--aw-mid);
+    cursor:pointer; line-height:1; padding:4px 8px; border-radius:8px;
+    transition:background .15s;
+}
+.aw-modal-close:hover { background:var(--aw-light); }
+
+@keyframes aw-pop {
+    from { opacity:0; transform:scale(.92) translateY(12px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+}
+
+/* ─── AI modal specific ─── */
+.aw-modal-ai-header {
+    display:flex; align-items:center; gap:16px; margin-bottom:24px;
+}
+.aw-modal-ai-icon {
+    width:48px; height:48px; border-radius:14px; flex-shrink:0;
+    background:linear-gradient(135deg,#8E44AD,#6C3483);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 14px rgba(142,68,173,.35);
+}
+.aw-modal-ai-title { font-size:18px; font-weight:800; color:var(--aw-text); }
+.aw-modal-ai-sub   { font-size:13px; color:var(--aw-mid); margin-top:2px; }
+
+.aw-spinner-wrap { text-align:center; padding:32px 0 16px; }
+.aw-spinner {
+    width:44px; height:44px; border:4px solid #F3E6FD;
+    border-top-color:#8E44AD; border-radius:50%;
+    animation:aw-spin 1s linear infinite; margin:0 auto;
+}
+.aw-spinner-text { font-size:13px; color:var(--aw-mid); margin-top:14px; }
+@keyframes aw-spin { to { transform:rotate(360deg); } }
+
+.aw-risk-row {
+    display:flex; align-items:center; gap:24px; margin-bottom:20px; flex-wrap:wrap;
+}
+.aw-risk-level {
+    font-size:16px; font-weight:800; padding:8px 20px;
+    border-radius:30px; display:inline-block;
+}
+.aw-risk-label { font-size:11px; color:var(--aw-mid); font-weight:600; margin-top:4px; }
+.aw-risk-score-wrap { flex:1; min-width:180px; }
+.aw-risk-score-track {
+    height:8px; background:#EEF2F7; border-radius:8px; overflow:hidden; margin-bottom:4px;
+}
+.aw-risk-score-fill {
+    height:100%; border-radius:8px;
+    transition:width .8s cubic-bezier(.34,1.56,.64,1);
+}
+.aw-risk-score-text { font-size:11px; color:var(--aw-mid); font-weight:600; }
+
+.aw-fraud-report {
+    background:linear-gradient(135deg,#FDF9FF,#F4ECF7);
+    border:1px solid #E8DAEF; border-radius:14px;
+    padding:20px 22px; font-size:14px; color:#34495E;
+    line-height:1.8; margin-bottom:8px;
+    box-shadow:0 2px 10px rgba(142,68,173,.08);
+}
+
+.aw-error-box {
+    display:flex; align-items:flex-start; gap:10px;
+    background:#FDEDEC; border:1px solid #F1948A; border-radius:10px;
+    padding:14px 16px; font-size:13px; color:#922B21;
+}
+
+/* ─── History modal ─── */
+.aw-modal-hist-header {
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:12px; margin-bottom:20px;
+}
+.aw-modal-hist-title { font-size:17px; font-weight:800; color:var(--aw-text); }
+.aw-modal-hist-sub   { font-size:12px; color:var(--aw-mid); margin-top:2px; }
+.aw-hist-balance-chip {
+    background:linear-gradient(135deg,#EAFAF1,#D5F5E3);
+    color:#1E8449; font-weight:800; font-size:15px;
+    padding:8px 16px; border-radius:30px; border:1px solid #A9DFBF;
+}
+
+.aw-hist-table { width:100%; border-collapse:collapse; }
+.aw-hist-table th {
+    background:#F8F9FA; padding:10px 14px; font-size:11px; font-weight:700;
+    color:var(--aw-mid); text-align:left; border-bottom:1px solid var(--aw-border);
+    letter-spacing:.4px;
+}
+.aw-hist-table td { padding:12px 14px; font-size:13px; border-bottom:1px solid var(--aw-border); vertical-align:middle; }
+.aw-hist-table tr:last-child td { border-bottom:none; }
+.aw-hist-table tr:hover td { background:#FAFBFC; }
+.aw-tx-type-chip {
+    font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px;
+}
+.aw-tx-recharge   { background:#EAFAF1; color:#1E8449; }
+.aw-tx-payment    { background:#EBF5FF; color:#1A5276; }
+.aw-tx-withdrawal { background:#FEF9E7; color:#7D6608; }
+.aw-hist-amount-plus  { color:#27AE60; font-weight:700; }
+.aw-hist-amount-minus { color:#E74C3C; font-weight:700; }
+
+.aw-no-tx { text-align:center; padding:40px; color:var(--aw-mid); font-size:14px; }
+
+/* ─── Recharge modal ─── */
+.aw-recharge-modal-header {
+    display:flex; align-items:center; gap:14px; margin-bottom:18px;
+}
+.aw-recharge-modal-icon {
+    width:44px; height:44px; border-radius:12px; flex-shrink:0;
+    background:linear-gradient(135deg,var(--aw-blue),var(--aw-blue2));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 12px rgba(74,144,226,.35);
+}
+.aw-recharge-balance-info {
+    background:#F8F9FA; border-radius:10px; padding:12px 16px;
+    font-size:13px; color:var(--aw-mid); margin-bottom:18px;
+    display:flex; align-items:center; justify-content:space-between;
+}
+.aw-recharge-balance-info strong { font-size:16px; color:#27AE60; }
+.aw-form-group { margin-bottom:14px; }
+.aw-form-label { font-size:12px; font-weight:700; color:var(--aw-mid); display:block; margin-bottom:6px; letter-spacing:.4px; }
+.aw-form-input {
+    width:100%; padding:11px 14px; border:1px solid var(--aw-border);
+    border-radius:10px; font-size:14px; color:var(--aw-text);
+    outline:none; box-sizing:border-box;
+    transition:border-color .2s, box-shadow .2s;
+}
+.aw-form-input:focus { border-color:var(--aw-blue); box-shadow:0 0 0 3px rgba(74,144,226,.15); }
+.aw-quick-amounts { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+.aw-quick-amounts button {
+    flex:1; min-width:60px; padding:8px 10px; border:1px solid var(--aw-border);
+    border-radius:8px; background:var(--aw-light); font-size:12px; font-weight:700;
+    color:var(--aw-blue); cursor:pointer; transition:background .15s;
+}
+.aw-quick-amounts button:hover { background:#EBF5FF; border-color:#AED6F1; }
+
+</style>
+
+{# ════════════════════════ SCRIPTS ════════════════════════ #}
+<script>
+/* ─── Search filter ─── */
+document.getElementById('aw-search').addEventListener('input', function() {
+    var q = this.value.toLowerCase();
+    document.querySelectorAll('.aw-card').forEach(function(card) {
+        card.style.display = card.dataset.search.includes(q) ? '' : 'none';
+    });
+});
+
+/* ─── Modal helpers ─── */
+function openModal(id) {
+    document.getElementById(id).style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+    document.body.style.overflow = '';
+}
+function openCreateModal() { openModal('modal-create'); }
+
+/* ─── AI Fraud Shield ─── */
+function runFraudAnalysis(walletId, userName) {
+    // Reset states
+    document.getElementById('fraud-loading').style.display = '';
+    document.getElementById('fraud-result').style.display  = 'none';
+    document.getElementById('fraud-error').style.display   = 'none';
+    document.getElementById('fraud-loading-name').textContent = 'Analyse pour ' + userName + '…';
+    openModal('modal-fraud');
+
+    fetch('/admin/wallets/' + walletId + '/ai-fraud', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        document.getElementById('fraud-loading').style.display = 'none';
+        if (!data.ok) {
+            document.getElementById('fraud-error-text').textContent = data.message || 'Erreur inconnue.';
+            document.getElementById('fraud-error').style.display = '';
+            return;
+        }
+        document.getElementById('fraud-result-name').textContent = data.user;
+        // Badge
+        var badge = document.getElementById('fraud-level-badge');
+        badge.textContent = data.level;
+        var colors = { 'Faible': { bg:'#EAFAF1', color:'#1E8449' }, 'Moyen': { bg:'#FEF9E7', color:'#7D6608' }, 'Élevé': { bg:'#FDEDEC', color:'#922B21' } };
+        var c = colors[data.level] || { bg:'#F0F3F4', color:'#566573' };
+        badge.style.background = c.bg;
+        badge.style.color = c.color;
+        badge.style.border = '1.5px solid ' + data.color;
+        // Score bar
+        document.getElementById('fraud-score-bar').style.width = data.score + '%';
+        document.getElementById('fraud-score-bar').style.background = data.color;
+        document.getElementById('fraud-score-text').textContent = 'Score de risque : ' + data.score + '/100';
+        // Report
+        document.getElementById('fraud-report-box').textContent = data.report;
+        document.getElementById('fraud-result').style.display = '';
+    })
+    .catch(function(e) {
+        document.getElementById('fraud-loading').style.display = 'none';
+        document.getElementById('fraud-error-text').textContent = 'Erreur réseau : ' + e.message;
+        document.getElementById('fraud-error').style.display = '';
+    });
+}
+
+/* ─── History ─── */
+function loadHistory(walletId, userName) {
+    document.getElementById('history-loading').style.display  = '';
+    document.getElementById('history-content').style.display  = 'none';
+    document.getElementById('history-error').style.display    = 'none';
+    openModal('modal-history');
+
+    fetch('/admin/wallets/' + walletId + '/history')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        document.getElementById('history-loading').style.display = 'none';
+        if (!data.ok) {
+            document.getElementById('history-error-text').textContent = data.message || 'Erreur.';
+            document.getElementById('history-error').style.display = '';
+            return;
+        }
+        document.getElementById('hist-user-name').textContent  = data.user;
+        document.getElementById('hist-user-email').textContent = data.email;
+        document.getElementById('hist-balance').textContent    = parseFloat(data.balance).toFixed(2) + ' DT';
+
+        var txs  = data.transactions;
+        var wrap = document.getElementById('hist-table-wrap');
+
+        if (!txs.length) {
+            wrap.innerHTML = '<div class="aw-no-tx">Aucune transaction enregistrée.</div>';
+        } else {
+            var rows = txs.map(function(t) {
+                var isRecharge = t.type === 'RECHARGE';
+                var typeClass  = isRecharge ? 'aw-tx-recharge' : (t.type === 'PAYMENT' ? 'aw-tx-payment' : 'aw-tx-withdrawal');
+                var amtClass   = isRecharge ? 'aw-hist-amount-plus' : 'aw-hist-amount-minus';
+                var amtPrefix  = isRecharge ? '+' : '-';
+                return '<tr>'
+                    + '<td style="color:#7F8C8D;font-size:12px;">' + (t.date || '—') + '</td>'
+                    + '<td><span class="aw-tx-type-chip ' + typeClass + '">' + t.type + '</span></td>'
+                    + '<td style="color:#34495E;">' + (t.description || '—') + '</td>'
+                    + '<td class="' + amtClass + '" style="text-align:right;">' + amtPrefix + parseFloat(t.amount).toFixed(2) + ' DT</td>'
+                    + '</tr>';
+            }).join('');
+            wrap.innerHTML = '<table class="aw-hist-table"><thead><tr><th>DATE</th><th>TYPE</th><th>DESCRIPTION</th><th style="text-align:right;">MONTANT</th></tr></thead><tbody>' + rows + '</tbody></table>';
+        }
+        document.getElementById('history-content').style.display = '';
+    })
+    .catch(function(e) {
+        document.getElementById('history-loading').style.display = 'none';
+        document.getElementById('history-error-text').textContent = 'Erreur réseau : ' + e.message;
+        document.getElementById('history-error').style.display = '';
+    });
+}
+
+/* ─── Recharge ─── */
+function openRecharge(walletId, userName, balance, csrf) {
+    document.getElementById('recharge-wallet-id').value      = walletId;
+    document.getElementById('recharge-csrf').value           = csrf;
+    document.getElementById('recharge-modal-name').textContent = userName;
+    document.getElementById('recharge-current-balance').textContent = parseFloat(balance).toFixed(2) + ' DT';
+    document.getElementById('recharge-amount').value         = '';
+    document.getElementById('recharge-result-msg').style.display = 'none';
+    openModal('modal-recharge');
+}
+
+function setRechargeAmount(v) {
+    document.getElementById('recharge-amount').value = v;
+}
+
+document.getElementById('recharge-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var walletId = document.getElementById('recharge-wallet-id').value;
+    var amount   = document.getElementById('recharge-amount').value;
+    var csrf     = document.getElementById('recharge-csrf').value;
+    var btn      = document.getElementById('recharge-submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Traitement…';
+
+    fetch('/admin/wallets/' + walletId + '/recharge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ amount: amount, _token: csrf }),
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Créditer le wallet';
+        var msgEl = document.getElementById('recharge-result-msg');
+        if (data.ok) {
+            msgEl.className = 'aw-flash aw-flash-success';
+            msgEl.textContent = data.message;
+            msgEl.style.display = 'flex';
+            document.getElementById('recharge-current-balance').textContent = parseFloat(data.newBalance).toFixed(2) + ' DT';
+            setTimeout(function() { closeModal('modal-recharge'); location.reload(); }, 1800);
+        } else {
+            msgEl.className = 'aw-flash aw-flash-error';
+            msgEl.textContent = data.message;
+            msgEl.style.display = 'flex';
+        }
+    })
+    .catch(function(e) {
+        btn.disabled = false;
+        btn.textContent = 'Créditer le wallet';
+        alert('Erreur réseau : ' + e.message);
+    });
+});
+
+/* ─── Stat counter animation ─── */
+function animateCounter(el) {
+    var target   = parseFloat(el.dataset.count) || 0;
+    var suffix   = el.dataset.suffix || '';
+    var decimals = parseInt(el.dataset.decimals || '0');
+    var duration = 1200;
+    var start    = null;
+    var ease     = function(t) { return 1 - Math.pow(1 - t, 3); }; // ease-out cubic
+
+    function step(ts) {
+        if (!start) start = ts;
+        var progress = Math.min((ts - start) / duration, 1);
+        var value    = target * ease(progress);
+        if (decimals > 0) {
+            el.textContent = value.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + suffix;
+        } else {
+            el.textContent = Math.round(value) + suffix;
+        }
+        if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.aw-stat-value[data-count]').forEach(function(el) {
+        animateCounter(el);
+    });
+});
+
+/* ─── Close on Escape ─── */
+document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Escape') return;
+    ['modal-fraud','modal-history','modal-recharge','modal-create'].forEach(function(id) {
+        if (document.getElementById(id).style.display !== 'none') closeModal(id);
+    });
+});
+</script>
 {% endblock %}

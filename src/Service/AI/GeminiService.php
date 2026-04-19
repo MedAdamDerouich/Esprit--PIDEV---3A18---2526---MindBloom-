@@ -16,7 +16,7 @@ class GeminiService
 
     public function __construct(
         private HttpClientInterface $http,
-        #[Autowire('%env(GEMINI_API_KEY)%')] private string $apiKey,
+        #[Autowire('%env(GEMINI_API_KEY_WALLET)%')] private string $apiKey,
     ) {}
 
     /**

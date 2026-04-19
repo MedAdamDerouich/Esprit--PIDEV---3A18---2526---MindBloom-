@@ -220,19 +220,30 @@ PROMPT;
     private function extractJson(string $text): ?array
     {
         $text = trim($text);
-        // Strip markdown code fences if present
-        if (str_starts_with($text, '```')) {
-            $text = preg_replace('/^```(?:json)?\s*/i', '', $text);
-            $text = preg_replace('/\s*```\s*$/', '', $text);
+        $text = preg_replace('/^```(?:json)?\s*/i', '', $text);
+        $text = preg_replace('/\s*```\s*$/i', '', trim($text));
+        $text = trim($text);
+
+        $data = json_decode($text, true);
+        if (is_array($data)) {
+            return $data;
         }
-        // Find the first { ... } block (greedy, balanced enough for flat JSON)
+
         $start = strpos($text, '{');
-        $end   = strrpos($text, '}');
-        if ($start === false || $end === false || $end < $start) {
-            return null;
+        if ($start === false) return null;
+
+        $depth = 0; $len = strlen($text); $inStr = false; $end = null;
+        for ($i = $start; $i < $len; $i++) {
+            $ch = $text[$i];
+            if ($ch === '\\' && $inStr) { $i++; continue; }
+            if ($ch === '"') { $inStr = !$inStr; continue; }
+            if ($inStr) continue;
+            if ($ch === '{') $depth++;
+            elseif ($ch === '}') { $depth--; if ($depth === 0) { $end = $i; break; } }
         }
-        $json = substr($text, $start, $end - $start + 1);
-        $data = json_decode($json, true);
+
+        if ($end === null) return null;
+        $data = json_decode(substr($text, $start, $end - $start + 1), true);
         return is_array($data) ? $data : null;
     }
 

@@ -257,23 +257,23 @@
         {# Numbers strip #}
         <div class="numbers-strip">
             <div class="num-block">
-                <div class="n">{{ stats.users }}</div>
+                <div class="n" data-count="{{ stats.users }}">0</div>
                 <div class="l">Utilisateurs au total</div>
             </div>
             <div class="num-block">
-                <div class="n green">{{ stats.active }}</div>
+                <div class="n green" data-count="{{ stats.active }}">0</div>
                 <div class="l">Comptes actifs</div>
             </div>
             <div class="num-block">
-                <div class="n blue">{{ stats.psychologues }}</div>
+                <div class="n blue" data-count="{{ stats.psychologues }}">0</div>
                 <div class="l">Psychologues</div>
             </div>
             <div class="num-block">
-                <div class="n teal">{{ stats.cabinets ?? 0 }}</div>
+                <div class="n teal" data-count="{{ stats.cabinets ?? 0 }}">0</div>
                 <div class="l">Cabinets</div>
             </div>
             <div class="num-block">
-                <div class="n orange">{{ stats.revenue }} DT</div>
+                <div class="n orange" data-count="{{ stats.revenue }}" data-suffix=" DT" data-decimals="2">0</div>
                 <div class="l">Total en wallets</div>
             </div>
         </div>
@@ -284,7 +284,7 @@
             <a href="{{ path('app_admin_produit_index') }}" class="mod-card">
                 <div class="mod-icon" style="background:#FFF3E0;"><i class="bi bi-bag"></i></div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#E67E22;">{{ stats.produits }}</div>
+                    <div class="mod-count" style="color:#E67E22;" data-count="{{ stats.produits }}">0</div>
                     <div class="mod-label">Produits</div>
                 </div>
             </a>
@@ -292,7 +292,7 @@
             <a href="#" class="mod-card">
                 <div class="mod-icon" style="background:#E8F5E9;"><i class="bi bi-calendar-event"></i></div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#27ae60;">{{ stats.evenements }}</div>
+                    <div class="mod-count" style="color:#27ae60;" data-count="{{ stats.evenements }}">0</div>
                     <div class="mod-label">Événements</div>
                 </div>
             </a>
@@ -300,7 +300,7 @@
             <a href="{{ path('app_admin_cabinets') }}" class="mod-card">
                 <div class="mod-icon" style="background:#E3F2FD;"><i class="bi bi-hospital"></i></div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#4A90E2;">{{ stats.cabinets }}</div>
+                    <div class="mod-count" style="color:#4A90E2;" data-count="{{ stats.cabinets }}">0</div>
                     <div class="mod-label">Cabinets</div>
                 </div>
             </a>
@@ -308,7 +308,7 @@
             <a href="{{ path('app_admin_order_index') }}" class="mod-card">
                 <div class="mod-icon" style="background:#F3E5F5;"><i class="bi bi-box-seam"></i></div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#8E44AD;">{{ stats.commandes }}</div>
+                    <div class="mod-count" style="color:#8E44AD;" data-count="{{ stats.commandes }}">0</div>
                     <div class="mod-label">Commandes</div>
                 </div>
             </a>
@@ -316,7 +316,7 @@
             <a href="#" class="mod-card">
                 <div class="mod-icon" style="background:#E0F7FA;"><i class="bi bi-clipboard-data"></i></div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#00ACC1;">{{ stats.tests }}</div>
+                    <div class="mod-count" style="color:#00ACC1;" data-count="{{ stats.tests }}">0</div>
                     <div class="mod-label">Tests</div>
                 </div>
             </a>
@@ -324,7 +324,7 @@
             <a href="{{ path('app_admin_wallets') }}" class="mod-card">
                 <div class="mod-icon" style="background:#E8F5E9;"><i class="bi bi-wallet2"></i></div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#5FBF9F;">{{ stats.revenue }}</div>
+                    <div class="mod-count" style="color:#5FBF9F;" data-count="{{ stats.revenue }}" data-suffix=" DT" data-decimals="2">0</div>
                     <div class="mod-label">DT en wallets</div>
                 </div>
             </a>
@@ -332,7 +332,7 @@
             <a href="{{ path('app_admin_cabinets') }}" class="mod-card">
                 <div class="mod-icon" style="background:#FFF8E1;"><i class="bi bi-calendar-check"></i></div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#F39C12;">{{ stats.reservations }}</div>
+                    <div class="mod-count" style="color:#F39C12;" data-count="{{ stats.reservations }}">0</div>
                     <div class="mod-label">Réservations</div>
                 </div>
             </a>
@@ -340,7 +340,7 @@
             <a href="{{ path('app_admin_users') }}" class="mod-card">
                 <div class="mod-icon" style="background:#FDECEA;"><i class="bi bi-people"></i></div>
                 <div class="mod-body">
-                    <div class="mod-count" style="color:#E74C3C;">{{ stats.suspended }}</div>
+                    <div class="mod-count" style="color:#E74C3C;" data-count="{{ stats.suspended }}">0</div>
                     <div class="mod-label">Comptes suspendus</div>
                 </div>
             </a>
@@ -468,4 +468,30 @@
 </div>
 {% endblock %}
 
-{% block javascripts %}{% endblock %}
+{% block javascripts %}
+<script>
+function animateCounter(el) {
+    var target   = parseFloat(el.dataset.count) || 0;
+    var suffix   = el.dataset.suffix || '';
+    var decimals = parseInt(el.dataset.decimals || '0');
+    var duration = 1200;
+    var start    = null;
+    var ease     = function(t) { return 1 - Math.pow(1 - t, 3); };
+    function step(ts) {
+        if (!start) start = ts;
+        var progress = Math.min((ts - start) / duration, 1);
+        var value    = target * ease(progress);
+        el.textContent = decimals > 0
+            ? value.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + suffix
+            : Math.round(value) + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+}
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-count]').forEach(function(el) {
+        animateCounter(el);
+    });
+});
+</script>
+{% endblock %}

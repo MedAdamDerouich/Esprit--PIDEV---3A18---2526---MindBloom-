@@ -10,7 +10,14 @@
             {{ form_row(form.quantite) }}
         </div>
         <div class="col-md-12">
-            {{ form_row(form.description) }}
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                {{ form_label(form.description) }}
+                <button type="button" id="btn-suggest-ai" class="btn btn-sm btn-outline-warning rounded-pill px-3 shadow-sm border-0 bg-warning bg-opacity-10 text-warning fw-bold">
+                    <i class="bi bi-stars me-1"></i> Générer par IA ✨
+                </button>
+            </div>
+            {{ form_widget(form.description) }}
+            {{ form_errors(form.description) }}
         </div>
         <div class="col-md-12">
             {{ form_row(form.imageFile) }}
@@ -22,3 +29,45 @@
         </div>
     </div>
 {{ form_end(form) }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnAi = document.getElementById('btn-suggest-ai');
+    const nomField = document.querySelector('input[id$="_nom"]');
+    const descField = document.querySelector('textarea[id$="_description"]');
+
+    if (btnAi && nomField && descField) {
+        btnAi.addEventListener('click', function() {
+            const productName = nomField.value.trim();
+            if (!productName) {
+                alert("Veuillez d'abord saisir le nom du produit.");
+                return;
+            }
+
+            btnAi.disabled = true;
+            btnAi.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Réflexion...';
+
+            fetch("{{ path('app_admin_produit_suggest_description') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: productName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.description) {
+                    descField.value = data.description;
+                } else if (data.error) {
+                    alert(data.error);
+                }
+            })
+            .catch(err => alert("Erreur lors de la génération : " + err))
+            .finally(() => {
+                btnAi.disabled = false;
+                btnAi.innerHTML = '<i class="bi bi-stars me-1"></i> Générer par IA ✨';
+            });
+        });
+    }
+});
+</script>

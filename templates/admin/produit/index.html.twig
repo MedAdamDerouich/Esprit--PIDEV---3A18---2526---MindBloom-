@@ -127,7 +127,7 @@
                         </tr>
                     </thead>
                     <tbody id="adminProductTableBody">
-                    {% for produit in produits %}
+                    {% for produit in pagination %}
                         <tr class="admin-product-row">
                             <td class="ps-4 py-4 border-0">
                                 <div class="d-flex align-items-center">
@@ -178,6 +178,10 @@
                 </table>
             </div>
         </div>
+    </div>
+
+    <div class="d-flex justify-content-center mt-4">
+        {{ knp_pagination_render(pagination) }}
     </div>
 
     <!-- Stock Alert Modal -->

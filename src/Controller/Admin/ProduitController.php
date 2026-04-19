@@ -20,7 +20,11 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 class ProduitController extends AbstractController
 {
     #[Route('', name: 'app_admin_produit_index', methods: ['GET'])]
-    public function index(ProduitRepository $produitRepository, Request $request): Response
+    public function index(
+        ProduitRepository $produitRepository, 
+        Request $request, 
+        \Knp\Component\Pager\PaginatorInterface $paginator
+    ): Response
     {
         $q = $request->query->get('q');
         $tri = $request->query->get('tri', 'default');
@@ -40,19 +44,26 @@ class ProduitController extends AbstractController
             $qb->orderBy('p.id', 'DESC');
         }
 
-        $produits = $qb->getQuery()->getResult();
+        // Pagination
+        $pagination = $paginator->paginate(
+            $qb, // Query builder
+            $request->query->getInt('page', 1), // Numéro de page
+            8 // Produits par page
+        );
 
-        $lowStockProducts = array_filter($produits, fn($p) => $p->getQuantite() <= $p->getStockSeuil());
+        // On a besoin de tous pour les stats, mais la pagination pour l'affichage
+        $allProducts = $qb->getQuery()->getResult();
+        $lowStockProducts = array_filter($allProducts, fn($p) => $p->getQuantite() <= $p->getStockSeuil());
 
         // Calculate Stats
         $stats = [
-            'total' => count($produits),
+            'total' => count($allProducts),
             'outOfStock' => 0,
             'lowStock' => count($lowStockProducts),
             'totalValue' => 0
         ];
 
-        foreach ($produits as $p) {
+        foreach ($allProducts as $p) {
             $stats['totalValue'] += ($p->getQuantite() * $p->getPrix());
             if ($p->getQuantite() == 0) {
                 $stats['outOfStock']++;
@@ -60,7 +71,7 @@ class ProduitController extends AbstractController
         }
 
         return $this->render('admin/produit/index.html.twig', [
-            'produits' => $produits,
+            'pagination' => $pagination,
             'q' => $q,
             'tri' => $tri,
             'stats' => $stats,
@@ -145,7 +156,26 @@ class ProduitController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_admin_produit_delete', methods: ['POST'])]
+    #[Route('/suggest-description', name: 'app_admin_produit_suggest_description', methods: ['POST'])]
+    public function suggestDescription(Request $request, \App\Service\GroqService $groq): Response
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+            $name = $data['name'] ?? '';
+
+            if (empty($name)) {
+                return $this->json(['error' => 'Le nom du produit est requis.'], 400);
+            }
+
+            $description = $groq->generateDescription($name);
+
+            return $this->json(['description' => $description]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Erreur technique : ' . $e->getMessage()], 500);
+        }
+    }
+
+    #[Route('/{id}', name: 'app_admin_produit_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(Request $request, Produit $produit, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$produit->getId(), $request->request->get('_token'))) {
@@ -156,7 +186,7 @@ class ProduitController extends AbstractController
         return $this->redirectToRoute('app_admin_produit_index', [], Response::HTTP_SEE_OTHER);
     }
 
-    #[Route('/{id}/feedbacks', name: 'app_admin_produit_feedbacks', methods: ['GET'])]
+    #[Route('/{id}/feedbacks', name: 'app_admin_produit_feedbacks', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function feedbacks(Produit $produit, \App\Service\SentimentService $sentimentService): Response
     {
         $feedbacks = $produit->getFeedbacks();

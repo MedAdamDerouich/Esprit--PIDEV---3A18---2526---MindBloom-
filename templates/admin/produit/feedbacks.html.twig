@@ -59,17 +59,54 @@
                                 {{ feedback.dateFeedback|date('d/m/Y H:i') }}
                             </td>
                             <td class="pe-4 py-4 border-0 text-end">
-                                <form action="{{ path('app_admin_feedback_delete', {'id': feedback.id}) }}" method="post" onsubmit="return confirm('Supprimer ce feedback ?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_feedback' ~ feedback.id) }}">
-                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3">
-                                        <i class="bi bi-trash me-1"></i> Supprimer
+                                <div class="d-flex justify-content-end gap-2">
+                                    {# Bouton Voir #}
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#viewComment{{ feedback.id }}">
+                                        <i class="bi bi-eye me-1"></i> Voir
                                     </button>
-                                </form>
+
+                                    {# Formulaire Supprimer #}
+                                    <form action="{{ path('app_admin_feedback_delete', {'id': feedback.id}) }}" method="post" onsubmit="return confirm('Supprimer ce feedback ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_feedback' ~ feedback.id) }}">
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                            <i class="bi bi-trash me-1"></i> Supprimer
+                                        </button>
+                                    </form>
+                                </div>
+
+                                {# Modal pour voir le commentaire #}
+                                <div class="modal fade" id="viewComment{{ feedback.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content border-0 shadow rounded-4">
+                                            <div class="modal-header border-0 pb-0">
+                                                <h5 class="modal-title fw-bold">Avis de {{ feedback.user ? feedback.user.fullName : 'Utilisateur' }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body text-start p-4">
+                                                <div class="mb-3 text-warning">
+                                                    {% for i in 1..5 %}
+                                                        <i class="bi bi-star{{ i <= feedback.note ? '-fill' : '' }}"></i>
+                                                    {% endfor %}
+                                                    <span class="ms-2 text-muted small">({{ feedback.note }}/5)</span>
+                                                </div>
+                                                <div class="p-3 bg-light rounded-4 text-dark shadow-sm">
+                                                    {{ feedback.commentaire|nl2br }}
+                                                </div>
+                                                <div class="mt-3 small text-muted">
+                                                    <i class="bi bi-calendar3 me-1"></i> Déposé le {{ feedback.dateFeedback|date('d/m/Y à H:i') }}
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer border-0 pt-0">
+                                                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Fermer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="5" class="text-center py-5 text-muted">
+                            <td colspan="6" class="text-center py-5 text-muted">
                                 Aucun avis déposé pour ce produit.
                             </td>
                         </tr>

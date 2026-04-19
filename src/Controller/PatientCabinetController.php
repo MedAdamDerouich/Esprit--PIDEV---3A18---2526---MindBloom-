@@ -45,6 +45,7 @@ class PatientCabinetController extends AbstractController
             'cabinets' => $pagination,
             'availableDates' => $availableDates,
             'search' => $search,
+            'googleMapsApiKey' => $_ENV['GOOGLE_MAPS_API_KEY'] ?? getenv('GOOGLE_MAPS_API_KEY'),
         ]);
     }
 

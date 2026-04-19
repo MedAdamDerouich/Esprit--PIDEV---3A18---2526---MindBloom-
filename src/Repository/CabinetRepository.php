@@ -37,7 +37,7 @@ class CabinetRepository extends ServiceEntityRepository
             ->addSelect('p');
 
         if ($search) {
-            $qb->andWhere('p.fullName LIKE :search OR c.specialite LIKE :search')
+            $qb->andWhere('p.fullName LIKE :search OR c.specialite LIKE :search OR c.nomCabinet LIKE :search')
                ->setParameter('search', '%' . $search . '%');
         }
 

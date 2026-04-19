@@ -41,10 +41,11 @@ class ProduitController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_produit_show', methods: ['GET'])]
-    public function show(Produit $produit): Response
+    public function show(Produit $produit, \App\Service\ReviewSummaryService $summaryService): Response
     {
         return $this->render('produit/show.html.twig', [
             'produit' => $produit,
+            'summary' => $summaryService->summarize($produit),
         ]);
     }
 
@@ -55,7 +56,8 @@ class ProduitController extends AbstractController
         Request $request, 
         EntityManagerInterface $entityManager,
         \App\Service\ModerationService $moderation,
-        \App\Service\SentimentService $sentiment
+        \App\Service\SentimentService $sentiment,
+        \App\Service\ReviewSummaryService $summaryService
     ): Response
     {
         $feedback = new Feedback();
@@ -90,6 +92,9 @@ class ProduitController extends AbstractController
 
             $entityManager->persist($feedback);
             $entityManager->flush();
+
+            // Invalider le résumé IA car un nouvel avis est arrivé
+            $summaryService->invalidateCache($produit);
 
             $this->addFlash('success', 'Votre avis a été ajouté ! — ' . $sentimentMsg);
 

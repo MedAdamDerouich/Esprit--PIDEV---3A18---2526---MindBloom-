@@ -233,4 +233,32 @@ class ProduitController extends AbstractController
 
         return $this->redirectToRoute('app_produit_show', ['id' => $produitId]);
     }
+
+    #[Route('/bulk-delete', name: 'app_admin_produit_bulk_delete', methods: ['POST'])]
+    public function bulkDelete(Request $request, EntityManagerInterface $entityManager, ProduitRepository $produitRepository): Response
+    {
+        $idsString = $request->request->get('ids');
+        $token = $request->request->get('_token');
+
+        if (!$this->isCsrfTokenValid('bulk_delete', $token)) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_admin_produit_index');
+        }
+
+        if ($idsString) {
+            $ids = explode(',', $idsString);
+            $count = 0;
+            foreach ($ids as $id) {
+                $produit = $produitRepository->find($id);
+                if ($produit) {
+                    $entityManager->remove($produit);
+                    $count++;
+                }
+            }
+            $entityManager->flush();
+            $this->addFlash('success', "$count produits ont été supprimés avec succès.");
+        }
+
+        return $this->redirectToRoute('app_admin_produit_index');
+    }
 }

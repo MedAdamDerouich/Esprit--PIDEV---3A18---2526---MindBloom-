@@ -123,4 +123,3 @@ class PatientCabinetController extends AbstractController
         ]);
     }
 }
-

@@ -76,18 +76,20 @@
 
                         <span style="font-size:12px; color:#A0AEC0;">⌂ {{ cabinet.adresse }}</span>
 
-                        {# Bouton Maps #}
-                        <button onclick="openMapsModal('{{ cabinet.adresse|e('js') }}', '{{ cabinet.nomCabinet|e('js') }}')"
-                            style="display:inline-flex; align-items:center; gap:6px; align-self:flex-start; background:rgba(74,144,226,0.2); color:#4A90E2; border:none; border-radius:15px; font-weight:bold; padding:6px 15px; font-size:12px; cursor:pointer; transition:background 0.2s;"
-                            onmouseover="this.style.background='rgba(74,144,226,0.4)'"
-                            onmouseout="this.style.background='rgba(74,144,226,0.2)'">
-                            📍 Maps
-                        </button>
-                        
                         <div style="flex:1;"></div>
 
-                        {# Bouton Réserver #}
-                        <a href="{{ path('app_patient_cabinet_reserver', {id: cabinet.idCabinet}) }}" class="open-modal-creneau" style="display:block; text-align:center; background:#5FBF9F; color:white; font-size:15px; font-weight:bold; padding:12px 0; border-radius:15px; text-decoration:none; width:100%; transition: background 0.2s;" onmouseover="this.style.background='#4DAE8E'" onmouseout="this.style.background='#5FBF9F'">Prenez un Rendez-Vous</a>
+                        <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
+                            {# Bouton Maps #}
+                            <button onclick="openMapsModal('{{ cabinet.adresse|e('js') }}', '{{ cabinet.nomCabinet|e('js') }}')"
+                                style="display:inline-flex; align-items:center; gap:5px; align-self:flex-start; background:rgba(74,144,226,0.2); color:#4A90E2; border:none; border-radius:12px; font-weight:bold; padding:5px 12px; font-size:11px; cursor:pointer; transition:background 0.2s;"
+                                onmouseover="this.style.background='rgba(74,144,226,0.4)'"
+                                onmouseout="this.style.background='rgba(74,144,226,0.2)'">
+                                📍 Maps
+                            </button>
+                            
+                            {# Bouton Réserver #}
+                            <a href="{{ path('app_patient_cabinet_reserver', {id: cabinet.idCabinet}) }}" class="open-modal-creneau" style="display:block; text-align:center; background:#5FBF9F; color:white; font-size:15px; font-weight:bold; padding:12px 0; border-radius:15px; text-decoration:none; width:100%; transition: background 0.2s;" onmouseover="this.style.background='#4DAE8E'" onmouseout="this.style.background='#5FBF9F'">Prenez un Rendez-Vous</a>
+                        </div>
 
                     </div>
                 </div>

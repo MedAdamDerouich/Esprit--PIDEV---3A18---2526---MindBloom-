@@ -14,7 +14,7 @@
         "knplabs/knp-paginator-bundle": "^6.10",
         "knpuniversity/oauth2-client-bundle": "^2.20",
         "league/oauth2-google": "^5.0",
-        "nucleos/dompdf-bundle": "^4.3",
+        "nucleos/dompdf-bundle": "*",
         "phpmailer/phpmailer": "^7.0",
         "stripe/stripe-php": "^20.0",
         "symfony/asset": "6.4.*",

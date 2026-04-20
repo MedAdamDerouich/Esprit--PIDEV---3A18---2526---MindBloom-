@@ -45,7 +45,18 @@
                         <div class="col-sm-6">
                             <div class="bg-light p-4 rounded-4 h-100 position-relative">
                                 <h6 class="fw-bold mb-3 small text-uppercase" style="color: #adb5bd; letter-spacing: 1px;">Informations de Facturation</h6>
-                                <p class="mb-2"><strong>Statut:</strong> <span class="text-success">{{ facture.statutLivraison|default('En attente') }}</span></p>
+                                <p class="mb-2">
+                                    <strong>Statut:</strong> 
+                                    <span class="badge 
+                                        {% if facture.statutLivraison == 'ENVOYE' %}bg-success
+                                        {% elseif facture.statutLivraison == 'ANNULE' or facture.statutLivraison is empty %}bg-danger
+                                        {% else %}bg-warning text-dark{% endif %} 
+                                        rounded-pill px-3 py-1 text-uppercase small" style="font-size: 11px;">
+                                        {% if facture.statutLivraison == 'ENVOYE' %}EXPÉDIÉE
+                                        {% elseif facture.statutLivraison == 'ANNULE' or facture.statutLivraison is empty %}ANNULÉE
+                                        {% else %}EN PRÉPARATION{% endif %}
+                                    </span>
+                                </p>
                                 <p class="mb-3"><strong>Paiement:</strong> {{ facture.typePaiement|default('') }}</p>
                                 <p class="text-muted small mb-0 lh-lg">
                                     <strong>MindBloom Boutique</strong><br>

@@ -12,6 +12,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'facture')]
 class Facture
 {
+    public const STATUS_PENDING = 'NON_ENVOYE';
+    public const STATUS_SHIPPED = 'ENVOYE';
+    public const STATUS_CANCELLED = 'ANNULE';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_facture')]
@@ -30,7 +34,7 @@ class Facture
     private ?string $typePaiement = null;
 
     #[ORM\Column(name: 'statut_livraison', length: 50)]
-    private ?string $statutLivraison = 'NON_ENVOYE';
+    private ?string $statutLivraison = self::STATUS_PENDING;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'id', nullable: true)]

@@ -38,8 +38,21 @@ class OrderController extends AbstractController
         }
 
         $totalValue = 0;
+        $countPending = 0;
+        $countShipped = 0;
+        $countCancelled = 0;
+
         foreach ($factures as $facture) {
-            $totalValue += $facture->getMontantTotal();
+            $status = $facture->getStatutLivraison();
+            if ($status === Facture::STATUS_PENDING) $countPending++;
+            elseif ($status === Facture::STATUS_SHIPPED) $countShipped++;
+            elseif ($status === Facture::STATUS_CANCELLED || empty($status)) $countCancelled++;
+
+            // Only count non-cancelled and non-empty orders in total revenue
+            if ($status !== Facture::STATUS_CANCELLED && !empty($status)) {
+                $totalValue += $facture->getMontantTotal();
+            }
+
             foreach ($facture->getCommandes() as $commande) {
                 try {
                     if ($commande->getProduit() && $commande->getProduit()->getNom()) {
@@ -57,7 +70,14 @@ class OrderController extends AbstractController
             'totalValue' => $totalValue,
             'q' => $q,
             'lowStockCount' => count($lowStockProducts),
-            'lowStockItems' => $lowStockProducts
+            'lowStockItems' => $lowStockProducts,
+            'STATUS_PENDING' => Facture::STATUS_PENDING,
+            'STATUS_SHIPPED' => Facture::STATUS_SHIPPED,
+            'STATUS_CANCELLED' => Facture::STATUS_CANCELLED,
+            'countPending' => $countPending,
+            'countShipped' => $countShipped,
+            'countCancelled' => $countCancelled,
+            'countAll' => count($factures),
         ]);
     }
 
@@ -88,7 +108,10 @@ class OrderController extends AbstractController
             $userOrders = $factureRepository->findBy(['user' => $user]);
             if (count($userOrders) === 0 && !$q) continue; // Skip users with no orders unless searching
 
-            $totalSpent = array_reduce($userOrders, fn($carry, $f) => $carry + $f->getMontantTotal(), 0);
+            // Only sum orders that are NOT cancelled
+            $totalSpent = array_reduce($userOrders, function($carry, $f) {
+                return $f->getStatutLivraison() !== Facture::STATUS_CANCELLED ? $carry + $f->getMontantTotal() : $carry;
+            }, 0);
             
             // Search filter
             if ($q && !str_contains(strtolower($user->getFullName() ?? ''), strtolower($q)) && !str_contains(strtolower($user->getEmail() ?? ''), strtolower($q))) {
@@ -120,7 +143,7 @@ class OrderController extends AbstractController
     #[Route('/expedier/{id}', name: 'app_admin_order_ship', methods: ['POST'])]
     public function ship(Facture $facture, EntityManagerInterface $entityManager, MailerInterface $mailer, \App\Service\PdfService $pdfService): Response
     {
-        $facture->setStatutLivraison('ENVOYE');
+        $facture->setStatutLivraison(Facture::STATUS_SHIPPED);
         $entityManager->flush();
 
         if ($facture->getUser() && $facture->getUser()->getEmail()) {
@@ -133,7 +156,7 @@ class OrderController extends AbstractController
 
             $context = [
                 'facture' => $facture,
-                'status' => 'ENVOYE',
+                'status' => Facture::STATUS_SHIPPED,
                 'user_image_exists' => false,
                 'product_images' => []
             ];
@@ -180,7 +203,7 @@ class OrderController extends AbstractController
     #[Route('/annuler/{id}', name: 'app_admin_order_cancel', methods: ['POST'])]
     public function cancel(Facture $facture, EntityManagerInterface $entityManager, MailerInterface $mailer, \App\Service\PdfService $pdfService): Response
     {
-        $facture->setStatutLivraison('ANNULE');
+        $facture->setStatutLivraison(Facture::STATUS_CANCELLED);
         
         foreach ($facture->getCommandes() as $commande) {
             $produit = $commande->getProduit();
@@ -205,7 +228,7 @@ class OrderController extends AbstractController
 
             $context = [
                 'facture' => $facture,
-                'status' => 'ANNULE',
+                'status' => Facture::STATUS_CANCELLED,
                 'user_image_exists' => false,
                 'product_images' => []
             ];

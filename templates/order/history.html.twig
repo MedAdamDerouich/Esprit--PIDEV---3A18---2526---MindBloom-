@@ -26,9 +26,9 @@
                 <div class="col-md-3">
                     <select name="statut" class="form-select rounded-pill border-0 bg-light px-3" style="height: 48px;" onchange="this.form.submit()">
                         <option value="">Tous les statuts</option>
-                        <option value="NON_ENVOYE" {% if statut == 'NON_ENVOYE' %}selected{% endif %}>En préparation</option>
-                        <option value="ENVOYE" {% if statut == 'ENVOYE' %}selected{% endif %}>Expédiée</option>
-                        <option value="ANNULE" {% if statut == 'ANNULE' %}selected{% endif %}>Annulée</option>
+                        <option value="{{ STATUS_PENDING }}" {% if statut == STATUS_PENDING %}selected{% endif %}>En préparation</option>
+                        <option value="{{ STATUS_SHIPPED }}" {% if statut == STATUS_SHIPPED %}selected{% endif %}>Expédiée</option>
+                        <option value="{{ STATUS_CANCELLED }}" {% if statut == STATUS_CANCELLED %}selected{% endif %}>Annulée</option>
                     </select>
                 </div>
 
@@ -52,8 +52,14 @@
             <div class="col-md-6 col-lg-4">
                 <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden order-card transition-hover">
                     <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
-                        <span class="badge {{ facture.statutLivraison == 'ENVOYE' ? 'bg-success-subtle text-success' : (facture.statutLivraison == 'ANNULE' ? 'bg-danger-subtle text-danger' : 'bg-warning-subtle text-warning') }} rounded-pill px-3 py-2 fw-bold" style="font-size: 11px;">
-                            {{ facture.statutLivraison == 'ENVOYE' ? 'EXPÉDIÉE' : (facture.statutLivraison == 'ANNULE' ? 'ANNULÉE' : 'EN PRÉPARATION') }}
+                        <span class="badge 
+                            {% if facture.statutLivraison == STATUS_SHIPPED %}bg-success-subtle text-success
+                            {% elseif facture.statutLivraison == STATUS_CANCELLED or facture.statutLivraison is empty %}bg-danger-subtle text-danger
+                            {% else %}bg-warning-subtle text-warning{% endif %} 
+                            rounded-pill px-3 py-2 fw-bold" style="font-size: 11px;">
+                            {% if facture.statutLivraison == STATUS_SHIPPED %}EXPÉDIÉE
+                            {% elseif facture.statutLivraison == STATUS_CANCELLED or facture.statutLivraison is empty %}ANNULÉE
+                            {% else %}EN PRÉPARATION{% endif %}
                         </span>
                         <span class="small text-muted fw-bold">#{{ facture.id }}</span>
                     </div>
@@ -78,9 +84,18 @@
                             {% endif %}
                         </div>
 
-                        <a href="{{ path('app_order_show', {id: facture.id}) }}" class="btn btn-outline-primary w-100 rounded-pill py-2 fw-bold small">
-                            <i class="bi bi-file-earmark-text me-1"></i> Détails & Facture
-                        </a>
+                        <div class="d-flex gap-2">
+                            <a href="{{ path('app_order_show', {id: facture.id}) }}" class="btn btn-outline-primary flex-grow-1 rounded-pill py-2 fw-bold small">
+                                <i class="bi bi-file-earmark-text me-1"></i> Détails
+                            </a>
+                            {% if facture.statutLivraison == STATUS_PENDING %}
+                                <form action="{{ path('app_order_cancel', {id: facture.id}) }}" method="POST" class="flex-grow-1" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette commande ?')">
+                                    <button type="submit" class="btn btn-outline-danger w-100 rounded-pill py-2 fw-bold small">
+                                        <i class="bi bi-x-circle me-1"></i> Annuler
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>

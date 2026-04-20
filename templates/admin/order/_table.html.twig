@@ -45,8 +45,14 @@
                                 {{ facture.montantTotal|number_format(2, ',', ' ') }} DT
                             </td>
                             <td class="py-4 border-0">
-                                <span class="badge {{ facture.statutLivraison == 'ENVOYE' ? 'bg-success' : (facture.statutLivraison == 'ANNULE' ? 'bg-danger' : 'bg-warning') }} rounded-pill px-3 py-1 text-uppercase small text-white" style="font-size: 10px;">
-                                    {{ facture.statutLivraison == 'ENVOYE' ? 'Expédiée' : (facture.statutLivraison == 'ANNULE' ? 'Annulée' : 'En attente') }}
+                                <span class="badge 
+                                    {% if facture.statutLivraison == STATUS_SHIPPED %}bg-success
+                                    {% elseif facture.statutLivraison == STATUS_CANCELLED or facture.statutLivraison is empty %}bg-danger
+                                    {% else %}bg-warning{% endif %} 
+                                    rounded-pill px-3 py-1 text-uppercase small text-white" style="font-size: 10px;">
+                                    {% if facture.statutLivraison == STATUS_SHIPPED %}Expédiée
+                                    {% elseif facture.statutLivraison == STATUS_CANCELLED or facture.statutLivraison is empty %}Annulée
+                                    {% else %}En attente{% endif %}
                                 </span>
                             </td>
                             <td class="pe-4 py-4 border-0 text-end">
@@ -54,7 +60,7 @@
                                     <a href="{{ path('app_order_show', {id: facture.id}) }}" class="btn btn-sm btn-white border-0 py-2 px-3 bg-white" title="Voir">
                                         <i class="bi bi-eye text-primary"></i>
                                     </a>
-                                    {% if facture.statutLivraison == 'NON_ENVOYE' %}
+                                    {% if facture.statutLivraison == STATUS_PENDING %}
                                         <form action="{{ path('app_admin_order_ship', {id: facture.id}) }}" method="POST" class="d-inline">
                                             <button type="submit" class="btn btn-sm btn-white border-0 py-2 px-3 bg-white border-start" title="Expédier" onclick="return confirm('Expédier cette commande ?')">
                                                 <i class="bi bi-truck text-success"></i>

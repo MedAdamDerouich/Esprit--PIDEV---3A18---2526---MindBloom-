@@ -7,9 +7,11 @@ use App\Repository\CommandeRepository;
 use App\Repository\FactureRepository;
 use App\Service\WalletService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -96,8 +98,13 @@ class OrderController extends AbstractController
 
         // --- Filtrage par statut ---
         if ($statut) {
-            $qb->andWhere('f.statutLivraison = :statut')
-               ->setParameter('statut', $statut);
+            if ($statut === Facture::STATUS_CANCELLED) {
+                $qb->andWhere('f.statutLivraison = :statut OR f.statutLivraison IS NULL OR f.statutLivraison = \'\'')
+                   ->setParameter('statut', $statut);
+            } else {
+                $qb->andWhere('f.statutLivraison = :statut')
+                   ->setParameter('statut', $statut);
+            }
         }
 
         // --- Recherche par mot-clé (ID ou Adresse) ---
@@ -140,6 +147,9 @@ class OrderController extends AbstractController
             'tri'      => $tri,
             'statut'   => $statut,
             'search'   => $search,
+            'STATUS_PENDING' => Facture::STATUS_PENDING,
+            'STATUS_SHIPPED' => Facture::STATUS_SHIPPED,
+            'STATUS_CANCELLED' => Facture::STATUS_CANCELLED,
         ]);
     }
 
@@ -197,5 +207,73 @@ class OrderController extends AbstractController
                 'Content-Disposition' => sprintf('attachment; filename="facture-%s.pdf"', $facture->getId())
             ]
         );
+    }
+
+    #[Route('/annuler/{id}', name: 'app_order_cancel', methods: ['POST'])]
+    public function patientCancel(Facture $facture, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+    {
+        if ($facture->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if ($facture->getStatutLivraison() !== Facture::STATUS_PENDING) {
+            $this->addFlash('error', 'Vous ne pouvez plus annuler cette commande.');
+            return $this->redirectToRoute('app_order_history');
+        }
+
+        $facture->setStatutLivraison(Facture::STATUS_CANCELLED);
+
+        // Restore stock
+        foreach ($facture->getCommandes() as $commande) {
+            $produit = $commande->getProduit();
+            if ($produit) {
+                try {
+                    $produit->setQuantite($produit->getQuantite() + $commande->getQuantite());
+                } catch (\Doctrine\ORM\EntityNotFoundException $e) {
+                    // ignore
+                }
+            }
+        }
+
+        $entityManager->flush();
+
+        // Send confirmation email
+        if ($facture->getUser() && $facture->getUser()->getEmail()) {
+            $user = $facture->getUser();
+            $email = (new TemplatedEmail())
+                ->from('mindbloom.platform@gmail.com')
+                ->to($user->getEmail())
+                ->subject('Confirmation d\'annulation de votre commande MindBloom ❌')
+                ->htmlTemplate('email/order_status.html.twig');
+
+            $context = [
+                'facture' => $facture,
+                'status' => Facture::STATUS_CANCELLED,
+                'user_image_exists' => false,
+                'product_images' => []
+            ];
+
+            // Embed Profile Image
+            $publicDir = $this->getParameter('kernel.project_dir') . '/public';
+            if ($user->getProfileImage()) {
+                $profilePath = $publicDir . '/uploads/profiles/' . $user->getProfileImage();
+                if (file_exists($profilePath)) {
+                    $email->embedFromPath($profilePath, 'user_profile');
+                    $context['user_image_exists'] = true;
+                }
+            }
+
+            $email->context($context);
+
+            try {
+                $mailer->send($email);
+            } catch (\Exception $e) {
+                // Silently fail if mailer not configured
+            }
+        }
+
+        $this->addFlash('success', 'Votre commande a été annulée avec succès.');
+
+        return $this->redirectToRoute('app_order_history');
     }
 }

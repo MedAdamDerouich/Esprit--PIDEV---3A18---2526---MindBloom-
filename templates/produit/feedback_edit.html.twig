@@ -2,8 +2,44 @@
 
 {% block title %}Modifier mon avis - {{ produit.nom }}{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+body.dark-mode .produit-feedback-page {
+    color: #D8DCE8;
+}
+body.dark-mode .produit-feedback-page .card,
+body.dark-mode .produit-feedback-page .card-body,
+body.dark-mode .produit-feedback-page .bg-primary {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode .produit-feedback-page .text-muted,
+body.dark-mode .produit-feedback-page p {
+    color: #7A8299 !important;
+}
+body.dark-mode .produit-feedback-page h3,
+body.dark-mode .produit-feedback-page .form-label,
+body.dark-mode .produit-feedback-page .text-white {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .produit-feedback-page .form-control,
+body.dark-mode .produit-feedback-page .form-select,
+body.dark-mode .produit-feedback-page textarea,
+body.dark-mode .produit-feedback-page select,
+body.dark-mode .produit-feedback-page .bg-light {
+    background: #1A1F2E !important;
+    color: #E8EAF0 !important;
+    border-color: #2A3147 !important;
+}
+body.dark-mode .produit-feedback-page .btn-link {
+    color: #AEB5C8 !important;
+}
+</style>
+{% endblock %}
+
 {% block body %}
-<div class="container py-5">
+<div class="container py-5 produit-feedback-page">
     <div class="row justify-content-center">
         <div class="col-lg-6">
             <div class="mb-4">

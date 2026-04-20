@@ -2,8 +2,80 @@
 
 {% block title %}{{ produit.nom }} - MindBloom{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+body.dark-mode .produit-page {
+    background: #0F1117 !important;
+    color: #D8DCE8;
+}
+body.dark-mode .produit-page [style*="background:#F5F3EF"] {
+    background: #0F1117 !important;
+}
+body.dark-mode .produit-page .glass-card,
+body.dark-mode .produit-page .card,
+body.dark-mode .produit-page .modal-content,
+body.dark-mode .produit-page .purchase-card,
+body.dark-mode .produit-page .feedback-content,
+body.dark-mode .produit-page .trust-icons,
+body.dark-mode .produit-page .bg-white,
+body.dark-mode .produit-page .bg-light {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode .produit-page .text-dark,
+body.dark-mode .produit-page .h1,
+body.dark-mode .produit-page .h2,
+body.dark-mode .produit-page .h3,
+body.dark-mode .produit-page .h4,
+body.dark-mode .produit-page .h5,
+body.dark-mode .produit-page .h6,
+body.dark-mode .produit-page .display-5,
+body.dark-mode .produit-page .fw-bold,
+body.dark-mode .produit-page .fw-extra-bold {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .produit-page .text-muted,
+body.dark-mode .produit-page small,
+body.dark-mode .produit-page p {
+    color: #7A8299 !important;
+}
+body.dark-mode .produit-page .breadcrumb-item a,
+body.dark-mode .produit-page .breadcrumb-item.active {
+    color: #AEB5C8 !important;
+}
+body.dark-mode .produit-page .form-control,
+body.dark-mode .produit-page .form-select,
+body.dark-mode .produit-page input[type="number"] {
+    background: #1A1F2E !important;
+    border-color: #2A3147 !important;
+    color: #E8EAF0 !important;
+}
+body.dark-mode .produit-page .btn-light,
+body.dark-mode .produit-page .btn.btn-light {
+    background: #1E2333 !important;
+    border-color: #2A3147 !important;
+    color: #D8DCE8 !important;
+}
+body.dark-mode .produit-page .btn-light:hover,
+body.dark-mode .produit-page .btn.btn-light:hover {
+    background: #2A3147 !important;
+    border-color: #3A425C !important;
+    color: #E8EAF0 !important;
+}
+body.dark-mode .produit-page .feedback-card:hover {
+    background: #1A1F2E !important;
+}
+body.dark-mode .produit-page .alert-warning {
+    background: #2C2618 !important;
+    color: #E8EAF0 !important;
+}
+</style>
+{% endblock %}
+
 {% block body %}
-<div class="container py-5">
+<div class="produit-page" style="background:#F5F3EF;min-height:calc(100vh - 70px);padding:40px 20px;">
+<div class="container" style="max-width:1100px;">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4 animate__animated animate__fadeIn">
         <ol class="breadcrumb mb-0">
@@ -221,6 +293,7 @@
         </div>
     </div>
 </div>
+</div>
 
 <div class="modal fade" id="deleteFeedbackModal" tabindex="-1" aria-labelledby="deleteFeedbackModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -253,17 +326,10 @@
 </div>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
-
 :root {
     --mindbloom-color: #4A90E2;
     --mindbloom-dark: #357ABD;
     --mindbloom-soft: #e7f1ff;
-}
-
-body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #f8fafc;
 }
 
 .fw-extra-bold { font-weight: 800; }

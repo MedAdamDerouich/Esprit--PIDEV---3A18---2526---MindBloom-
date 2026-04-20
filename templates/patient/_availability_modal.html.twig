@@ -1,4 +1,40 @@
-<div style="width:600px; max-width:95vw; background:white; border-radius:25px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 25px 50px rgba(0,0,0,0.22);">
+<style>
+body.dark-mode .patient-availability-modal {
+    background: #161A26 !important;
+    color: #D8DCE8 !important;
+}
+body.dark-mode .patient-availability-modal [style*="background:white"],
+body.dark-mode .patient-availability-modal [style*="background:#F8FAFC"],
+body.dark-mode .patient-availability-modal [style*="background:#F5F3EF"],
+body.dark-mode .patient-availability-modal [style*="background: white"],
+body.dark-mode .patient-availability-modal [style*="background: rgb(255, 255, 255)"],
+body.dark-mode .patient-availability-modal [style*="background: #F8FAFC"],
+body.dark-mode .patient-availability-modal [style*="background: rgb(248, 250, 252)"] {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode .patient-availability-modal [style*="color:#2D3748"],
+body.dark-mode .patient-availability-modal [style*="color:#2C3E50"] {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .patient-availability-modal [style*="color:#718096"],
+body.dark-mode .patient-availability-modal [style*="color:#A0AEC0"] {
+    color: #7A8299 !important;
+}
+body.dark-mode .patient-availability-modal a[style*="background:white"] {
+    background: #1E2333 !important;
+    border-color: #252B3E !important;
+    color: #D8DCE8 !important;
+}
+body.dark-mode .patient-availability-modal .availability-slot-link,
+body.dark-mode .patient-availability-modal .availability-slot-link:hover {
+    background: #1E2333 !important;
+    border-color: #2A3147 !important;
+    color: #D8DCE8 !important;
+}
+</style>
+
+<div class="patient-availability-modal" style="width:600px; max-width:95vw; background:white; border-radius:25px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 25px 50px rgba(0,0,0,0.22);">
     
     {# Header #}
     <div style="padding:20px 30px; background:#F8FAFC; border-bottom:1px solid #E2E8F0; display:flex; justify-content:space-between; align-items:center;">
@@ -45,7 +81,7 @@
 
                     <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; padding-top:10px; border-top:1px dashed #E2E8F0;">
                         {% for slot in g.slots %}
-                            <a href="{{ path('app_patient_reserver_confirm_page', {id: slot.id}) }}" style="border:1px solid #F3F0E9; background:white; color:#2D3748; padding:6px 4px; border-radius:10px; transition: all 0.2s; text-decoration:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;" onmouseover="this.style.background='#F8FAFC'; this.style.borderColor='#4A90E2'" onmouseout="this.style.background='white'; this.style.borderColor='#F3F0E9'">
+                            <a href="{{ path('app_patient_reserver_confirm_page', {id: slot.id}) }}" class="availability-slot-link" style="border:1px solid #F3F0E9; background:white; color:#2D3748; padding:6px 4px; border-radius:10px; transition: all 0.2s; text-decoration:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;" onmouseover="if(document.body.classList.contains('dark-mode')){this.style.background='#1E2333'; this.style.borderColor='#4A90E2'}else{this.style.background='#F8FAFC'; this.style.borderColor='#4A90E2'}" onmouseout="if(document.body.classList.contains('dark-mode')){this.style.background='#1E2333'; this.style.borderColor='#2A3147'}else{this.style.background='white'; this.style.borderColor='#F3F0E9'}">
                                 <span style="font-weight:bold; font-size:13px; color:#2D3748;">{{ slot.heureDebut|date('H:i') }}</span>
                                 <span style="font-size:7px; font-weight:bold; color:#5FBF9F; text-transform:uppercase;">Disponible</span>
                                 <span style="font-size:8px; color:#A0AEC0; font-weight:500;">{{ slot.dureeMinutes }} min</span>

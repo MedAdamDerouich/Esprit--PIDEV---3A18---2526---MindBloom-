@@ -2,8 +2,47 @@
 
 {% block title %}Facture #{{ facture.id }} - MindBloom{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+body.dark-mode .order-show-page {
+    color: #D8DCE8;
+}
+body.dark-mode .order-show-page .card,
+body.dark-mode .order-show-page .card-body,
+body.dark-mode .order-show-page .card-footer,
+body.dark-mode .order-show-page .bg-light,
+body.dark-mode .order-show-page .border,
+body.dark-mode .order-show-page .table {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode .order-show-page h1,
+body.dark-mode .order-show-page h6,
+body.dark-mode .order-show-page .fw-bold,
+body.dark-mode .order-show-page strong {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .order-show-page .text-muted,
+body.dark-mode .order-show-page p,
+body.dark-mode .order-show-page small,
+body.dark-mode .order-show-page td,
+body.dark-mode .order-show-page th {
+    color: #7A8299 !important;
+}
+body.dark-mode .order-show-page thead,
+body.dark-mode .order-show-page thead th {
+    background: #2D6BB3 !important;
+    color: #FFFFFF !important;
+}
+body.dark-mode .order-show-page .btn-link {
+    color: #AEB5C8 !important;
+}
+</style>
+{% endblock %}
+
 {% block body %}
-<div class="container py-5">
+<div class="container py-5 order-show-page">
     <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-8">
             <div class="d-flex justify-content-between align-items-center mb-4">

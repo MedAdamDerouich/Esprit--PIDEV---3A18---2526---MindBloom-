@@ -2,6 +2,49 @@
 
 {% block title %}{{ test.nomTest }} — MindBloom{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+body.dark-mode .test-page {
+    background: #0F1117 !important;
+}
+body.dark-mode .test-page [style*="background:#F5F3EF"],
+body.dark-mode .test-page [style*="background:#FAFAF8"] {
+    background: #0F1117 !important;
+}
+body.dark-mode .test-page [style*="background: white"],
+body.dark-mode .test-page [style*="background:white"] {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.45) !important;
+}
+body.dark-mode .test-page [style*="background:#E8F1FC"],
+body.dark-mode .test-page [style*="background:#F4F6F6"],
+body.dark-mode .test-page [style*="background:#F8FAFD"] {
+    background: #1A1F2E !important;
+}
+body.dark-mode .test-page [style*="color:#2C3E50"],
+body.dark-mode .test-page [style*="color:#34495E"],
+body.dark-mode .test-page [style*="color: #2C3E50"] {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .test-page [style*="color:#7F8C8D"],
+body.dark-mode .test-page [style*="color:#95A5A6"] {
+    color: #7A8299 !important;
+}
+body.dark-mode .test-page .sticky-timer {
+    background: #161A26 !important;
+    border-left-color: #4A90E2 !important;
+}
+body.dark-mode .test-page .timer-digits {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .test-page input[type="radio"] {
+    accent-color: #4A90E2;
+}
+</style>
+{% endblock %}
+
 {% block body %}
 
 
@@ -74,7 +117,7 @@
     }
 </style>
 
-<div class="animate-entry" style="background:#FAFAF8; min-height: calc(100vh - 80px); padding: 50px;">
+<div class="animate-entry test-page" style="background:#F5F3EF; min-height: calc(100vh - 80px); padding: 50px;">
     {% if not is_granted('ROLE_PSYCHOLOGUE') and test.duree > 0 %}
     <div class="sticky-timer animate-entry" id="testTimerWidget" style="animation-delay: 0.5s;">
         <div style="font-size: 24px;">⏱️</div>

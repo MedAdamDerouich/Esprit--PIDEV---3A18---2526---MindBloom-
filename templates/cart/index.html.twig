@@ -3,15 +3,84 @@
 {% block title %}Mon Panier - MindBloom{% endblock %}
 
 {% block stylesheets %}
+{{ parent() }}
 <style>
     .smaller { font-size: 0.85rem; }
     .transition-all { transition: all 0.2s ease; }
     .hover-shadow-sm:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-color: #4A90E2 !important; background: white !important; }
+
+    body.dark-mode .cart-page {
+        color: #D8DCE8;
+    }
+    body.dark-mode .cart-page .card,
+    body.dark-mode .cart-page .card-body,
+    body.dark-mode .cart-page .bg-white,
+    body.dark-mode .cart-page .bg-light,
+    body.dark-mode .cart-page .table,
+    body.dark-mode .cart-page thead,
+    body.dark-mode .cart-page tbody tr,
+    body.dark-mode .cart-page .sticky-top {
+        background: #161A26 !important;
+        border-color: #252B3E !important;
+    }
+    body.dark-mode .cart-page h5,
+    body.dark-mode .cart-page h6,
+    body.dark-mode .cart-page .h5,
+    body.dark-mode .cart-page .fw-bold,
+    body.dark-mode .cart-page .text-dark {
+        color: #E8EAF0 !important;
+    }
+    body.dark-mode .cart-page .text-muted,
+    body.dark-mode .cart-page small,
+    body.dark-mode .cart-page td,
+    body.dark-mode .cart-page th,
+    body.dark-mode .cart-page span,
+    body.dark-mode .cart-page p {
+        color: #7A8299 !important;
+    }
+    body.dark-mode .cart-page .form-control,
+    body.dark-mode .cart-page input[type="number"] {
+        background: #1A1F2E !important;
+        color: #E8EAF0 !important;
+        border-color: #2A3147 !important;
+    }
+    body.dark-mode .cart-page .btn-link {
+        color: #AEB5C8 !important;
+    }
+    body.dark-mode .cart-page .btn-outline-danger {
+        color: #F2A4A4 !important;
+        border-color: #E57373 !important;
+    }
+
+    body.dark-mode #cart-chat-panel {
+        background: #161A26 !important;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(74,144,226,0.2) !important;
+    }
+    body.dark-mode #ai-chat-messages {
+        background: #1A1F2E !important;
+    }
+    body.dark-mode .cchat-msg--bot .cchat-bubble,
+    body.dark-mode .cchat-typing {
+        background: #161A26 !important;
+        border-color: #2A3147 !important;
+        color: #D8DCE8 !important;
+    }
+    body.dark-mode #cart-chat-input-row,
+    body.dark-mode #cart-chat-input-row input {
+        background: #161A26 !important;
+        color: #E8EAF0 !important;
+        border-color: #2A3147 !important;
+    }
+    body.dark-mode #cart-chat-panel [style*="background:#F8FAFF"],
+    body.dark-mode #cart-chat-panel [style*="background='rgba(74,144,226,0.08)'"] {
+        background: #161A26 !important;
+        border-color: #2A3147 !important;
+    }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="container py-5">
+<div class="container py-5 cart-page">
     <div class="row">
         <div class="col-lg-8">
             <!-- AI Recommendations Section (Top & Compact) -->

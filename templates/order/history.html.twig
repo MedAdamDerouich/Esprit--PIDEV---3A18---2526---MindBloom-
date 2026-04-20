@@ -2,8 +2,66 @@
 
 {% block title %}Mes Commandes - MindBloom{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+body.dark-mode .order-history-page {
+    background: #0F1117 !important;
+}
+body.dark-mode .order-history-page [style*="background:#F5F3EF"] {
+    background: #0F1117 !important;
+}
+body.dark-mode .order-history-page .card,
+body.dark-mode .order-history-page .card-header,
+body.dark-mode .order-history-page .card-body,
+body.dark-mode .order-history-page .bg-white,
+body.dark-mode .order-history-page .bg-light,
+body.dark-mode .order-history-page .order-card,
+body.dark-mode .order-history-page #historyFilterForm {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode .order-history-page .form-control,
+body.dark-mode .order-history-page .form-select {
+    background: #1A1F2E !important;
+    color: #E8EAF0 !important;
+    border-color: #2A3147 !important;
+}
+body.dark-mode .order-history-page [style*="color:#2D3748"],
+body.dark-mode .order-history-page h4,
+body.dark-mode .order-history-page h5,
+body.dark-mode .order-history-page .fw-bold {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .order-history-page [style*="color:#718096"],
+body.dark-mode .order-history-page .text-muted,
+body.dark-mode .order-history-page .small,
+body.dark-mode .order-history-page p,
+body.dark-mode .order-history-page span {
+    color: #7A8299 !important;
+}
+body.dark-mode .order-history-page .btn-outline-primary {
+    border-color: #4A90E2 !important;
+    color: #7DB4FF !important;
+}
+body.dark-mode .order-history-page .btn-outline-danger {
+    border-color: #E57373 !important;
+    color: #F2A4A4 !important;
+}
+body.dark-mode .order-history-page .bg-success-subtle {
+    background-color: rgba(34, 197, 94, 0.18) !important;
+}
+body.dark-mode .order-history-page .bg-warning-subtle {
+    background-color: rgba(245, 158, 11, 0.2) !important;
+}
+body.dark-mode .order-history-page .bg-danger-subtle {
+    background-color: rgba(239, 68, 68, 0.2) !important;
+}
+</style>
+{% endblock %}
+
 {% block body %}
-<div style="background:#F5F3EF; min-height:calc(100vh - 70px); padding:40px; display:flex; flex-direction:column; align-items:center;">
+<div class="order-history-page" style="background:#F5F3EF; min-height:calc(100vh - 70px); padding:40px; display:flex; flex-direction:column; align-items:center;">
     
     <!-- Hero Header (Matched with Cabinet style) -->
     <div style="width:100%; max-width:1200px; display:flex; flex-direction:column; align-items:center; gap:5px; margin-bottom:40px;">

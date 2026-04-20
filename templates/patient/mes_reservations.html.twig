@@ -2,67 +2,119 @@
 
 {% block title %}Mes Réservations — MindBloom{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+body.dark-mode .patient-reservations-page {
+    background: linear-gradient(175deg,#0F1117 0%,#121826 45%,#101A18 100%) !important;
+}
+body.dark-mode .patient-reservations-page [style*="background:white"],
+body.dark-mode .patient-reservations-page [style*="background:#fff"] {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.45) !important;
+}
+body.dark-mode .patient-reservations-page [style*="background:#E0E0E0"],
+body.dark-mode .patient-reservations-page [style*="background:#F0F7FF"],
+body.dark-mode .patient-reservations-page [style*="background:#E2E8F0"] {
+    background: #1A1F2E !important;
+}
+body.dark-mode .patient-reservations-page [style*="color:#333"],
+body.dark-mode .patient-reservations-page [style*="color:#2D3748"],
+body.dark-mode .patient-reservations-page [style*="color:#2C3E50"],
+body.dark-mode .patient-reservations-page [style*="color:#4A5568"] {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .patient-reservations-page [style*="color:#777777"],
+body.dark-mode .patient-reservations-page [style*="color:#888"],
+body.dark-mode .patient-reservations-page [style*="color:#666"],
+body.dark-mode .patient-reservations-page [style*="color:#999"],
+body.dark-mode .patient-reservations-page [style*="color:#718096"],
+body.dark-mode .patient-reservations-page [style*="color:#7F8C8D"],
+body.dark-mode .patient-reservations-page [style*="color:#A0AEC0"] {
+    color: #7A8299 !important;
+}
+body.dark-mode .patient-reservations-page .filter-btn {
+    background: #1E2333 !important;
+    color: #D8DCE8 !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode .patient-reservations-page .filter-btn.active {
+    background: #00C2C7 !important;
+    color: #fff !important;
+}
+body.dark-mode .patient-reservations-page .btn-soft-blue {
+    background: #1E2333 !important;
+    color: #D8DCE8 !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode .patient-reservations-page .btn-soft-blue:hover {
+    background: #00C2C7 !important;
+    color: #fff !important;
+    border-color: #00C2C7 !important;
+}
+body.dark-mode .patient-reservations-page .reservation-card {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+}
+</style>
+{% endblock %}
+
 {% block body %}
+<div class="patient-reservations-page" style="background:linear-gradient(175deg,#F0F6FF 0%,#E8F4F8 45%,#EEF5F0 100%); min-height:calc(100vh - 80px); padding:40px 20px;">
+<div style="max-width:1000px; margin:0 auto;">
 
+    {# ── Hero ── #}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:16px;">
+        <div>
+            <h1 style="font-size:28px;font-weight:900;color:#1B3A6B;margin:0 0 6px;letter-spacing:-.4px;">Mes <span style="background:linear-gradient(135deg,#00C2C7,#4ECB71);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Réservations</span></h1>
+            <p style="font-size:13px;color:#7F8C8D;margin:0;">Retrouvez l'ensemble de vos rendez-vous.</p>
+        </div>
 
-<div style="background:#FAFAF8; min-height:calc(100vh - 80px); padding:40px 0; display:flex; flex-direction:column; align-items:center;">
-    
-    <!-- TITRE ET FILTRAGE -->
-    <div style="text-align:center; margin-bottom:30px;">
-        <h1 style="margin:0; font-size:28px; font-weight:bold; color:#333333; display:inline-block;">Mes </h1>
-        <h1 style="margin:0; font-size:28px; font-weight:bold; color:#4A90E2; display:inline-block;">Réservations</h1>
-        <p style="color:#777777; font-size:14px; margin-top:10px;">Retrouvez l'ensemble de vos rendez-vous.</p>
-
-        <!-- BOUTONS DE FILTRAGE -->
-        <div style="display:flex; justify-content:center; gap:10px; margin-top:20px;" id="filterButtons">
-            <button class="filter-btn active" data-filter="tous" style="background:#4A90E2; color:white; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Tous</button>
-            <button class="filter-btn" data-filter="confirmes" style="background:#E0E0E0; color:#333333; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Confirmés</button>
-            <button class="filter-btn" data-filter="annules" style="background:#E0E0E0; color:#333333; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Annulés</button>
-            <button class="filter-btn" data-filter="passees" style="background:#E0E0E0; color:#333333; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Passés</button>
+        {# ── Filter buttons ── #}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="filterButtons">
+            <button class="filter-btn active" data-filter="tous" style="background:linear-gradient(135deg,#00C2C7,#4ECB71);color:#fff;border:1.5px solid #00C2C7;border-radius:20px;font-size:12px;font-weight:700;padding:7px 16px;cursor:pointer;transition:all .2s;">Tous</button>
+            <button class="filter-btn" data-filter="confirmes" style="background:#fff;color:#2C3E50;border:1.5px solid #E0E8F8;border-radius:20px;font-size:12px;font-weight:700;padding:7px 16px;cursor:pointer;transition:all .2s;">Confirmés</button>
+            <button class="filter-btn" data-filter="annules" style="background:#fff;color:#2C3E50;border:1.5px solid #E0E8F8;border-radius:20px;font-size:12px;font-weight:700;padding:7px 16px;cursor:pointer;transition:all .2s;">Annulés</button>
+            <button class="filter-btn" data-filter="passees" style="background:#fff;color:#2C3E50;border:1.5px solid #E0E8F8;border-radius:20px;font-size:12px;font-weight:700;padding:7px 16px;cursor:pointer;transition:all .2s;">Passés</button>
         </div>
     </div>
 
-    <!-- CUSTOM MODAL OVERLAY -->
-    <div id="customModalOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(3px);">
-        <div style="background:white; border-radius:20px; padding:30px; width:400px; text-align:center; box-shadow:0 25px 50px rgba(0,0,0,0.15); transform:scale(0.9); opacity:0; transition:all 0.3s; animation: modalPop 0.3s forwards;">
-            
-            <style>
-                @keyframes modalPop {
-                    to { transform:scale(1); opacity:1; }
-                }
-            </style>
-            
-            <!-- Icons -->
-            <div id="modalIconWarning" style="display:none; font-size:45px; margin-bottom:10px;">⚠️</div>
-            <div id="modalIconError" style="display:none; font-size:45px; margin-bottom:10px;">❌</div>
-            <div id="modalIconSuccess" style="display:none; font-size:45px; margin-bottom:10px;">✅</div>
-            
-            <h3 id="modalTitle" style="color:#2D3748; margin-top:0; font-weight:bold; font-size:22px;">Confirmation</h3>
-            <p id="modalMessage" style="color:#718096; font-size:15px; line-height:1.5; margin-bottom:25px;">Message ici</p>
-            
-            <div style="display:flex; justify-content:center; gap:15px;">
-                <button type="button" id="modalBtnCancel" style="display:none; background:#E2E8F0; color:#4A5568; border:none; padding:12px 25px; border-radius:12px; font-size:14px; font-weight:bold; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#CBD5E0'" onmouseout="this.style.background='#E2E8F0'">Annuler</button>
-                <button type="button" id="modalBtnConfirm" style="background:#4A90E2; color:white; border:none; padding:12px 25px; border-radius:12px; font-size:14px; font-weight:bold; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#3182CE'" onmouseout="this.style.background='#4A90E2'">Compris</button>
+    {# ── Custom Modal ── #}
+    <div id="customModalOverlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.45);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(3px);">
+        <div style="background:white;border-radius:20px;padding:32px;width:400px;max-width:90vw;text-align:center;box-shadow:0 25px 50px rgba(0,0,0,0.15);animation:modalPop .3s forwards;">
+            <style>@keyframes modalPop { from{transform:scale(.9);opacity:0} to{transform:scale(1);opacity:1} }</style>
+            <div id="modalIconWarning" style="display:none;font-size:44px;margin-bottom:10px;">⚠️</div>
+            <div id="modalIconError"   style="display:none;font-size:44px;margin-bottom:10px;">❌</div>
+            <div id="modalIconSuccess" style="display:none;font-size:44px;margin-bottom:10px;">✅</div>
+            <h3 id="modalTitle"   style="color:#1B3A6B;margin:0 0 10px;font-weight:800;font-size:20px;">Confirmation</h3>
+            <p  id="modalMessage" style="color:#7F8C8D;font-size:14px;line-height:1.6;margin-bottom:24px;">Message ici</p>
+            <div style="display:flex;justify-content:center;gap:12px;">
+                <button type="button" id="modalBtnCancel" class="btn-soft-blue" style="display:none;background:rgba(0,194,199,0.10);color:#008c91;border:1.5px solid rgba(0,194,199,0.25);padding:10px 22px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;" onmouseover="this.style.background='#00C2C7';this.style.color='#fff'" onmouseout="if(document.body.classList.contains('dark-mode')){this.style.background='#1E2333';this.style.color='#D8DCE8'}else{this.style.background='#F0F6FF';this.style.color='#00C2C7'}">Annuler</button>
+                <button type="button" id="modalBtnConfirm" style="background:#00C2C7;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">Compris</button>
             </div>
         </div>
     </div>
-    <!-- LISTE DES RESERVATIONS -->
-    <div id="reservationsContainer" style="display:flex; flex-direction:column; gap:20px; width:100%; max-width:850px;">
+
+    {# ── Cards ── #}
+    <div id="reservationsContainer" style="display:flex;flex-direction:column;gap:14px;">
         {% if reservations is empty %}
-            <div style="text-align:center; color:#999; font-size:16px; padding:50px;">
-                Aucune réservation trouvée.
+            <div style="text-align:center;padding:80px 20px;background:#fff;border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,0.05);">
+                <div style="width:80px;height:80px;background:rgba(0,194,199,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#00C2C7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <h4 style="font-size:20px;font-weight:800;color:#1B3A6B;margin:0 0 8px;">Aucune réservation trouvée</h4>
+                <p style="color:#7F8C8D;font-size:14px;margin:0;">Vos rendez-vous apparaîtront ici une fois réservés.</p>
             </div>
         {% else %}
             {% set now = date() %}
             {% for r in reservations %}
-                
                 {% set dateCreneau = r.creneau.dateCreneau|date('Y-m-d') %}
                 {% set today = now|date('Y-m-d') %}
                 {% set timeCreneau = r.creneau.heureDebut|date('H:i') %}
                 {% set currTime = now|date('H:i') %}
-
                 {% set isPast = (dateCreneau < today) or (dateCreneau == today and timeCreneau < currTime) %}
-                
+
                 {% set statusCat = 'tous ' %}
                 {% if isPast %}
                     {% set statusCat = statusCat ~ 'passees ' %}
@@ -72,255 +124,195 @@
                     {% set statusCat = statusCat ~ 'annules ' %}
                 {% endif %}
 
-                <div class="reservation-card {{ statusCat }}" style="background:white; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.05); padding:10px 15px; display:flex; align-items:center; gap:15px; transition:transform 0.2s;">
-                    
-                    {# Photo Psychologue #}
-                    <div style="width:60px; height:60px; border-radius:50%; background:#E2E8F0; overflow:hidden; flex-shrink:0;">
+                <div class="reservation-card {{ statusCat }}" style="background:white;border-radius:16px;padding:20px 24px;box-shadow:0 2px 12px rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.04);display:flex;align-items:center;gap:18px;flex-wrap:wrap;transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 6px 24px rgba(0,194,199,0.10)'" onmouseout="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.05)'">
+
+                    {# Avatar #}
+                    <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#EEF4FF,#E8F5F0);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
                         {% if r.creneau.cabinet.psychologue and r.creneau.cabinet.psychologue.profileImage %}
-                            <img src="{{ asset('uploads/profiles/' ~ r.creneau.cabinet.psychologue.profileImage) }}" style="width:100%; height:100%; object-fit:cover;" />
+                            <img src="{{ asset('uploads/profiles/' ~ r.creneau.cabinet.psychologue.profileImage) }}" style="width:100%;height:100%;object-fit:cover;">
                         {% else %}
-                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:22px; color:rgba(74,144,226,0.3);">👤</div>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00C2C7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         {% endif %}
                     </div>
 
-                    {# Infos #}
-                    <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
-                        
-                        {# Header info #}
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <span style="font-size:16px; font-weight:bold; color:#333;">Dr. {{ r.creneau.cabinet.psychologue.fullName|default('Inconnu') }}</span>
-                            
+                    {# Info #}
+                    <div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:6px;">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <span style="font-size:15px;font-weight:800;color:#1B3A6B;">Dr. {{ r.creneau.cabinet.psychologue.fullName|default('Inconnu') }}</span>
                             {% if isPast %}
-                                <span style="font-size:11px; color:#666; background:#E0E0E0; padding:2px 8px; border-radius:10px;">📅 Passée</span>
+                                <span style="font-size:11px;font-weight:700;color:#7F8C8D;background:#F4F6F6;padding:3px 10px;border-radius:20px;">Passée</span>
                             {% elseif r.status.value == 'Confirmé' %}
-                                <span style="font-size:11px; color:#5FBF9F; background:#E8F5E9; padding:2px 8px; border-radius:10px;">Confirmé</span>
+                                <span style="font-size:11px;font-weight:700;color:#27ae60;background:rgba(78,203,113,0.12);padding:3px 10px;border-radius:20px;">✓ Confirmé</span>
                             {% else %}
-                                <span style="font-size:11px; color:#FF4D4D; background:#FFE5E5; padding:2px 8px; border-radius:10px;">Annulé</span>
+                                <span style="font-size:11px;font-weight:700;color:#ef4444;background:rgba(239,68,68,0.10);padding:3px 10px;border-radius:20px;">Annulé</span>
                             {% endif %}
                         </div>
 
-                        {# Details #}
-                        <span style="color:#888; font-size:13px;">{{ r.creneau.cabinet.specialite|default('Spécialité non définie') }}</span>
-                        <span style="color:#666; font-size:12px;">🏥 {{ r.creneau.cabinet.adresse|default('Adresse non définie') }}</span>
-                        <span id="distance-{{ r.idReservation }}"
-      data-adresse="{{ r.creneau.cabinet.adresse|e('html_attr') }}"
-      style="font-size:12px; color:#A0AEC0; display:none;">
-</span>
-                        {# Date & Heure #}
-                        <div style="display:flex; gap:8px; margin-top:2px;">
-                            <span style="background:#F0F7FF; color:#4A90E2; padding:3px 8px; border-radius:5px; font-size:12px;">📅 {{ r.creneau.dateCreneau|date('d/m/Y') }}</span>
-                            <span style="background:#F0F7FF; color:#4A90E2; padding:3px 8px; border-radius:5px; font-size:12px;">🕒 {{ r.creneau.heureDebut|date('H:i') }}</span>
+                        <span style="font-size:12px;color:#7F8C8D;">{{ r.creneau.cabinet.specialite|default('Spécialité non définie') }}</span>
+
+                        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+                            <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#55606e;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00C2C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                {{ r.creneau.cabinet.adresse|default('Adresse non définie') }}
+                            </span>
+                            <span id="distance-{{ r.idReservation }}" data-adresse="{{ r.creneau.cabinet.adresse|e('html_attr') }}" style="display:none;font-size:12px;color:#7F8C8D;align-items:center;gap:5px;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00C2C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <span class="dist-text"></span>
+                            </span>
+                        </div>
+
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <span style="display:flex;align-items:center;gap:5px;background:rgba(0,194,199,0.10);color:#008c91;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:600;">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                {{ r.creneau.dateCreneau|date('d/m/Y') }}
+                            </span>
+                            <span style="display:flex;align-items:center;gap:5px;background:rgba(0,194,199,0.10);color:#008c91;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:600;">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                {{ r.creneau.heureDebut|date('H:i') }}
+                            </span>
                         </div>
                     </div>
 
                     {# Actions #}
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        
-                        {# Boutons Toggle (Reconfirmer/Annuler) - seulement si ce n'est pas passé #}
+                    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+
                         {% if not isPast %}
                             <form action="{{ path('app_patient_reservations_toggle', {id: r.idReservation}) }}" method="post" style="margin:0;">
                                 {% if r.status.value == 'Confirmé' %}
-                                    <button type="button" class="btn-confirm-action" 
+                                    <button type="button" class="btn-confirm-action"
                                             data-title="Confirmation d'annulation"
-                                            data-confirm="Êtes-vous sûr de vouloir annuler cette réservation ? Le créneau deviendra disponible pour d'autres patients." 
+                                            data-confirm="Êtes-vous sûr de vouloir annuler cette réservation ? Le créneau deviendra disponible pour d'autres patients."
                                             data-btn="Oui, annuler"
-                                            data-color="#FF4D4D"
-                                            style="background:#FF4D4D; color:white; border-radius:8px; font-weight:600; font-size:12px; padding:6px 12px; border:none; cursor:pointer; min-width:85px; transition:0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Annuler</button>
+                                            data-color="#ef4444"
+                                            style="background:rgba(239,68,68,0.10);color:#ef4444;border:none;border-radius:9px;font-size:12px;font-weight:700;padding:7px 14px;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#ef4444';this.style.color='#fff'" onmouseout="this.style.background='rgba(239,68,68,0.10)';this.style.color='#ef4444'">Annuler</button>
                                 {% else %}
                                     {% if r.creneau.isDisponible %}
-                                        <button type="button" class="btn-confirm-action" 
+                                        <button type="button" class="btn-confirm-action"
                                                 data-title="Reprise de rendez-vous"
-                                                data-confirm="Voulez-vous reconfirmer ce créneau ? Assurez-vous d'être disponible." 
+                                                data-confirm="Voulez-vous reconfirmer ce créneau ? Assurez-vous d'être disponible."
                                                 data-btn="Oui, reconfirmer"
-                                                data-color="#5FBF9F"
-                                                style="background:#5FBF9F; color:white; border-radius:8px; font-weight:600; font-size:12px; padding:6px 12px; border:none; cursor:pointer; min-width:85px; transition:0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Reconfirmer</button>
+                                                data-color="#27ae60"
+                                                style="background:rgba(78,203,113,0.12);color:#27ae60;border:none;border-radius:9px;font-size:12px;font-weight:700;padding:7px 14px;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#27ae60';this.style.color='#fff'" onmouseout="this.style.background='rgba(78,203,113,0.12)';this.style.color='#27ae60'">Reconfirmer</button>
                                     {% else %}
-                                        <button type="button" onclick="window.showConfirmation(document.getElementById('delete-form-{{ r.idReservation }}'), 'Créneau indisponible', 'Désolé, ce créneau a déjà été réservé par un autre patient.\n\nVoulez-vous le supprimer de vos réservations ?', 'Oui, supprimer', '#FF4D4D')" 
-                                                style="background:#5FBF9F; color:white; border-radius:8px; font-weight:600; font-size:12px; padding:6px 12px; border:none; cursor:pointer; min-width:85px; transition:0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Reconfirmer</button>
+                                        <button type="button" onclick="window.showConfirmation(document.getElementById('delete-form-{{ r.idReservation }}'), 'Créneau indisponible', 'Désolé, ce créneau a déjà été réservé par un autre patient.\n\nVoulez-vous le supprimer de vos réservations ?', 'Oui, supprimer', '#ef4444')"
+                                                style="background:rgba(78,203,113,0.12);color:#27ae60;border:none;border-radius:9px;font-size:12px;font-weight:700;padding:7px 14px;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#27ae60';this.style.color='#fff'" onmouseout="this.style.background='rgba(78,203,113,0.12)';this.style.color='#27ae60'">Reconfirmer</button>
                                     {% endif %}
                                 {% endif %}
                             </form>
                         {% endif %}
 
+                        {% if not isPast and r.status.value == 'Confirmé' %}
+                            <form action="{{ path('app_patient_send_whatsapp', {id: r.idReservation}) }}" method="post" style="margin:0;">
+                                <button type="submit" class="btn-soft-blue" title="Envoyer par WhatsApp" style="display:flex;align-items:center;gap:5px;height:34px;padding:0 12px;background:#F0F6FF;border:none;border-radius:9px;color:#00C2C7;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#00C2C7';this.style.color='#fff'" onmouseout="if(document.body.classList.contains('dark-mode')){this.style.background='#1E2333';this.style.color='#D8DCE8'}else{this.style.background='#F0F6FF';this.style.color='#00C2C7'}">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                    WhatsApp
+                                </button>
+                            </form>
+                        {% endif %}
 
-                        {# Bouton WhatsApp - seulement si confirmé et pas passé #}
-{% if not isPast and r.status.value == 'Confirmé' %}
-    <form action="{{ path('app_patient_send_whatsapp', {id: r.idReservation}) }}" method="post" style="margin:0;">
-        <button type="submit"
-            style="background:rgba(74,144,226,0.15); color:#4A90E2; border:none; border-radius:8px; font-weight:600; font-size:12px; padding:6px 12px; cursor:pointer; transition:0.2s;"
-            onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
-            📩 WhatsApp
-        </button>
-    </form>
-{% endif %}
-
-                        {# Bouton Supprimer (Corbeille) - seulement si annulé #}
                         {% if r.status.value == 'Annulé' %}
-                            <form id="delete-form-{{ r.idReservation }}" action="{{ path('app_patient_reservations_delete', {id: r.idReservation}) }}" method="post" style="margin:0;" title="Supprimer de l'historique">
-                                <button type="button" class="btn-confirm-action" 
+                            <form id="delete-form-{{ r.idReservation }}" action="{{ path('app_patient_reservations_delete', {id: r.idReservation}) }}" method="post" style="margin:0;">
+                                <button type="button" class="btn-confirm-action"
                                         data-title="Suppression définitive"
-                                        data-confirm="Voulez-vous supprimer définitivement cette réservation de vos réservations  ?" 
+                                        data-confirm="Voulez-vous supprimer définitivement cette réservation ?"
                                         data-btn="Oui, supprimer"
-                                        data-color="#EF4444"
-                                        style="background:transparent; color:#EF4444; border-radius:5px; display:flex; align-items:center; justify-content:center; width:26px; height:26px; border:1px solid #EF4444; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#FFE5E5'" onmouseout="this.style.background='transparent'">
-                                    <span style="font-size:14px; font-weight:bold; pointer-events:none;">✕</span>
+                                        data-color="#ef4444"
+                                        title="Supprimer" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;background:rgba(239,68,68,0.08);border:none;border-radius:9px;color:#ef4444;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#ef4444';this.style.color='#fff'" onmouseout="this.style.background='rgba(239,68,68,0.08)';this.style.color='#ef4444'">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                                 </button>
                             </form>
                         {% endif %}
 
                     </div>
-
                 </div>
             {% endfor %}
         {% endif %}
     </div>
-</div>
 
-<style>
-    .reservation-card:hover {
-        transform: scale(1.02);
-    }
-</style>
+</div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    
-    // --- FILTRAGE DES CATEGORIES ---
+
+    // --- FILTRAGE ---
     const filterBtns = document.querySelectorAll('.filter-btn');
     const cards = document.querySelectorAll('.reservation-card');
 
-    const countTotal = cards.length;
-    let countPassees = 0;
-    let countConfirmes = 0;
-    let countAnnules = 0;
-
-    cards.forEach(card => {
-        if (card.classList.contains('passees')) countPassees++;
-        if (card.classList.contains('confirmes')) countConfirmes++;
-        if (card.classList.contains('annules')) countAnnules++;
+    let countTotal = cards.length, countPassees = 0, countConfirmes = 0, countAnnules = 0;
+    cards.forEach(c => {
+        if (c.classList.contains('passees'))   countPassees++;
+        if (c.classList.contains('confirmes')) countConfirmes++;
+        if (c.classList.contains('annules'))   countAnnules++;
     });
-
-    document.querySelector('[data-filter="tous"]').innerText = `Tous (${countTotal})`;
-    document.querySelector('[data-filter="passees"]').innerText = `Passés (${countPassees})`;
+    document.querySelector('[data-filter="tous"]').innerText     = `Tous (${countTotal})`;
+    document.querySelector('[data-filter="passees"]').innerText   = `Passés (${countPassees})`;
     document.querySelector('[data-filter="confirmes"]').innerText = `Confirmés (${countConfirmes})`;
-    document.querySelector('[data-filter="annules"]').innerText = `Annulés (${countAnnules})`;
+    document.querySelector('[data-filter="annules"]').innerText   = `Annulés (${countAnnules})`;
 
     filterBtns.forEach(btn => {
         btn.addEventListener('click', function() {
+            const isDarkMode = document.body.classList.contains('dark-mode');
             filterBtns.forEach(b => {
-                b.style.background = '#E0E0E0';
-                b.style.color = '#333333';
+                b.style.background = isDarkMode ? '#1E2333' : '#fff';
+                b.style.color = isDarkMode ? '#D8DCE8' : '#2C3E50';
+                b.style.borderColor = isDarkMode ? '#252B3E' : '#E0E8F8';
                 b.classList.remove('active');
             });
-            this.style.background = '#4A90E2';
-            this.style.color = 'white';
-            this.classList.add('active');
-
+            this.style.background = 'linear-gradient(135deg,#00C2C7,#4ECB71)'; this.style.color = '#fff';
+            this.style.borderColor = '#00C2C7'; this.classList.add('active');
             const filter = this.getAttribute('data-filter');
             cards.forEach(card => {
-                if (filter === 'tous') {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = card.classList.contains(filter) ? 'flex' : 'none';
-                }
+                card.style.display = (filter === 'tous' || card.classList.contains(filter)) ? 'flex' : 'none';
             });
         });
     });
 
-    // --- MODAL & MESSAGES CONFIGURATION ---
-    const customModal = document.getElementById('customModalOverlay');
+    // --- MODAL ---
+    const overlay    = document.getElementById('customModalOverlay');
     const modalTitle = document.getElementById('modalTitle');
-    const modalMessage = document.getElementById('modalMessage');
-    const btnCancel = document.getElementById('modalBtnCancel');
+    const modalMsg   = document.getElementById('modalMessage');
+    const btnCancel  = document.getElementById('modalBtnCancel');
     const btnConfirm = document.getElementById('modalBtnConfirm');
-    const iconWarning = document.getElementById('modalIconWarning');
-    const iconError = document.getElementById('modalIconError');
-    const iconSuccess = document.getElementById('modalIconSuccess');
-    
-    let pendingFormSubmit = null;
+    const iconWarn   = document.getElementById('modalIconWarning');
+    const iconErr    = document.getElementById('modalIconError');
+    const iconOk     = document.getElementById('modalIconSuccess');
+    let pendingForm  = null;
 
-    function showConfirmation(formElement, title, message, btnText, color) {
-        iconWarning.style.display = 'block';
-        iconError.style.display = 'none';
-        iconSuccess.style.display = 'none';
-        
-        modalTitle.innerText = title;
-        modalMessage.innerText = message;
-        
+    function showConfirmation(formEl, title, msg, btnText, color) {
+        iconWarn.style.display = 'block'; iconErr.style.display = 'none'; iconOk.style.display = 'none';
+        modalTitle.innerText = title; modalMsg.innerText = msg;
         btnCancel.style.display = 'block';
-        btnConfirm.innerText = btnText;
-        btnConfirm.style.background = color;
-        
-        // Darken color slightly on hover by adjusting opacity styling inline
-        btnConfirm.onmouseover = () => btnConfirm.style.opacity = '0.8';
-        btnConfirm.onmouseout = () => btnConfirm.style.opacity = '1';
-        
-        pendingFormSubmit = formElement;
-        customModal.style.display = 'flex';
+        btnConfirm.innerText = btnText; btnConfirm.style.background = color;
+        pendingForm = formEl; overlay.style.display = 'flex';
     }
-
-    function showAlert(title, message, type) {
-        iconWarning.style.display = type === 'warning' ? 'block' : 'none';
-        iconError.style.display = type === 'error' ? 'block' : 'none';
-        iconSuccess.style.display = type === 'success' ? 'block' : 'none';
-        
-        modalTitle.innerText = title;
-        modalMessage.innerText = message;
-        
-        btnCancel.style.display = 'none';
-        btnConfirm.innerText = 'Compris';
-        
-        if (type === 'error') {
-            btnConfirm.style.background = '#FF4D4D';
-        } else if (type === 'success') {
-            btnConfirm.style.background = '#5FBF9F';
-        } else {
-            btnConfirm.style.background = '#4A90E2';
-        }
-        
-        btnConfirm.onmouseover = () => btnConfirm.style.opacity = '0.8';
-        btnConfirm.onmouseout = () => btnConfirm.style.opacity = '1';
-        
-        pendingFormSubmit = null;
-        customModal.style.display = 'flex';
+    function showAlert(title, msg, type) {
+        iconWarn.style.display = type==='warning' ? 'block' : 'none';
+        iconErr.style.display  = type==='error'   ? 'block' : 'none';
+        iconOk.style.display   = type==='success' ? 'block' : 'none';
+        modalTitle.innerText = title; modalMsg.innerText = msg;
+        btnCancel.style.display = 'none'; btnConfirm.innerText = 'Compris';
+        btnConfirm.style.background = type==='error' ? '#ef4444' : type==='success' ? '#27ae60' : '#00C2C7';
+        pendingForm = null; overlay.style.display = 'flex';
     }
-    
-    // Expose to global scope for inline onclick usage
     window.showAlert = showAlert;
     window.showConfirmation = showConfirmation;
 
-    btnCancel.addEventListener('click', () => {
-        customModal.style.display = 'none';
-        pendingFormSubmit = null;
-    });
+    btnCancel.addEventListener('click', () => { overlay.style.display = 'none'; pendingForm = null; });
+    btnConfirm.addEventListener('click', () => { pendingForm ? pendingForm.submit() : overlay.style.display = 'none'; });
 
-    btnConfirm.addEventListener('click', () => {
-        if (pendingFormSubmit) {
-            pendingFormSubmit.submit();
-        } else {
-            customModal.style.display = 'none';
-        }
-    });
-
-    // Hijack the data-confirm actions natively from buttons
     document.querySelectorAll('.btn-confirm-action').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
-            const formObj = this.closest('form');
-            const cTitle = this.getAttribute('data-title') || 'Confirmation';
-            const cMsg = this.getAttribute('data-confirm');
-            const cBtn = this.getAttribute('data-btn') || 'Oui';
-            const cCol = this.getAttribute('data-color') || '#FF4D4D';
-            
-            showConfirmation(formObj, cTitle, cMsg, cBtn, cCol);
+            showConfirmation(this.closest('form'), this.dataset.title || 'Confirmation', this.dataset.confirm, this.dataset.btn || 'Oui', this.dataset.color || '#ef4444');
         });
     });
 
-    // Server Flashes Display
+    // Flash messages
     {% for label, messages in app.flashes %}
         {% for message in messages %}
             {% if label == 'error' %}
-                showAlert('Erreur de réservation', '{{ message|e('js') }}', 'error');
+                showAlert('Erreur', '{{ message|e('js') }}', 'error');
             {% elseif label == 'success' %}
                 showAlert('Action réussie', '{{ message|e('js') }}', 'success');
             {% else %}
@@ -330,55 +322,37 @@ document.addEventListener('DOMContentLoaded', function() {
     {% endfor %}
 });
 
-
-// --- GÉOLOCALISATION & DISTANCE ---
+// --- GÉOLOCALISATION ---
 function haversineDistance(lat1, lng1, lat2, lng2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
-    return Math.round(6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * 10) / 10;
+    const R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+    return Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))*10)/10;
 }
-
 async function geocodeAdresse(adresse) {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(adresse)}&limit=1`;
     try {
-        const response = await fetch(url);
-        const data = await response.json();
-        if (data && data.length > 0) {
-            return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-        }
-    } catch (e) {}
+        const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(adresse)}&limit=1`);
+        const d = await r.json();
+        if (d.length) return { lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon) };
+    } catch(e) {}
     return null;
 }
-
 async function calculateDistances(userLat, userLng) {
-    const distanceSpans = document.querySelectorAll('[id^="distance-"]');
-    for (const span of distanceSpans) {
-        const adresse = span.getAttribute('data-adresse');
-        const coords = await geocodeAdresse(adresse);
+    for (const span of document.querySelectorAll('[id^="distance-"]')) {
+        const coords = await geocodeAdresse(span.dataset.adresse);
         if (coords) {
             const dist = haversineDistance(userLat, userLng, coords.lat, coords.lng);
-            span.textContent = `📍 ${dist} km de vous`;
-            span.style.display = 'inline';
+            span.querySelector('.dist-text').textContent = `${dist} km de vous`;
+            span.style.display = 'flex';
         }
     }
 }
-
 if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
-        function(position) {
-            calculateDistances(position.coords.latitude, position.coords.longitude);
-        },
-        function() {
-            calculateDistances(36.8065, 10.1815);
-        }
+        p => calculateDistances(p.coords.latitude, p.coords.longitude),
+        () => calculateDistances(36.8065, 10.1815)
     );
 } else {
     calculateDistances(36.8065, 10.1815);
 }
-
 </script>
 {% endblock %}

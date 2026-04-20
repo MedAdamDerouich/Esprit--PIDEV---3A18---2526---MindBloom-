@@ -31,7 +31,7 @@ class ProduitController extends AbstractController
         $pagination = $paginator->paginate(
             $qb, /* query NOT result */
             $request->query->getInt('page', 1), /*page number*/
-            6 /*limit per page*/
+            3 /*limit per page*/
         );
 
         return $this->render('produit/index.html.twig', [

@@ -2,89 +2,157 @@
 {% block title %}Mes Participations — MindBloom{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('css/events.css') }}">
+{{ parent() }}
+<style>
+body.dark-mode .patient-event-page {
+    background: #0F1117 !important;
+}
+body.dark-mode .patient-event-page [style*="background:#F5F3EF"] {
+    background: #0F1117 !important;
+}
+body.dark-mode .patient-event-page [style*="background:#fff"],
+body.dark-mode .patient-event-page [style*="background:white"],
+body.dark-mode .patient-event-page [style*="background: #fff"],
+body.dark-mode .patient-event-page [style*="background: white"],
+body.dark-mode .patient-event-page [style*="background: rgb(255, 255, 255)"] {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.45) !important;
+}
+body.dark-mode .patient-event-page .participation-card {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode .patient-event-page .participation-card:hover {
+    background: #1A1F2E !important;
+}
+body.dark-mode .patient-event-page [style*="background:#EEF4FF"],
+body.dark-mode .patient-event-page [style*="background:#F0F6FF"],
+body.dark-mode .patient-event-page [style*="background:#F8F9FA"] {
+    background: #1A1F2E !important;
+}
+body.dark-mode .patient-event-page [style*="color:#1B3A6B"],
+body.dark-mode .patient-event-page [style*="color:#2C3E50"],
+body.dark-mode .patient-event-page [style*="color:#2D3748"] {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .patient-event-page [style*="color:#7F8C8D"],
+body.dark-mode .patient-event-page [style*="color:#95A5A6"],
+body.dark-mode .patient-event-page [style*="color:#55606e"] {
+    color: #A8B0C4 !important;
+}
+body.dark-mode .patient-event-page a[style*="background:#fff"],
+body.dark-mode .patient-event-page a[style*="background:white"] {
+    background: #1E2333 !important;
+    color: #D8DCE8 !important;
+    border-color: #252B3E !important;
+}
+</style>
 {% endblock %}
 
 {% block body %}
-<div style="background: #f5f7fa; min-height: 100vh; padding: 30px;">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 style="font-weight: 700; color: #2c3e50;">📋 Mes Participations</h2>
-            <a href="{{ path('app_patient_event_index') }}" class="btn-event-add">
-                ⬅️ Retour aux événements
-            </a>
-        </div>
-        
-        {% for label, messages in app.flashes %}
-            {% for message in messages %}
-                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-        {% endfor %}
+<div class="patient-event-page" style="background:#F5F3EF; min-height:calc(100vh - 70px); padding:40px 20px;">
+<div style="max-width:1100px; margin:0 auto;">
 
-        <div class="events-table-container">
-            <table class="events-table">
-                <thead>
-                    <tr>
-                        <th>Événement</th>
-                        <th>Date</th>
-                        <th>Lieu</th>
-                        <th>Inscription</th>
-                        <th>Statut</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for participation in participations %}
-                    {% set event = participation.evenement %}
-                    <tr>
-                        <td>
-                            <strong>{{ event.titre }}</strong>
-                            <br><small class="text-muted">{{ event.organisateur }}</small>
-                        </td>
-                        <td>{{ event.dateDebut|date('d/m/Y H:i') }}</td>
-                        <td>{{ event.lieu }}</td>
-                        <td>{{ participation.dateInscription|date('d/m/Y') }}</td>
-                        <td>
-                            <span class="badge" style="background: #27ae60; color: white; padding: 5px 10px; border-radius: 4px;">
-                                ✓ {{ participation.statut }}
-                            </span>
-                        </td>
-                        <td>
-                            <a href="{{ path('app_patient_event_show', {id: event.id}) }}" 
-                               class="btn-action btn-view">👁️</a>
-                            
-                            <a href="{{ path('app_patient_event_ticket', {id: participation.id}) }}" 
-                               class="btn-action btn-print" style="text-decoration: none;" title="Télécharger le PDF de cet événement">
-                                📄 PDF
-                            </a>
-
-                            <form method="post" 
-                                  action="{{ path('app_patient_event_cancel', {id: event.id}) }}" 
-                                  style="display: inline;"
-                                  onsubmit="return confirm('Êtes-vous sûr de vouloir annuler votre participation ?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ event.id) }}">
-                                <button type="submit" class="btn-action btn-delete">❌</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="text-center" style="padding: 40px;">
-                            <div style="font-size: 48px;">📭</div>
-                            <p style="color: #7f8c8d; margin-top: 10px;">Vous n'êtes inscrit à aucun événement</p>
-                            <a href="{{ path('app_patient_event_index') }}" class="btn-event-add" style="margin-top: 10px;">
-                                Découvrir les événements
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    {# ── Hero ── #}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:16px;">
+        <div>
+            <h1 style="font-size:28px;font-weight:900;color:#1B3A6B;margin:0 0 6px;letter-spacing:-.4px;">Mes <span style="color:#4A90E2;">Participations</span></h1>
+            <p style="font-size:13px;color:#7F8C8D;margin:0;">{{ participations|length }} participation{{ participations|length > 1 ? 's' : '' }} au total</p>
         </div>
+        <a href="{{ path('app_patient_event_index') }}" style="display:inline-flex;align-items:center;gap:8px;background:#fff;color:#4A90E2;border:1.5px solid rgba(74,144,226,0.25);border-radius:12px;padding:10px 18px;font-size:13px;font-weight:700;text-decoration:none;transition:all .2s;" onmouseover="this.style.background='#4A90E2';this.style.color='#fff'" onmouseout="this.style.background='#fff';this.style.color='#4A90E2'">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Retour aux événements
+        </a>
     </div>
+
+    {# ── Flash ── #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div style="background:{{ label=='success' ? '#eafaf1' : (label=='warning' ? '#fffbeb' : '#fef2f2') }};border-left:4px solid {{ label=='success' ? '#4ECB71' : (label=='warning' ? '#f59e0b' : '#ef4444') }};color:{{ label=='success' ? '#1e8449' : (label=='warning' ? '#92400e' : '#b91c1c') }};padding:12px 16px;border-radius:10px;margin-bottom:16px;font-weight:600;font-size:13px;">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
+
+    {% if participations|length > 0 %}
+
+    {# ── Cards grid ── #}
+    <div style="display:flex;flex-direction:column;gap:14px;">
+        {% for participation in participations %}
+        {% set event = participation.evenement %}
+        <div class="participation-card" style="background:#fff;border-radius:16px;padding:20px 24px;box-shadow:0 2px 12px rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.04);display:flex;align-items:center;gap:20px;flex-wrap:wrap;transition:box-shadow .2s;" onmouseover="this.style.boxShadow='0 6px 24px rgba(74,144,226,0.10)'" onmouseout="this.style.boxShadow='0 2px 12px rgba(0,0,0,0.05)'">
+
+            {# Event image or placeholder #}
+            <div style="width:64px;height:64px;border-radius:12px;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,#EEF4FF,#E8F5F0);display:flex;align-items:center;justify-content:center;">
+                {% if event.photo %}
+                    <img src="{{ asset('uploads/events/' ~ event.photo) }}" alt="{{ event.titre }}" style="width:100%;height:100%;object-fit:cover;">
+                {% else %}
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4A90E2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                {% endif %}
+            </div>
+
+            {# Info #}
+            <div style="flex:1;min-width:200px;">
+                <div style="font-size:15px;font-weight:800;color:#1B3A6B;margin-bottom:4px;">{{ event.titre }}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                    <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#7F8C8D;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4A90E2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        {{ event.dateDebut|date('d/m/Y à H:i') }}
+                    </span>
+                    <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#7F8C8D;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4A90E2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        {{ event.lieu }}
+                    </span>
+                    <span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#7F8C8D;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4A90E2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Inscrit le {{ participation.dateInscription|date('d/m/Y') }}
+                    </span>
+                </div>
+            </div>
+
+            {# Status badge #}
+            <div style="flex-shrink:0;">
+                <span style="background:rgba(78,203,113,0.12);color:#27ae60;font-size:11px;font-weight:800;padding:5px 12px;border-radius:20px;letter-spacing:.3px;text-transform:uppercase;">
+                    ✓ {{ participation.statut }}
+                </span>
+            </div>
+
+            {# Actions #}
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                <a href="{{ path('app_patient_event_show', {id: event.id}) }}" title="Voir l'événement" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:#F0F6FF;border-radius:9px;color:#4A90E2;text-decoration:none;transition:all .2s;" onmouseover="this.style.background='#4A90E2';this.style.color='#fff'" onmouseout="this.style.background='#F0F6FF';this.style.color='#4A90E2'">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </a>
+
+                <a href="{{ path('app_patient_event_ticket', {id: participation.id}) }}" title="Télécharger le billet PDF" style="display:flex;align-items:center;gap:5px;height:36px;padding:0 12px;background:#F0F6FF;border-radius:9px;color:#4A90E2;text-decoration:none;font-size:12px;font-weight:700;transition:all .2s;" onmouseover="this.style.background='#4A90E2';this.style.color='#fff'" onmouseout="this.style.background='#F0F6FF';this.style.color='#4A90E2'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                    PDF
+                </a>
+
+                <form method="post" action="{{ path('app_patient_event_cancel', {id: event.id}) }}" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler votre participation ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('cancel' ~ event.id) }}">
+                    <button type="submit" title="Annuler la participation" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:rgba(239,68,68,0.08);border:none;border-radius:9px;color:#ef4444;cursor:pointer;transition:all .2s;" onmouseover="this.style.background='#ef4444';this.style.color='#fff'" onmouseout="this.style.background='rgba(239,68,68,0.08)';this.style.color='#ef4444'">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                    </button>
+                </form>
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    {# ── Empty state ── #}
+    <div style="text-align:center;padding:80px 20px;background:#fff;border-radius:20px;box-shadow:0 4px 20px rgba(0,0,0,0.05);">
+        <div style="width:80px;height:80px;background:rgba(74,144,226,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#4A90E2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <h4 style="font-size:20px;font-weight:800;color:#1B3A6B;margin:0 0 8px;">Aucune participation pour le moment</h4>
+        <p style="color:#7F8C8D;font-size:14px;margin:0 0 24px;">Découvrez nos événements bien-être et inscrivez-vous dès maintenant.</p>
+        <a href="{{ path('app_patient_event_index') }}" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#4A90E2,#2563EB);color:#fff;border-radius:12px;padding:12px 24px;font-size:14px;font-weight:700;text-decoration:none;box-shadow:0 4px 14px rgba(74,144,226,0.3);">
+            Découvrir les événements →
+        </a>
+    </div>
+    {% endif %}
+
+</div>
 </div>
 {% endblock %}

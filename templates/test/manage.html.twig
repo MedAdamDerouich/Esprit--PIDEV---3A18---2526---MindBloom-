@@ -2,6 +2,46 @@
 
 {% block title %}Gérer Mes Tests — MindBloom{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+body.dark-mode .test-page {
+    background: #0F1117 !important;
+}
+body.dark-mode .test-page [style*="background:#F5F3EF"],
+body.dark-mode .test-page [style*="background:#FAFAF8"] {
+    background: #0F1117 !important;
+}
+body.dark-mode .test-page [style*="background: white"],
+body.dark-mode .test-page [style*="background:white"] {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.45) !important;
+}
+body.dark-mode .test-page [style*="background:#E8F1FC"],
+body.dark-mode .test-page [style*="background:#F4F6F6"],
+body.dark-mode .test-page [style*="background:#EDF9F5"] {
+    background: #1A1F2E !important;
+}
+body.dark-mode .test-page [style*="color:#2C3E50"],
+body.dark-mode .test-page [style*="color:#34495E"],
+body.dark-mode .test-page [style*="color: #2C3E50"] {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .test-page [style*="color:#7F8C8D"],
+body.dark-mode .test-page [style*="color:#95A5A6"],
+body.dark-mode .test-page [style*="color: #BDC3C7"] {
+    color: #7A8299 !important;
+}
+body.dark-mode .test-page input,
+body.dark-mode .test-page select {
+    background: #1A1F2E !important;
+    color: #E8EAF0 !important;
+    border-color: #2A3147 !important;
+}
+</style>
+{% endblock %}
+
 {% block body %}
 <style>
     @keyframes fadeUpPage {
@@ -29,7 +69,7 @@
     .pagination li.disabled span { color: #BDC3C7; background: #FAFAFA; cursor: not-allowed; }
 </style>
 
-<div class="animate-entry" style="background:#FAFAF8; min-height: calc(100vh - 70px); padding: 50px; animation-delay: 0s;">
+<div class="animate-entry test-page" style="background:#F5F3EF; min-height: calc(100vh - 70px); padding: 50px; animation-delay: 0s;">
     <div style="max-width: 1200px; margin: 0 auto;">
         
         <div class="animate-entry" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; animation-delay: 0.1s;">

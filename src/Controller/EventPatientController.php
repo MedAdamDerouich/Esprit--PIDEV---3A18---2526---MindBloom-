@@ -7,6 +7,7 @@ use App\Entity\Participation;
 use App\Repository\EventRepository;
 use App\Repository\ParticipationRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,13 +19,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class EventPatientController extends AbstractController
 {
     #[Route('', name: 'app_patient_event_index', methods: ['GET'])]
-    public function index(EventRepository $eventRepository): Response
+    public function index(EventRepository $eventRepository, Request $request, PaginatorInterface $paginator): Response
     {
-        // Récupérer tous les événements actifs avec places disponibles
-        $events = $eventRepository->findActifs();
+        $qb = $eventRepository->findActifsQb();
+
+        $events = $paginator->paginate(
+            $qb,
+            $request->query->getInt('page', 1),
+            3
+        );
 
         return $this->render('patient/event/index.html.twig', [
-            'events' => $events
+            'events' => $events,
+            'total'  => $events->getTotalItemCount(),
         ]);
     }
 

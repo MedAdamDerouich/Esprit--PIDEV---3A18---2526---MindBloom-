@@ -42,6 +42,26 @@
         transform: translateY(-2px);
     }
     .text-danger { color: #E74C3C; font-size: 13px; margin-top: 5px; }
+
+    body.dark-mode .test-page .web2-label {
+        color: #E8EAF0;
+    }
+    body.dark-mode .test-page .web2-input {
+        background: #1A1F2E;
+        border-color: #2A3147;
+        color: #E8EAF0;
+    }
+    body.dark-mode .test-page .web2-input::placeholder {
+        color: #7A8299;
+    }
+    body.dark-mode .test-page .web2-input:focus {
+        border-color: #4A90E2;
+        box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.18);
+    }
+    body.dark-mode .test-page .web2-btn {
+        background: #4A90E2;
+        box-shadow: 0 6px 16px rgba(74, 144, 226, 0.35);
+    }
 </style>
 
 {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}

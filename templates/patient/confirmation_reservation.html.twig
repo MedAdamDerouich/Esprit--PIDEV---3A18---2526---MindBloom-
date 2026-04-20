@@ -2,8 +2,48 @@
 
 {% block title %}Confirmation de Réservation — MindBloom{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+body.dark-mode .patient-confirm-page {
+    background: #0F1117 !important;
+}
+body.dark-mode .patient-confirm-page [style*="background:#F5F3EF"] {
+    background: #0F1117 !important;
+}
+body.dark-mode .patient-confirm-page [style*="background:white"],
+body.dark-mode .patient-confirm-page [style*="background: white"],
+body.dark-mode .patient-confirm-page [style*="background: rgb(255, 255, 255)"],
+body.dark-mode .patient-confirm-page [style*="background:#F8FAFC"],
+body.dark-mode .patient-confirm-page [style*="background: #F8FAFC"],
+body.dark-mode .patient-confirm-page [style*="background: rgb(248, 250, 252)"] {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode .patient-confirm-page [style*="color:#2D3748"],
+body.dark-mode .patient-confirm-page [style*="color:#2C3E50"] {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .patient-confirm-page [style*="color:#718096"],
+body.dark-mode .patient-confirm-page [style*="color:#A0AEC0"] {
+    color: #7A8299 !important;
+}
+body.dark-mode .patient-confirm-page a[style*="border:1.5px solid #E2E8F0"] {
+    background: #1E2333 !important;
+    border-color: #252B3E !important;
+    color: #D8DCE8 !important;
+}
+body.dark-mode .patient-confirm-page .confirm-back-btn,
+body.dark-mode .patient-confirm-page .confirm-back-btn:hover {
+    background: #1E2333 !important;
+    border-color: #252B3E !important;
+    color: #D8DCE8 !important;
+}
+</style>
+{% endblock %}
+
 {% block body %}
-<div style="background:#F5F3EF; min-height:calc(100vh - 80px); display:flex; align-items:center; justify-content:center; padding:40px;">
+<div class="patient-confirm-page" style="background:#F5F3EF; min-height:calc(100vh - 80px); display:flex; align-items:center; justify-content:center; padding:40px;">
     
     <div style="background:white; border-radius:25px; width:100%; max-width:420px; box-shadow:0 25px 50px rgba(0,0,0,0.1); overflow:hidden; border:1px solid #E2E8F0; display:flex; flex-direction:column;">
         
@@ -61,7 +101,7 @@
             </div>
 
             <div style="display:flex; gap:15px; margin-top:10px;">
-                <a href="{{ path('app_patient_cabinet_reserver', {id: creneau.cabinet.idCabinet}) }}" id="backToReserverBtn" style="flex:1; text-align:center; padding:14px; border:1.5px solid #E2E8F0; border-radius:15px; color:#718096; font-weight:bold; text-decoration:none; transition:all 0.2s;" onmouseover="this.style.background='#F8FAFC'" onmouseout="this.style.background='transparent'">Retour</a>
+                <a href="{{ path('app_patient_cabinet_reserver', {id: creneau.cabinet.idCabinet}) }}" id="backToReserverBtn" class="confirm-back-btn" style="flex:1; text-align:center; padding:14px; border:1.5px solid #E2E8F0; border-radius:15px; color:#718096; font-weight:bold; text-decoration:none; transition:all 0.2s;" onmouseover="if(!document.body.classList.contains('dark-mode')){this.style.background='#F8FAFC'}" onmouseout="this.style.background='transparent'">Retour</a>
                 
                 <form action="{{ path('app_patient_reserver_creneau', {id: creneau.id}) }}" method="POST" style="flex:2; margin:0;">
                     <button type="submit" style="width:100%; padding:15px; background:#4A90E2; border:none; border-radius:15px; color:white; font-weight:bold; font-size:15px; cursor:pointer; box-shadow:0 10px 20px rgba(74, 144, 226, 0.2); transition:all 0.2s;" onmouseover="this.style.background='#357ABD'; this.style.transform='translateY(-2px)'" onmouseout="this.style.background='#4A90E2'; this.style.transform='translateY(0)'">

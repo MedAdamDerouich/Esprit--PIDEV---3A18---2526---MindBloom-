@@ -45,6 +45,14 @@ class EventRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findActifsQb(): \Doctrine\ORM\QueryBuilder
+    {
+        return $this->createQueryBuilder('e')
+            ->where('e.statut = :statut')
+            ->setParameter('statut', Event::STATUT_ACTIF)
+            ->orderBy('e.dateDebut', 'ASC');
+    }
+
     /**
      * Récupère les événements actifs avec places disponibles
      */

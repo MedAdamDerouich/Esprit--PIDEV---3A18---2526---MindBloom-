@@ -2,66 +2,60 @@
 {% block title %}Mes Réservations — Espace Psychologue{% endblock %}
 
 {% block body %}
-<div style="background:#F5F3EF;min-height:calc(100vh - 85px); padding:40px; display:flex; flex-direction:column; align-items:center; gap:25px;">
-    
-    <div style="text-align:center; margin-bottom:10px;">
-        <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
-            <span style="font-size:24px;">📋</span>
-            <h1 style="color:#2C3E50; font-size:24px; font-weight:bold; margin:0;">Mes Réservations</h1>
-        </div>
+<div style="background:#F5F3EF; min-height:calc(100vh - 85px); padding:40px 20px;">
+<div style="max-width:1000px; margin:0 auto;">
 
-        <!-- BOUTONS DE FILTRAGE -->
-        <div style="display:flex; justify-content:center; gap:10px; margin-top:20px;" id="filterButtons">
-            <button class="filter-btn active" data-filter="tous" style="background:#5FBF9F; color:white; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Tous</button>
-            <button class="filter-btn" data-filter="confirmes" style="background:#E0E0E0; color:#333333; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Confirmés</button>
-            <button class="filter-btn" data-filter="annules" style="background:#E0E0E0; color:#333333; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Annulés</button>
-            <button class="filter-btn" data-filter="passees" style="background:#E0E0E0; color:#333333; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Passés</button>
+    {# ── Hero ── #}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:16px;">
+        <div>
+            <h1 style="font-size:28px;font-weight:900;color:#1B3A6B;margin:0 0 6px;letter-spacing:-.4px;">Mes <span style="color:#4A90E2;">Réservations</span></h1>
+            <p style="font-size:13px;color:#7F8C8D;margin:0;">Consultez et gérez les rendez-vous de vos patients.</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            {# Filter buttons #}
+            <div style="display:flex;gap:8px;" id="filterButtons">
+                <button class="filter-btn active" data-filter="tous" style="background:#4A90E2;color:#fff;border:1.5px solid #4A90E2;border-radius:20px;font-size:12px;font-weight:700;padding:7px 16px;cursor:pointer;transition:all .2s;">Tous</button>
+                <button class="filter-btn" data-filter="confirmes" style="background:#fff;color:#2C3E50;border:1.5px solid #E0E8F8;border-radius:20px;font-size:12px;font-weight:700;padding:7px 16px;cursor:pointer;transition:all .2s;">Confirmés</button>
+                <button class="filter-btn" data-filter="annules" style="background:#fff;color:#2C3E50;border:1.5px solid #E0E8F8;border-radius:20px;font-size:12px;font-weight:700;padding:7px 16px;cursor:pointer;transition:all .2s;">Annulés</button>
+                <button class="filter-btn" data-filter="passees" style="background:#fff;color:#2C3E50;border:1.5px solid #E0E8F8;border-radius:20px;font-size:12px;font-weight:700;padding:7px 16px;cursor:pointer;transition:all .2s;">Passés</button>
+            </div>
+            {# Export #}
+            <div id="exportContainer">
+                <a href="{{ path('app_psychologue_reservations_export') }}" style="display:inline-flex;align-items:center;gap:7px;background:#fff;color:#1D6F42;border:1.5px solid rgba(29,111,66,0.25);border-radius:20px;padding:7px 16px;font-size:12px;font-weight:700;text-decoration:none;transition:all .2s;" onmouseover="this.style.background='rgba(29,111,66,0.08)'" onmouseout="this.style.background='#fff'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Exporter Excel
+                </a>
+            </div>
         </div>
     </div>
 
-    <!-- OPTION EXPORT -->
-    <div style="width:100%; max-width:900px; display:flex; justify-content:flex-start;" id="exportContainer">
-        <a href="{{ path('app_psychologue_reservations_export') }}" 
-           style="display:inline-flex; align-items:center; gap:8px; background:rgba(29, 111, 66, 0.1); color:#1D6F42; border:1px solid rgba(29, 111, 66, 0.2); border-radius:20px; padding:10px 20px; font-size:13px; font-weight:bold; text-decoration:none; margin-bottom:20px; transition:0.2s;"
-           onmouseover="this.style.background='rgba(29, 111, 66, 0.2)'" onmouseout="this.style.background='rgba(29, 111, 66, 0.1)'">
-            📊 Exporter en Excel
-        </a>
-    </div>
+    {# ── Table card ── #}
+    <div style="background:white;border-radius:18px;box-shadow:0 4px 20px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.04);overflow:hidden;">
 
-    <!-- Conteneur principal blanc -->
-    <div style="background:white; border-radius:15px; box-shadow:0 4px 10px rgba(0,0,0,0.05); width:100%; max-width:900px; overflow:hidden;">
-        
-        <!-- GridPane d'en-tête -->
-        <div style="display:grid; grid-template-columns: 180px 100px 120px 100px 100px 122px; gap:15px; padding:15px 20px; background:white;">
-            <span style="font-size:15px; font-weight:bold; color:#2C3E50; padding:5px 0 10px 0;">Patient</span>
-            <span style="font-size:15px; font-weight:bold; color:#2C3E50; padding:5px 0 10px 0;">Jour</span>
-            <span style="font-size:15px; font-weight:bold; color:#2C3E50; padding:5px 0 10px 0;">Date</span>
-            <span style="font-size:15px; font-weight:bold; color:#2C3E50; padding:5px 0 10px 0;">Heure</span>
-            <span style="font-size:15px; font-weight:bold; color:#2C3E50; padding:5px 0 10px 0;">Durée</span>
-            <span style="font-size:15px; font-weight:bold; color:#2C3E50; padding:5px 0 10px 0; text-align:center;">Statut</span>
+        {# Header #}
+        <div style="display:grid;grid-template-columns:2fr 1fr 1.2fr 1fr 1fr 1.1fr;gap:12px;padding:14px 24px;background:#F8FAFF;border-bottom:1.5px solid #E0E8F8;">
+            <span style="font-size:12px;font-weight:800;color:#1B3A6B;text-transform:uppercase;letter-spacing:.4px;">Patient</span>
+            <span style="font-size:12px;font-weight:800;color:#1B3A6B;text-transform:uppercase;letter-spacing:.4px;">Jour</span>
+            <span style="font-size:12px;font-weight:800;color:#1B3A6B;text-transform:uppercase;letter-spacing:.4px;">Date</span>
+            <span style="font-size:12px;font-weight:800;color:#1B3A6B;text-transform:uppercase;letter-spacing:.4px;">Heure</span>
+            <span style="font-size:12px;font-weight:800;color:#1B3A6B;text-transform:uppercase;letter-spacing:.4px;">Durée</span>
+            <span style="font-size:12px;font-weight:800;color:#1B3A6B;text-transform:uppercase;letter-spacing:.4px;text-align:center;">Statut</span>
         </div>
 
-        <hr style="border:0; border-top:1px solid rgba(0,0,0,0.1); margin:0;" />
-
-        <!-- VBox dynamique pour les réservations -->
-        <div style="padding:20px; display:flex; flex-direction:column; gap:10px;">
+        {# Rows #}
+        <div style="display:flex;flex-direction:column;">
             {% if reservations is empty %}
-                <div style="text-align:center; padding: 20px; color:#8E8E8E; font-size:15px;">Aucune réservation trouvée.</div>
+                <div style="text-align:center;padding:60px 20px;">
+                    <div style="width:64px;height:64px;background:rgba(74,144,226,0.08);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4A90E2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </div>
+                    <p style="color:#7F8C8D;font-size:14px;margin:0;">Aucune réservation trouvée.</p>
+                </div>
             {% else %}
                 {% for r in reservations %}
-                    {% set isPast = false %}
                     {% set todayDate = "now"|date("Y-m-d") %}
                     {% set resDateStr = r.creneau.dateCreneau|date("Y-m-d") %}
-                    
-                    {% if resDateStr < todayDate %}
-                        {% set isPast = true %}
-                    {% elseif resDateStr == todayDate %}
-                        {% set nowTime = "now"|date("H:i") %}
-                        {% set resTime = r.creneau.heureDebut|date("H:i") %}
-                        {% if resTime < nowTime %}
-                            {% set isPast = true %}
-                        {% endif %}
-                    {% endif %}
+                    {% set isPast = (resDateStr < todayDate) or (resDateStr == todayDate and r.creneau.heureDebut|date("H:i") < "now"|date("H:i")) %}
 
                     {% set statusCat = 'tous ' %}
                     {% if isPast %}
@@ -72,85 +66,69 @@
                         {% set statusCat = statusCat ~ 'annules ' %}
                     {% endif %}
 
-                    <div class="reservation-card {{ statusCat }}" style="display:grid; grid-template-columns: 180px 100px 120px 100px 100px 122px; gap:15px; align-items:center;">
-                        <span style="font-size:14px; color:#34495E; font-weight:bold;">{{ r.patient.fullName }}</span>
-                        <span style="font-size:14px; color:#34495E;">{{ r.creneau.jour.value|capitalize }}</span>
-                        <span style="font-size:14px; color:#34495E;">{{ r.creneau.dateCreneau|date('Y-m-d') }}</span> <!-- format brut comme dans JavaFX toString() -->
-                        <span style="font-size:14px; color:#34495E;">{{ r.creneau.heureDebut|date('H:i:s') }}</span>
-                        <span style="font-size:14px; color:#34495E;">{{ r.creneau.dureeMinutes }} min</span>
-                        
-                        <div style="display:flex; justify-content:center;">
+                    <div class="reservation-card {{ statusCat }}" style="display:grid;grid-template-columns:2fr 1fr 1.2fr 1fr 1fr 1.1fr;gap:12px;align-items:center;padding:14px 24px;border-bottom:1px solid #F0F4FA;transition:background .15s;" onmouseover="this.style.background='#F8FAFF'" onmouseout="this.style.background='transparent'">
+                        <span style="font-size:14px;font-weight:700;color:#1B3A6B;">{{ r.patient.fullName }}</span>
+                        <span style="font-size:13px;color:#55606e;">{{ r.creneau.jour.value|capitalize }}</span>
+                        <span style="font-size:13px;color:#55606e;">{{ r.creneau.dateCreneau|date('d/m/Y') }}</span>
+                        <span style="font-size:13px;color:#55606e;">{{ r.creneau.heureDebut|date('H:i') }}</span>
+                        <span style="font-size:13px;color:#55606e;">{{ r.creneau.dureeMinutes }} min</span>
+                        <div style="display:flex;justify-content:center;">
                             {% if isPast %}
-                                <span style="background:#95A5A6; color:white; padding:4px 12px; border-radius:15px; font-size:11px; font-weight:bold; text-transform:lowercase;">passé</span>
+                                <span style="font-size:11px;font-weight:800;color:#7F8C8D;background:#F4F6F6;padding:4px 12px;border-radius:20px;">Passé</span>
                             {% elseif r.status.value == 'Confirmé' %}
-                                <span style="background:#6FBF9B; color:white; padding:4px 12px; border-radius:15px; font-size:11px; font-weight:bold; text-transform:lowercase;">{{ r.status.value }}</span>
+                                <span style="font-size:11px;font-weight:800;color:#27ae60;background:rgba(78,203,113,0.12);padding:4px 12px;border-radius:20px;">✓ Confirmé</span>
                             {% else %}
-                                <span style="background:#E74C3C; color:white; padding:4px 12px; border-radius:15px; font-size:11px; font-weight:bold; text-transform:lowercase;">{{ r.status.value }}</span>
+                                <span style="font-size:11px;font-weight:800;color:#ef4444;background:rgba(239,68,68,0.10);padding:4px 12px;border-radius:20px;">Annulé</span>
                             {% endif %}
                         </div>
                     </div>
                 {% endfor %}
             {% endif %}
         </div>
-
     </div>
 
-    <!-- Retour au dashboard -->
-    <div style="width:100%; max-width:900px;">
-        <a href="{{ path('app_dashboard') }}" style="text-decoration:none; color:#8E8E8E; font-size:14px; cursor:pointer;">← Retour</a>
+    {# ── Back link ── #}
+    <div style="margin-top:24px;">
+        <a href="{{ path('app_dashboard') }}" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#7F8C8D;text-decoration:none;font-weight:600;transition:color .2s;" onmouseover="this.style.color='#4A90E2'" onmouseout="this.style.color='#7F8C8D'">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Retour au dashboard
+        </a>
     </div>
 
+</div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // --- FILTRAGE DES CATEGORIES ---
     const filterBtns = document.querySelectorAll('.filter-btn');
     const cards = document.querySelectorAll('.reservation-card');
+    const exportContainer = document.getElementById('exportContainer');
 
-    const countTotal = cards.length;
-    let countPassees = 0;
-    let countConfirmes = 0;
-    let countAnnules = 0;
-
-    cards.forEach(card => {
-        if (card.classList.contains('passees')) countPassees++;
-        if (card.classList.contains('confirmes')) countConfirmes++;
-        if (card.classList.contains('annules')) countAnnules++;
+    let countTotal = cards.length, countPassees = 0, countConfirmes = 0, countAnnules = 0;
+    cards.forEach(c => {
+        if (c.classList.contains('passees'))   countPassees++;
+        if (c.classList.contains('confirmes')) countConfirmes++;
+        if (c.classList.contains('annules'))   countAnnules++;
     });
-
-    document.querySelector('[data-filter="tous"]').innerText = `Tous (${countTotal})`;
-    document.querySelector('[data-filter="passees"]').innerText = `Passés (${countPassees})`;
+    document.querySelector('[data-filter="tous"]').innerText     = `Tous (${countTotal})`;
+    document.querySelector('[data-filter="passees"]').innerText   = `Passés (${countPassees})`;
     document.querySelector('[data-filter="confirmes"]').innerText = `Confirmés (${countConfirmes})`;
-    document.querySelector('[data-filter="annules"]').innerText = `Annulés (${countAnnules})`;
+    document.querySelector('[data-filter="annules"]').innerText   = `Annulés (${countAnnules})`;
 
     filterBtns.forEach(btn => {
         btn.addEventListener('click', function() {
             filterBtns.forEach(b => {
-                b.style.background = '#E0E0E0';
-                b.style.color = '#333333';
-                b.classList.remove('active');
+                b.style.background = '#fff'; b.style.color = '#2C3E50';
+                b.style.borderColor = '#E0E8F8'; b.classList.remove('active');
             });
-            this.style.background = '#5FBF9F';
-            this.style.color = 'white';
-            this.classList.add('active');
+            this.style.background = '#4A90E2'; this.style.color = '#fff';
+            this.style.borderColor = '#4A90E2'; this.classList.add('active');
 
             const filter = this.getAttribute('data-filter');
-            
-            // Toggle Excel button visibility (only for 'tous' and 'confirmes')
-            const exportContainer = document.getElementById('exportContainer');
-            if (filter === 'tous' || filter === 'confirmes') {
-                exportContainer.style.display = 'flex';
-            } else {
-                exportContainer.style.display = 'none';
-            }
+            exportContainer.style.display = (filter === 'tous' || filter === 'confirmes') ? 'block' : 'none';
 
             cards.forEach(card => {
-                if (filter === 'tous') {
-                    card.style.display = 'grid'; // Grid car c'est un tableau
-                } else {
-                    card.style.display = card.classList.contains(filter) ? 'grid' : 'none';
-                }
+                card.style.display = (filter === 'tous' || card.classList.contains(filter)) ? 'grid' : 'none';
             });
         });
     });

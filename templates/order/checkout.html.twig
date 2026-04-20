@@ -2,6 +2,57 @@
 
 {% block title %}Finaliser ma commande - MindBloom{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+body.dark-mode .order-checkout-page {
+    color: #D8DCE8;
+}
+body.dark-mode .order-checkout-page .card,
+body.dark-mode .order-checkout-page .card-body,
+body.dark-mode .order-checkout-page .bg-light,
+body.dark-mode .order-checkout-page .bg-primary.bg-opacity-10,
+body.dark-mode .order-checkout-page .sticky-top {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode .order-checkout-page h4,
+body.dark-mode .order-checkout-page h5,
+body.dark-mode .order-checkout-page .h5,
+body.dark-mode .order-checkout-page .form-label,
+body.dark-mode .order-checkout-page .fw-bold {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .order-checkout-page .text-muted,
+body.dark-mode .order-checkout-page small,
+body.dark-mode .order-checkout-page p,
+body.dark-mode .order-checkout-page span {
+    color: #7A8299 !important;
+}
+body.dark-mode .order-checkout-page .form-control,
+body.dark-mode .order-checkout-page .form-select,
+body.dark-mode .order-checkout-page textarea,
+body.dark-mode .order-checkout-page input[type="text"] {
+    background: #1A1F2E !important;
+    color: #E8EAF0 !important;
+    border-color: #2A3147 !important;
+}
+body.dark-mode .order-checkout-page .btn-link {
+    color: #AEB5C8 !important;
+}
+body.dark-mode .order-checkout-page .btn-outline-secondary {
+    background: #1E2333 !important;
+    border-color: #2A3147 !important;
+    color: #D8DCE8 !important;
+}
+body.dark-mode .order-checkout-page .alert-warning {
+    background: #2C2618 !important;
+    border-color: #5B4A25 !important;
+    color: #E8EAF0 !important;
+}
+</style>
+{% endblock %}
+
 {% block body %}
 <!-- Leaflet CSS & JS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -11,7 +62,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
-<div class="container py-5">
+<div class="container py-5 order-checkout-page">
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <div class="mb-4">

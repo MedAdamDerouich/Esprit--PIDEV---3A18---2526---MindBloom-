@@ -2,8 +2,41 @@
 
 {% block title %}Modifier {{ test.nomTest }} — MindBloom{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+body.dark-mode .test-page {
+    background: #0F1117 !important;
+}
+body.dark-mode .test-page [style*="background:#F5F3EF"],
+body.dark-mode .test-page [style*="background:#FAFAF8"] {
+    background: #0F1117 !important;
+}
+body.dark-mode .test-page [style*="background: white"],
+body.dark-mode .test-page [style*="background:white"] {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.45) !important;
+}
+body.dark-mode .test-page [style*="background:#FCF3CF"] {
+    background: #2C2A1D !important;
+}
+body.dark-mode .test-page [style*="color: #2C3E50"],
+body.dark-mode .test-page [style*="color:#2C3E50"] {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .test-page [style*="color: #7F8C8D"],
+body.dark-mode .test-page [style*="color:#7F8C8D"] {
+    color: #7A8299 !important;
+}
+body.dark-mode .test-page a[style*="color: #7F8C8D"] {
+    color: #AEB5C8 !important;
+}
+</style>
+{% endblock %}
+
 {% block body %}
-<div style="background:#FAFAF8; min-height: calc(100vh - 85px); padding: 50px;">
+<div class="test-page" style="background:#F5F3EF; min-height: calc(100vh - 85px); padding: 50px;">
     <div style="max-width: 800px; margin: 0 auto;">
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">

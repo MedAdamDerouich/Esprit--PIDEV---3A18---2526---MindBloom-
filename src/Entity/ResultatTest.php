@@ -6,7 +6,7 @@ use App\Repository\ResultatTestRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ResultatTestRepository::class)]
-#[ORM\Table(name: 'resultattest')]
+#[ORM\Table(name: 'resultat_test')]
 class ResultatTest
 {
     #[ORM\Id]
@@ -24,11 +24,11 @@ class ResultatTest
     private ?string $etat = null;
 
     #[ORM\ManyToOne(inversedBy: 'resultats')]
-    #[ORM\JoinColumn(name: 'id_test', referencedColumnName: 'id_test', nullable: false)]
+    #[ORM\JoinColumn(name: 'test_id', referencedColumnName: 'id_test', nullable: false)]
     private ?Test $test = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(name: 'id_patient', nullable: true)]
+    #[ORM\JoinColumn(name: 'patient_id', nullable: true)]
     private ?User $patient = null;
 
     public function getId(): ?int

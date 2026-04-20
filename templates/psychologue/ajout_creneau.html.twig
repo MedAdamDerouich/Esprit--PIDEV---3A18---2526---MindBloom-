@@ -28,16 +28,17 @@
         <!-- Champs -->
         <div style="display:flex; flex-direction:column; gap:15px; width:100%;">
             
-            <!-- Jour -->
-            <div style="background:white; border-radius:12px; padding:15px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
-                <label style="font-size:11px; font-weight:bold; color:#8E8E8E;">Jour de la semaine</label>
-                {{ form_widget(form.jour, {'attr': {'style':'width:100%; padding:8px; font-size:13px; border:1px solid #E0E0E0; border-radius:5px;'}}) }}
-            </div>
-
             <!-- Date -->
             <div style="background:white; border-radius:12px; padding:15px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
                 <label style="font-size:11px; font-weight:bold; color:#8E8E8E;">Date spécifique</label>
                 {{ form_widget(form.dateCreneau, {'attr': {'min': 'now'|date('Y-m-d'), 'style':'width:100%; padding:8px; font-size:13px; border:1px solid #E0E0E0; border-radius:5px;'}}) }}
+            </div>
+
+            <!-- Jour -->
+            <div style="background:white; border-radius:12px; padding:15px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+                <label style="font-size:11px; font-weight:bold; color:#8E8E8E;">Jour de la semaine</label>
+                <div id="jour-display" style="width:100%; padding:8px; font-size:13px; border:1px solid #E0E0E0; border-radius:5px; background:#F5F5F5; color:#7F8C8D;">—</div>
+                {{ form_widget(form.jour, {'attr': {'style':'display:none;'}}) }}
             </div>
 
             <!-- Heure & Durée côte à côte -->
@@ -68,4 +69,39 @@
 
     {{ form_end(form) }}
 </div>
+
+<script>
+(function () {
+    const dateInput = document.getElementById('{{ form.dateCreneau.vars.id }}');
+    const jourSelect = document.getElementById('{{ form.jour.vars.id }}');
+
+    const jsToFormDay = {
+        0: 'Dimanche',
+        1: 'Lundi',
+        2: 'Mardi',
+        3: 'Mercredi',
+        4: 'Jeudi',
+        5: 'Vendredi',
+        6: 'Samedi'
+    };
+
+    function syncJour() {
+        if (!dateInput.value) return;
+        const parts = dateInput.value.split('-');
+        const date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        const dayName = jsToFormDay[date.getDay()];
+        const display = document.getElementById('jour-display');
+
+        for (let i = 0; i < jourSelect.options.length; i++) {
+            if (jourSelect.options[i].value === dayName || jourSelect.options[i].text === dayName) {
+                jourSelect.value = jourSelect.options[i].value;
+                if (display) display.textContent = jourSelect.options[i].text;
+                break;
+            }
+        }
+    }
+
+    if (dateInput) dateInput.addEventListener('change', syncJour);
+})();
+</script>
 {% endblock %}

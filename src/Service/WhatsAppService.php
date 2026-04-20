@@ -41,14 +41,12 @@ class WhatsAppService
 
     $response = @file_get_contents('https://api.fonnte.com/send', false, $context);
 
-    // DEBUG
-    echo "Token: " . $this->token . "\n";
-    echo "Phone: " . $phone . "\n";
-    echo "Response: " . $response . "\n";
-
     if (!$response) return false;
     $result = json_decode($response, true);
-    return isset($result['status']) && $result['status'] === true;
+    if (!is_array($result)) return false;
+
+    // Fonnte returns status as boolean true or string "true"
+    return isset($result['status']) && filter_var($result['status'], FILTER_VALIDATE_BOOLEAN);
 }
 
     public function sendReminderMessage(

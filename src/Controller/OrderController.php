@@ -87,17 +87,38 @@ class OrderController extends AbstractController
     public function history(FactureRepository $factureRepository, Request $request): Response
     {
         $tri = $request->query->get('tri', 'date_desc');
-        
-        $orderBy = ['dateFacture' => 'DESC'];
-        if ($tri === 'date_asc') {
-            $orderBy = ['dateFacture' => 'ASC'];
-        } elseif ($tri === 'prix_desc') {
-            $orderBy = ['montantTotal' => 'DESC'];
-        } elseif ($tri === 'prix_asc') {
-            $orderBy = ['montantTotal' => 'ASC'];
+        $statut = $request->query->get('statut', '');
+        $search = $request->query->get('q', '');
+
+        $qb = $factureRepository->createQueryBuilder('f')
+            ->where('f.user = :user')
+            ->setParameter('user', $this->getUser());
+
+        // --- Filtrage par statut ---
+        if ($statut) {
+            $qb->andWhere('f.statutLivraison = :statut')
+               ->setParameter('statut', $statut);
         }
 
-        $factures = $factureRepository->findBy(['user' => $this->getUser()], $orderBy);
+        // --- Recherche par mot-clé (ID ou Adresse) ---
+        if ($search) {
+            $qb->andWhere('f.id = :searchNumeric OR f.adresseLivraison LIKE :searchText')
+               ->setParameter('searchNumeric', is_numeric($search) ? (int)$search : 0)
+               ->setParameter('searchText', '%' . $search . '%');
+        }
+
+        // --- Tri ---
+        if ($tri === 'date_asc') {
+            $qb->orderBy('f.dateFacture', 'ASC');
+        } elseif ($tri === 'prix_desc') {
+            $qb->orderBy('f.montantTotal', 'DESC');
+        } elseif ($tri === 'prix_asc') {
+            $qb->orderBy('f.montantTotal', 'ASC');
+        } else {
+            $qb->orderBy('f.dateFacture', 'DESC');
+        }
+
+        $factures = $qb->getQuery()->getResult();
         
         // Ensure commands with missing products don't crash the list rendering
         foreach ($factures as $facture) {
@@ -116,7 +137,9 @@ class OrderController extends AbstractController
 
         return $this->render('order/history.html.twig', [
             'factures' => $factures,
-            'tri' => $tri,
+            'tri'      => $tri,
+            'statut'   => $statut,
+            'search'   => $search,
         ]);
     }
 

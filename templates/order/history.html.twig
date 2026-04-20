@@ -11,18 +11,37 @@
         <span style="font-size:32px; font-weight:bold; color:#4A90E2;">commandes</span>
         <span style="color:#718096; font-size:16px; margin-top:10px; text-align:center;">Suivez l'état de vos livraisons et gérez vos factures MindBloom.</span>
 
-        <!-- Triage -->
-        <div class="mt-4 w-100 d-flex justify-content-center" style="max-width: 500px;">
-            <div class="search-sort-wrapper px-4">
-                <form action="{{ path('app_order_history') }}" method="GET" class="position-relative m-0 p-0" id="historySortForm">
-                    <select name="tri" class="premium-select form-select" onchange="document.getElementById('historySortForm').submit()" style="border-right: none !important; width: auto; max-width: 100%;">
-                        <option value="date_desc" {% if tri == 'date_desc' %}selected{% endif %}>Trier par : Les plus récentes</option>
-                        <option value="date_asc" {% if tri == 'date_asc' %}selected{% endif %}>Trier par : Les plus anciennes</option>
-                        <option value="prix_desc" {% if tri == 'prix_desc' %}selected{% endif %}>Trier par : Prix Décroissant</option>
-                        <option value="prix_asc" {% if tri == 'prix_asc' %}selected{% endif %}>Trier par : Prix Croissant</option>
+        <!-- Barre de Filtres & Recherche -->
+        <div class="mt-4 w-100" style="max-width: 1000px;">
+            <form action="{{ path('app_order_history') }}" method="GET" id="historyFilterForm" class="row g-3 justify-content-center bg-white p-3 rounded-4 shadow-sm border-0">
+                <!-- Recherche par mot-clé -->
+                <div class="col-md-5">
+                    <div class="position-relative">
+                        <input type="text" name="q" value="{{ search }}" class="form-control rounded-pill border-0 bg-light px-4" placeholder="Rechercher par N° ou Adresse..." style="height: 48px;">
+                        <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                    </div>
+                </div>
+
+                <!-- Filtre par Statut -->
+                <div class="col-md-3">
+                    <select name="statut" class="form-select rounded-pill border-0 bg-light px-3" style="height: 48px;" onchange="this.form.submit()">
+                        <option value="">Tous les statuts</option>
+                        <option value="NON_ENVOYE" {% if statut == 'NON_ENVOYE' %}selected{% endif %}>En préparation</option>
+                        <option value="ENVOYE" {% if statut == 'ENVOYE' %}selected{% endif %}>Expédiée</option>
+                        <option value="ANNULE" {% if statut == 'ANNULE' %}selected{% endif %}>Annulée</option>
                     </select>
-                </form>
-            </div>
+                </div>
+
+                <!-- Tri -->
+                <div class="col-md-4">
+                    <select name="tri" class="form-select rounded-pill border-0 bg-light px-3" style="height: 48px;" onchange="this.form.submit()">
+                        <option value="date_desc" {% if tri == 'date_desc' %}selected{% endif %}>Les plus récentes</option>
+                        <option value="date_asc" {% if tri == 'date_asc' %}selected{% endif %}>Les plus anciennes</option>
+                        <option value="prix_desc" {% if tri == 'prix_desc' %}selected{% endif %}>Prix Décroissant</option>
+                        <option value="prix_asc" {% if tri == 'prix_asc' %}selected{% endif %}>Prix Croissant</option>
+                    </select>
+                </div>
+            </form>
         </div>
     </div>
 

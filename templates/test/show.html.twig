@@ -5,17 +5,96 @@
 {% block body %}
 
 
-<div style="background:#FAFAF8; min-height: calc(100vh - 80px); padding: 50px;">
+<style>
+    @keyframes fadeUpPage {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-entry {
+        opacity: 0;
+        animation: fadeUpPage 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .btn-interactive {
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    .btn-interactive::after {
+        content: '';
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 0; height: 0;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.4s ease-out, height 0.4s ease-out;
+    }
+    .btn-interactive:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .btn-interactive:hover::after {
+        width: 150%; height: 150%;
+        opacity: 0;
+    }
+    .btn-interactive:active {
+        transform: translateY(1px) scale(0.95);
+    }
+    
+    /* Sticky Timer Styles */
+    .sticky-timer {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: white;
+        padding: 15px 25px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        z-index: 1000;
+        border-left: 5px solid #5FBF9F;
+        transition: border-color 0.3s;
+    }
+    .timer-warning {
+        border-left-color: #E74C3C;
+        animation: pulseRed 1s infinite alternate;
+    }
+    @keyframes pulseRed {
+        from { box-shadow: 0 10px 30px rgba(231, 76, 60, 0.1); }
+        to { box-shadow: 0 10px 30px rgba(231, 76, 60, 0.4); }
+    }
+    .timer-digits {
+        font-family: 'Courier New', monospace;
+        font-size: 26px;
+        font-weight: 800;
+        color: #2C3E50;
+        letter-spacing: 2px;
+    }
+</style>
+
+<div class="animate-entry" style="background:#FAFAF8; min-height: calc(100vh - 80px); padding: 50px;">
+    {% if not is_granted('ROLE_PSYCHOLOGUE') and test.duree > 0 %}
+    <div class="sticky-timer animate-entry" id="testTimerWidget" style="animation-delay: 0.5s;">
+        <div style="font-size: 24px;">⏱️</div>
+        <div>
+            <div style="font-size: 11px; font-weight: 700; color: #95A5A6; text-transform: uppercase;">Temps restant</div>
+            <div class="timer-digits" id="timerDisplay">--:--</div>
+        </div>
+    </div>
+    {% endif %}
+
     <div style="max-width: 800px; margin: 0 auto;">
         
-        <a href="{{ is_granted('ROLE_PSYCHOLOGUE') ? path('app_test_manage') : path('app_test_index') }}" style="display:inline-block; margin-bottom: 20px; color: #7F8C8D; text-decoration: none; font-size: 14px; font-weight: 500;">
+        <a href="{{ is_granted('ROLE_PSYCHOLOGUE') ? path('app_test_manage') : path('app_test_index') }}" class="btn-interactive" style="display:inline-block; margin-bottom: 20px; color: #7F8C8D; text-decoration: none; font-size: 14px; font-weight: 500; background: #fff; padding: 8px 16px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
             ← Retour aux tests
         </a>
 
-        <div style="background: white; border-radius: 20px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); margin-bottom: 30px;">
+        <div class="animate-entry" style="background: white; border-radius: 20px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); margin-bottom: 30px; animation-delay: 0.1s;">
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                 <span style="background: #E8F1FC; color: #4A90E2; padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 700;">{{ test.categorie }}</span>
-                <span style="background: #F4F6F6; color: #7F8C8D; padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;">⏱️ {{ test.duree }} min</span>
+                <span style="background: #F4F6F6; color: #7F8C8D; padding: 5px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;">⏱️ Inclus: {{ test.duree }} min</span>
             </div>
             <h1 style="font-size: 32px; font-weight: 800; color: #2C3E50; margin-bottom: 10px;">{{ test.nomTest }}</h1>
             {% if is_granted('ROLE_PSYCHOLOGUE') %}
@@ -24,16 +103,16 @@
             </p>
             {% else %}
             <p style="color: #7F8C8D; line-height: 1.6; font-size: 15px;">
-                Veuillez répondre honnêtement à chacune des questions ci-dessous. Il n'y a pas de mauvaises réponses, le but est d'évaluer votre état avec précision.
+                Veuillez répondre honnêtement à chacune des questions ci-dessous. Le test est chronométré et se soumettra automatiquement à la fin du compte à rebours.
             </p>
             {% endif %}
         </div>
 
         {% if not is_granted('ROLE_PSYCHOLOGUE') %}
-        <form action="{{ path('app_test_submit', {'id': test.id}) }}" method="POST">
+        <form id="testForm" action="{{ path('app_test_submit', {'id': test.id}) }}" method="POST">
         {% endif %}
             {% for index, question in questions %}
-                <div style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); margin-bottom: 20px;">
+                <div class="animate-entry" style="background: white; border-radius: 20px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); margin-bottom: 20px; animation-delay: {{ 0.2 + (index * 0.1) }}s;">
                     <h3 style="font-size: 18px; font-weight: 700; color: #2C3E50; margin-bottom: 20px;">
                         <span style="color: #4A90E2; margin-right: 5px;">{{ index + 1 }}.</span> {{ question.texteQuestion }}
                     </h3>
@@ -42,8 +121,8 @@
                         {% for reponse in question.reponses %}
                             <label style="display: flex; align-items: center; padding: 12px 20px; border: 2px solid {{ is_granted('ROLE_PSYCHOLOGUE') ? '#F0F3F4' : '#F0F3F4' }}; border-radius: 12px; cursor: {{ is_granted('ROLE_PSYCHOLOGUE') ? 'default' : 'pointer' }}; transition: all 0.2s;"
                                    {% if not is_granted('ROLE_PSYCHOLOGUE') %}
-                                   onmouseover="this.style.borderColor='#4A90E2'; this.style.background='#F8FAFD';"
-                                   onmouseout="if(!this.querySelector('input').checked){this.style.borderColor='#F0F3F4'; this.style.background='transparent';}"
+                                   onmouseover="this.style.borderColor='#4A90E2'; this.style.background='#F8FAFD'; this.style.transform='translateX(8px)';"
+                                   onmouseout="this.style.transform='translateX(0)'; if(!this.querySelector('input').checked){this.style.borderColor='#F0F3F4'; this.style.background='transparent';}"
                                    {% endif %}>
                                 {% if not is_granted('ROLE_PSYCHOLOGUE') %}
                                     <input type="radio" name="question_{{ question.id }}" value="{{ reponse.id }}" required style="margin-right: 15px; transform: scale(1.2);">
@@ -66,10 +145,11 @@
             {% endfor %}
 
             {% if questions|length > 0 and not is_granted('ROLE_PSYCHOLOGUE') %}
-                <div style="text-align: center; margin-top: 40px;">
-                    <button type="submit" style="background: #4A90E2; color: white; border: none; border-radius: 15px; padding: 15px 40px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
-                        Soumettre mes réponses
+                <div class="animate-entry" style="text-align: center; margin-top: 40px; animation-delay: {{ 0.2 + (questions|length * 0.1) }}s;">
+                    <button type="submit" class="btn-interactive" style="background: linear-gradient(135deg, #4A90E2, #357ABD); color: white; border: none; border-radius: 15px; padding: 15px 40px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);">
+                        📢 Soumettre mes réponses
                     </button>
+                    <p id="autoSubmitText" style="margin-top: 15px; font-size: 12px; color: #95A5A6; display: none;">Le temps est écoulé ! Soumission en cours...</p>
                 </div>
             {% endif %}
 
@@ -81,25 +161,73 @@
 </div>
 
 <script>
-    // Add active styling to selected radio buttons
     document.addEventListener('DOMContentLoaded', () => {
+        // --- Custom Radio Logic ---
         const radios = document.querySelectorAll('input[type="radio"]');
         radios.forEach(radio => {
             radio.addEventListener('change', function() {
-                // Reset all labels in this group
                 const name = this.getAttribute('name');
                 document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
                     r.closest('label').style.borderColor = '#F0F3F4';
                     r.closest('label').style.background = 'transparent';
                 });
                 
-                // Highlight selected
                 if (this.checked) {
                     this.closest('label').style.borderColor = '#4A90E2';
                     this.closest('label').style.background = '#F8FAFD';
                 }
             });
         });
+
+        // --- Countdown Timer Logic ---
+        {% if not is_granted('ROLE_PSYCHOLOGUE') and test.duree > 0 %}
+        const durationMinutes = {{ test.duree }};
+        let timeRemaining = durationMinutes * 60; // in seconds
+        
+        const display = document.getElementById('timerDisplay');
+        const widget = document.getElementById('testTimerWidget');
+        const form = document.getElementById('testForm');
+        
+        function updateTimer() {
+            let minutes = Math.floor(timeRemaining / 60);
+            let seconds = timeRemaining % 60;
+
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+
+            display.textContent = minutes + ":" + seconds;
+
+            // Warning style for last 60 seconds
+            if (timeRemaining <= 60 && !widget.classList.contains('timer-warning')) {
+                widget.classList.add('timer-warning');
+                display.style.color = '#E74C3C';
+            }
+
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                display.textContent = "00:00";
+                
+                // Disable all inputs so user stops interacting
+                document.querySelectorAll('input').forEach(input => input.disabled = true);
+                
+                // Attempt to submit valid fields. Form validity check:
+                // Remove required attributes just in case, because time is up. 
+                // Alternatively, let them submit partial.
+                document.querySelectorAll('input[required]').forEach(input => input.removeAttribute('required'));
+
+                document.getElementById('autoSubmitText').style.display = 'block';
+                document.querySelector('button[type="submit"]').style.display = 'none';
+                
+                setTimeout(() => {
+                    form.submit();
+                }, 1000);
+            }
+            timeRemaining--;
+        }
+
+        updateTimer();
+        const timerInterval = setInterval(updateTimer, 1000);
+        {% endif %}
     });
 </script>
 {% endblock %}

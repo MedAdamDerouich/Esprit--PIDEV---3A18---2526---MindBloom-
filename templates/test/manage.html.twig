@@ -3,12 +3,36 @@
 {% block title %}Gérer Mes Tests — MindBloom{% endblock %}
 
 {% block body %}
+<style>
+    @keyframes fadeUpPage {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-entry {
+        opacity: 0;
+        animation: fadeUpPage 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    /* Pagination Premium Styling */
+    .navigation { margin-top: 40px; }
+    .pagination { display: flex; justify-content: center; gap: 8px; list-style: none; padding: 0; }
+    .pagination li a, .pagination li span {
+        display: inline-block; padding: 10px 18px; border-radius: 12px; background: white; color: #4A90E2;
+        text-decoration: none; font-weight: 700; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); border: 1px solid #F0F0F0;
+    }
+    .pagination li.active span {
+        background: #4A90E2; color: white; border-color: #4A90E2; box-shadow: 0 6px 15px rgba(74, 144, 226, 0.3);
+    }
+    .pagination li a:hover {
+        background: #F4F8FF; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.06); border-color: #4A90E2;
+    }
+    .pagination li.disabled span { color: #BDC3C7; background: #FAFAFA; cursor: not-allowed; }
+</style>
 
-
-<div style="background:#FAFAF8; min-height: calc(100vh - 70px); padding: 50px;">
+<div class="animate-entry" style="background:#FAFAF8; min-height: calc(100vh - 70px); padding: 50px; animation-delay: 0s;">
     <div style="max-width: 1200px; margin: 0 auto;">
         
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+        <div class="animate-entry" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; animation-delay: 0.1s;">
             <div>
                 <span style="display:inline-block;background:#E8F1FC;color:#4A90E2;border-radius:20px;padding:6px 15px;font-size:13px;margin-bottom:10px;font-weight:600;">
                     ⚙️ Gestion
@@ -21,9 +45,45 @@
             </a>
         </div>
 
-        <div style="display: flex; flex-wrap: wrap; gap: 30px;">
+        <div class="animate-entry" style="background: white; max-width: 900px; margin: 0 auto 40px 0; padding: 20px 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); display: flex; gap: 20px; align-items: center; flex-wrap: wrap; animation-delay: 0.2s;">
+            <div style="flex: 2; min-width: 200px; position: relative;">
+                <span style="position: absolute; left: 15px; top: 12px; font-size: 18px; color: #95A5A6;">🔍</span>
+                <input type="text" id="manageSearchInput" placeholder="Rechercher par nom de test..." 
+                       style="width: 100%; padding: 12px 15px 12px 45px; border: 2px solid #E0E4E8; border-radius: 12px; font-size: 15px; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='#4A90E2'" onblur="this.style.borderColor='#E0E4E8'">
+            </div>
+            
+            <div style="flex: 1; min-width: 180px;">
+                <select id="manageCategoryFilter" style="width: 100%; padding: 12px 15px; border: 2px solid #E0E4E8; border-radius: 12px; font-size: 15px; font-family: 'Inter', sans-serif; outline: none; background: white; cursor: pointer; transition: border-color 0.2s;" onfocus="this.style.borderColor='#4A90E2'" onblur="this.style.borderColor='#E0E4E8'">
+                    <option value="all">Toutes les catégories</option>
+                    {% set categories = [] %}
+                    {% for test in tests %}
+                        {% if test.categorie not in categories %}
+                            {% set categories = categories|merge([test.categorie]) %}
+                            <option value="{{ test.categorie|lower }}">{{ test.categorie }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="flex: 1; min-width: 180px;">
+                <select id="manageSortFilter" style="width: 100%; padding: 12px 15px; border: 2px solid #E0E4E8; border-radius: 12px; font-size: 15px; font-family: 'Inter', sans-serif; outline: none; background: white; cursor: pointer; transition: border-color 0.2s;" onfocus="this.style.borderColor='#4A90E2'" onblur="this.style.borderColor='#E0E4E8'">
+                    <option value="default">Trier par date</option>
+                    <option value="populaire">Plus populaires (patients)</option>
+                    <option value="questions">Plus de questions</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="testManageContainer" style="display: flex; flex-wrap: wrap; gap: 30px; margin-bottom: 40px;">
+            <div id="noManageResults" style="display: none; width: 100%; text-align: center; padding: 60px; background: white; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.03);">
+                <div style="font-size: 40px; margin-bottom: 20px;">🕵️</div>
+                <h4 style="font-size: 20px; font-weight: 700; color: #2C3E50; margin-bottom: 10px;">Aucun test ne correspond</h4>
+                <p style="color: #7F8C8D;">Modifiez vos critères de recherche.</p>
+            </div>
+
             {% for test in tests %}
-                <div style="width: 350px; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.04); transition: transform 0.3s ease, box-shadow 0.3s ease; position: relative; overflow: hidden;"
+                <div class="manage-card animate-entry" data-title="{{ test.nomTest|lower }}" data-category="{{ test.categorie|lower }}" data-patients="{{ patientCounts[test.id] ?? 0 }}" data-questions="{{ test.questions|length }}" data-id="{{ test.id }}"
+                     style="width: 350px; background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.04); transition: transform 0.3s ease, box-shadow 0.3s ease; position: relative; overflow: hidden; animation-delay: {{ 0.3 + (loop.index0 * 0.1) }}s;"
                      onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 15px 35px rgba(0,0,0,0.08)'"
                      onmouseout="this.style.transform='none'; this.style.boxShadow='0 10px 25px rgba(0,0,0,0.04)'">
                     
@@ -72,6 +132,76 @@
                 </div>
             {% endfor %}
         </div>
+
+        {# Pagination Navigation #}
+        <div class="navigation animate-entry" style="display: flex; justify-content: center; margin-top: 20px; animation-delay: 0.8s;">
+            {{ knp_pagination_render(tests) }}
+        </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('manageSearchInput');
+        const categoryFilter = document.getElementById('manageCategoryFilter');
+        const sortFilter = document.getElementById('manageSortFilter');
+        const container = document.getElementById('testManageContainer');
+        const cards = Array.from(document.querySelectorAll('.manage-card'));
+        const noResults = document.getElementById('noManageResults');
+
+        function filterAndSortTests() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const categorySelect = categoryFilter.value;
+            const sortMode = sortFilter.value;
+            let visibleCount = 0;
+
+            // Sort
+            cards.sort((a, b) => {
+                if (sortMode === 'populaire') {
+                    return parseInt(b.getAttribute('data-patients')) - parseInt(a.getAttribute('data-patients'));
+                } else if (sortMode === 'questions') {
+                    return parseInt(b.getAttribute('data-questions')) - parseInt(a.getAttribute('data-questions'));
+                }
+                // default (by original ID in DOM)
+                return parseInt(b.getAttribute('data-id')) - parseInt(a.getAttribute('data-id'));
+            });
+
+            // Re-attach sorted cards
+            cards.forEach(card => container.appendChild(card));
+
+            // Filter
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title');
+                const category = card.getAttribute('data-category');
+                
+                const matchesSearch = title.includes(searchTerm);
+                const matchesCategory = categorySelect === 'all' || category === categorySelect;
+
+                if (matchesSearch && matchesCategory) {
+                    card.style.display = 'block';
+                    card.style.animation = 'fadeUp 0.3s ease-out forwards';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (visibleCount === 0 && cards.length > 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+            }
+        }
+
+        if (searchInput) searchInput.addEventListener('input', filterAndSortTests);
+        if (categoryFilter) categoryFilter.addEventListener('change', filterAndSortTests);
+        if (sortFilter) sortFilter.addEventListener('change', filterAndSortTests);
+    });
+</script>
+<style>
+    @keyframes fadeUp {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+</style>
 {% endblock %}

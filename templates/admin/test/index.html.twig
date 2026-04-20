@@ -3,20 +3,70 @@
 {% block title %}Gestion des Tests — MindBloom Admin{% endblock %}
 
 {% block body %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    @keyframes fadeUpPage {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-entry {
+        opacity: 0;
+        animation: fadeUpPage 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    /* Pagination Premium Styling */
+    .pagination { display: flex; justify-content: center; gap: 8px; list-style: none; padding: 0; }
+    .pagination li a, .pagination li span {
+        display: inline-block; padding: 8px 14px; border-radius: 10px; background: white; color: #4A90E2;
+        text-decoration: none; font-weight: 700; font-size: 13px; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        transition: all 0.2s ease; border: 1px solid #F0F0F0;
+    }
+    .pagination li.active span {
+        background: #4A90E2; color: white; border-color: #4A90E2;
+    }
+    .pagination li a:hover {
+        background: #F4F8FF; border-color: #4A90E2;
+    }
+    .pagination li.disabled span { color: #BDC3C7; background: #FAFAFA; cursor: not-allowed; }
+</style>
+
 <div class="d-flex">
     {{ include('admin/_sidebar.html.twig') }}
 
     <div class="admin-content" style="flex:1;">
-        {# Header #}
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        {# Header & Action #}
+        <div class="animate-entry d-flex justify-content-between align-items-center mb-4" style="animation-delay: 0s;">
             <div class="mb-page-header" style="margin:0;">
                 <h1>📋 Tests Disponibles</h1>
-                <p>Aperçu général des tests psychologiques</p>
+                <p>Analyse et gestion de l'ensemble des tests psychologiques</p>
+            </div>
+            
+            <div>
+                <a href="{{ path('app_admin_test_export') }}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 12px 25px; border-radius: 12px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); transition: all 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+                    Exporter données (CSV)
+                </a>
             </div>
         </div>
 
-        {# Search & Filters (similar to users list) #}
-        <div class="mb-card mb-3" style="padding:16px 20px;">
+        {# Advanced Metrics Dashboards #}
+        <div class="d-flex flex-wrap gap-4 mb-4">
+            <div class="animate-entry mb-card flex-fill" style="padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); animation-delay: 0.1s;">
+                <h5 style="font-weight: 800; color: #2C3E50; margin-bottom: 20px;">Répartition des État Cliniques</h5>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="statesChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="animate-entry mb-card flex-fill" style="padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); animation-delay: 0.2s;">
+                <h5 style="font-weight: 800; color: #2C3E50; margin-bottom: 20px;">Tests par Catégories</h5>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="catsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# Search & Filters #}
+        <div class="animate-entry mb-card mb-3" style="padding:16px 20px; animation-delay: 0.3s;">
             <div class="d-flex gap-3 align-items-center flex-wrap">
                 <div class="mb-search" style="flex:1;min-width:200px;">
                     <span class="search-icon">🔍</span>
@@ -27,7 +77,7 @@
         </div>
 
         {# Table #}
-        <div class="mb-card" style="padding:0;overflow:hidden;">
+        <div class="animate-entry mb-card" style="padding:0;overflow:hidden; animation-delay: 0.4s;">
             <table class="mb-table" id="testsTable">
                 <thead>
                     <tr>
@@ -79,6 +129,11 @@
                 </tbody>
             </table>
         </div>
+
+        {# Pagination Navigation #}
+        <div class="navigation animate-entry" style="display: flex; justify-content: center; margin-top: 25px; animation-delay: 0.5s;">
+            {{ knp_pagination_render(tests) }}
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -94,5 +149,64 @@ function filterTable(value) {
         row.style.display = matchSearch ? '' : 'none';
     });
 }
+
+// Global Variables injected from Controller
+const rawStates = {{ statesDist|raw }};
+const rawCats = {{ catDist|raw }};
+
+// Chart: States Distribution
+const ctxStates = document.getElementById('statesChart').getContext('2d');
+new Chart(ctxStates, {
+    type: 'doughnut',
+    data: {
+        labels: rawStates.map(d => d.label),
+        datasets: [{
+            data: rawStates.map(d => parseInt(d.count)),
+            backgroundColor: [
+                '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD', '#D4A5A5', '#9B59B6'
+            ],
+            borderWidth: 0,
+            hoverOffset: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'right', labels: { usePointStyle: true, font: { family: "'Inter', sans-serif" } } }
+        },
+        cutout: '70%'
+    }
+});
+
+// Chart: Category Distribution
+const ctxCats = document.getElementById('catsChart').getContext('2d');
+new Chart(ctxCats, {
+    type: 'bar',
+    data: {
+        labels: rawCats.map(d => d.label),
+        datasets: [{
+            label: 'Nombre de Tests',
+            data: rawCats.map(d => parseInt(d.count)),
+            backgroundColor: 'rgba(74, 144, 226, 0.8)',
+            borderColor: '#4A90E2',
+            borderWidth: 2,
+            borderRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+});
 </script>
 {% endblock %}

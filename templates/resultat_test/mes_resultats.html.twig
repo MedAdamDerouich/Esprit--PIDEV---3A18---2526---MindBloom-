@@ -3,10 +3,47 @@
 {% block title %}Mes Résultats de Tests — MindBloom{% endblock %}
 
 {% block body %}
-<div style="background:#FAFAF8; min-height: calc(100vh - 85px); padding: 50px;">
+<style>
+    @keyframes fadeUpPage {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-entry {
+        opacity: 0;
+        animation: fadeUpPage 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .btn-interactive {
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    .btn-interactive::after {
+        content: '';
+        position: absolute;
+        top: 50%; left: 50%;
+        width: 0; height: 0;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.4s ease-out, height 0.4s ease-out;
+    }
+    .btn-interactive:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .btn-interactive:hover::after {
+        width: 150%; height: 150%;
+        opacity: 0;
+    }
+    .btn-interactive:active {
+        transform: translateY(1px) scale(0.95);
+    }
+</style>
+
+<div class="animate-entry" style="background:#FAFAF8; min-height: calc(100vh - 85px); padding: 50px; animation-delay: 0s;">
     <div style="max-width: 1000px; margin: 0 auto;">
         
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+        <div class="animate-entry" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; animation-delay: 0.1s;">
             <div>
                 <span style="display:inline-block;background:#E8F1FC;color:#4A90E2;border-radius:20px;padding:6px 15px;font-size:13px;margin-bottom:10px;font-weight:600;">
                     📊 Historique
@@ -14,19 +51,26 @@
                 <h1 style="font-size:36px;font-weight:900;color:#2C3E50;">Mes Résultats de Tests</h1>
             </div>
             
-            <a href="{{ path('app_test_index') }}" style="background: white; color: #4A90E2; padding: 12px 25px; border-radius: 12px; font-weight: 700; text-decoration: none; border: 2px solid #4A90E2; transition: all 0.2s;" onmouseover="this.style.background='#4A90E2'; this.style.color='white'" onmouseout="this.style.background='white'; this.style.color='#4A90E2'">
-                Passer un nouveau test
-            </a>
+            <div style="display: flex; gap: 15px;">
+                {% if resultat_tests|length > 0 %}
+                <a href="{{ path('app_resultat_test_generer_rapport') }}" class="btn-interactive" style="display: inline-block; background: linear-gradient(135deg, #8E2DE2, #4A00E0); color: white; padding: 12px 25px; border-radius: 12px; font-weight: 700; text-decoration: none; border: none; box-shadow: 0 4px 15px rgba(74, 0, 224, 0.3);">
+                    ✨ Générer Rapport Analytique
+                </a>
+                {% endif %}
+                <a href="{{ path('app_test_index') }}" class="btn-interactive" style="display: inline-block; background: white; color: #4A90E2; padding: 12px 25px; border-radius: 12px; font-weight: 700; text-decoration: none; border: 2px solid #4A90E2;">
+                    Passer un nouveau test
+                </a>
+            </div>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 20px;">
             {% for resultat in resultat_tests %}
-                <div style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; border-left: 6px solid {% if resultat.score > 80 %}#27AE60{% elseif resultat.score > 50 %}#F39C12{% else %}#E74C3C{% endif %};">
+                <div class="animate-entry" style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; border-left: 6px solid {% if resultat.score > 80 %}#27AE60{% elseif resultat.score > 50 %}#F39C12{% else %}#E74C3C{% endif %}; animation-delay: {{ 0.2 + (loop.index0 * 0.1) }}s;">
                     
                     <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <h3 style="font-size: 20px; font-weight: 800; color: #34495E; margin: 0;">{{ resultat.test.nomTest }}</h3>
+                        <h3 style="font-size: 20px; font-weight: 800; color: #34495E; margin: 0;">{{ resultat.test ? resultat.test.nomTest : 'Test supprimé' }}</h3>
                         <div style="display: flex; gap: 15px; font-size: 13px; color: #7F8C8D;">
-                            <span>Catégorie: <b>{{ resultat.test.categorie }}</b></span>
+                            <span>Catégorie: <b>{{ resultat.test ? resultat.test.categorie : 'N/A' }}</b></span>
                         </div>
                     </div>
                     
@@ -39,8 +83,7 @@
                         </span>
                     </div>
 
-                    <a href="{{ path('app_resultat_test_show', {'id': resultat.id}) }}" style="background:#EDF9F5; color:#5FBF9F; border-radius:10px; padding:10px 20px; text-decoration:none; font-weight:700; font-size:14px; transition:0.2s;"
-                       onmouseover="this.style.background='#5FBF9F'; this.style.color='white'" onmouseout="this.style.background='#EDF9F5'; this.style.color='#5FBF9F'">
+                    <a href="{{ path('app_resultat_test_show', {'id': resultat.id}) }}" class="btn-interactive" style="display: inline-block; background:#EDF9F5; color:#5FBF9F; border-radius:10px; padding:10px 20px; text-decoration:none; font-weight:700; font-size:14px; box-shadow: 0 2px 5px rgba(95, 191, 159, 0.2);">
                         Voir détails →
                     </a>
                 </div>

@@ -16,6 +16,10 @@ framework:
     #fragments: true
     php_errors:
         log: true
+    
+    translator:
+        default_path: '%kernel.project_dir%/translations'
+        fallbacks: ['fr']
 
 when@test:
     framework:

@@ -13,18 +13,24 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/test')]
 class TestController extends AbstractController
 {
     #[Route('/', name: 'app_test_index', methods: ['GET'])]
-    public function index(TestRepository $repository, EntityManagerInterface $em): Response
+    public function index(TestRepository $repository, EntityManagerInterface $em, Request $request, PaginatorInterface $paginator): Response
     {
         if ($this->isGranted('ROLE_ADMIN')) {
             return $this->redirectToRoute('app_admin_test_index');
         }
 
-        $tests = $repository->findAll();
+        $query = $repository->createQueryBuilder('t')->getQuery();
+        $tests = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            3
+        );
         $patientCounts = [];
         
         foreach ($tests as $test) {
@@ -70,14 +76,23 @@ class TestController extends AbstractController
 
     #[Route('/manage', name: 'app_test_manage', methods: ['GET'])]
     #[IsGranted('ROLE_PSYCHOLOGUE')]
-    public function manage(TestRepository $repository, EntityManagerInterface $em): Response
+    public function manage(TestRepository $repository, EntityManagerInterface $em, Request $request, PaginatorInterface $paginator): Response
     {
         $user = $this->getUser();
         if (!$user) {
             throw $this->createAccessDeniedException('Vous devez être connecté.');
         }
 
-        $tests = $repository->findBy(['user' => $user]);
+        $query = $repository->createQueryBuilder('t')
+            ->where('t.user = :user')
+            ->setParameter('user', $user)
+            ->getQuery();
+
+        $tests = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            3
+        );
         $patientCounts = [];
 
         foreach ($tests as $test) {

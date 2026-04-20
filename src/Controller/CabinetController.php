@@ -24,7 +24,7 @@ class CabinetController extends AbstractController
 
         return $this->render('psychologue/cabinet.html.twig', [
             'cabinet' => $cabinet,
-            // 'groqApiKey' => $_ENV['GROQ_API_KEY'] ?? getenv('GROQ_API_KEY'), 
+            // 'groqApiKey' => $this->getParameter('groq_api_key'), 
         ]);
     }
 
@@ -68,7 +68,7 @@ class CabinetController extends AbstractController
         return $this->render('psychologue/ajout_cabinet.html.twig', [
             'form' => $form->createView(),
             'cabinet' => $cabinet->getIdCabinet() ? $cabinet : null,
-            'groqApiKey' => $_ENV['GROQ_API_KEY'] ?? getenv('GROQ_API_KEY'),
+            'groqApiKey' => $this->getParameter('groq_api_key'),
         ]);
     }
 }

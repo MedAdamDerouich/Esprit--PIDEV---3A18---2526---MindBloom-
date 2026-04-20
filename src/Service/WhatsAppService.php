@@ -6,9 +6,9 @@ class WhatsAppService
 {
     private string $token;
 
-    public function __construct()
+    public function __construct(string $token)
     {
-        $this->token = $_ENV['FONNTE_TOKEN'] ?? getenv('FONNTE_TOKEN');
+        $this->token = $token;
     }
 
     public function sendMessage(string $phone, string $message): bool

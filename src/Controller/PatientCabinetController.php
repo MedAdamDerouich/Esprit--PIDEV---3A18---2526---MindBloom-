@@ -45,7 +45,7 @@ class PatientCabinetController extends AbstractController
             'cabinets' => $pagination,
             'availableDates' => $availableDates,
             'search' => $search,
-            'googleMapsApiKey' => $_ENV['GOOGLE_MAPS_API_KEY'] ?? getenv('GOOGLE_MAPS_API_KEY'),
+            'googleMapsApiKey' => $this->getParameter('google_maps_api_key'),
         ]);
     }
 
@@ -81,7 +81,7 @@ class PatientCabinetController extends AbstractController
         return $this->render('patient/reserver.html.twig', [
             'cabinet' => $cabinet,
             'groupedCreneaux' => $groupedCreneaux,
-            'groqApiKey' => $_ENV['GROQ_API_KEY'] ?? getenv('GROQ_API_KEY'),
+            'groqApiKey' => $this->getParameter('groq_api_key'),
         ]);
     }
 

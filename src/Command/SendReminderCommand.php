@@ -48,7 +48,7 @@ class SendReminderCommand extends Command
             }
 
             $sent = $this->whatsAppService->sendReminderMessage(
-                '+216' . $patient->getPhone(),
+                $patient->getPhone(),
                 $patient->getFullName() ?? 'Patient',
                 $cabinet?->getPsychologue()?->getFullName() ?? 'Dr. Inconnu',
                 $creneau->getDateCreneau()->format('d/m/Y'),

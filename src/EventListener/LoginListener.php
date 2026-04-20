@@ -33,7 +33,7 @@ class LoginListener
             if (!$user->getPhone()) continue;
 
             $sent = $this->whatsAppService->sendReminderMessage(
-                '+216' . $user->getPhone(),
+                $user->getPhone(),
                 $user->getFullName() ?? 'Patient',
                 $cabinet?->getPsychologue()?->getFullName() ?? 'Dr. Inconnu',
                 $creneau->getDateCreneau()->format('d/m/Y'),

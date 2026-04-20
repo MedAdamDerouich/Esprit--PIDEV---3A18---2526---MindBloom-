@@ -103,7 +103,7 @@
             <p style="font-size:16px;color:#7F8C8D;max-width:600px;margin:0 auto;line-height:1.6;">
                 Découvrez nos tests validés scientifiquement pour mieux comprendre vos émotions, votre personnalité et votre bien-être mental.
             </p>
-            {% if app.user %}
+            {% if app.user and app.user.role == 'PATIENT' %}
                 <div style="margin-top: 25px;">
                     <a href="{{ path('app_resultat_test_mes_resultats') }}" style="background: #5FBF9F; color: white; padding: 12px 30px; border-radius: 12px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 10px rgba(95, 191, 159, 0.3); transition: transform 0.2s; display: inline-block;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
                         📊 Voir mes résultats

@@ -238,7 +238,7 @@
             </div>
             <div class="kpi-block">
                 <div class="kpi-label">Wallets</div>
-                <div class="kpi-val orange" data-count="{{ stats.revenue }}" data-suffix=" DT" data-decimals="2">0</div>
+                <div class="kpi-val orange" data-count="{{ (stats.revenue|default(0)) * 1000 }}" data-suffix=" m" data-decimals="0">0</div>
                 <div class="kpi-sub">solde cumulé</div>
             </div>
         </div>
@@ -249,7 +249,7 @@
                 <div class="mod-icon" style="background:#FFF7ED;"><i class="bi bi-bag" style="color:#D97706;"></i></div>
                 <div><div class="mod-count" style="color:#D97706;" data-count="{{ stats.produits }}">0</div><div class="mod-label">Produits</div></div>
             </a>
-            <a href="#" class="mod-card">
+            <a href="{{ path('app_admin_event_index') }}" class="mod-card">
                 <div class="mod-icon" style="background:#ECFDF5;"><i class="bi bi-calendar-event" style="color:#059669;"></i></div>
                 <div><div class="mod-count" style="color:#059669;" data-count="{{ stats.evenements }}">0</div><div class="mod-label">Événements</div></div>
             </a>
@@ -261,13 +261,13 @@
                 <div class="mod-icon" style="background:#F5F3FF;"><i class="bi bi-box-seam" style="color:#7C3AED;"></i></div>
                 <div><div class="mod-count" style="color:#7C3AED;" data-count="{{ stats.commandes }}">0</div><div class="mod-label">Commandes</div></div>
             </a>
-            <a href="#" class="mod-card">
+            <a href="{{ path('app_admin_test_index') }}" class="mod-card">
                 <div class="mod-icon" style="background:#ECFEFF;"><i class="bi bi-clipboard-data" style="color:#0891B2;"></i></div>
                 <div><div class="mod-count" style="color:#0891B2;" data-count="{{ stats.tests }}">0</div><div class="mod-label">Tests</div></div>
             </a>
             <a href="{{ path('app_admin_wallets') }}" class="mod-card">
                 <div class="mod-icon" style="background:#ECFDF5;"><i class="bi bi-wallet2" style="color:#059669;"></i></div>
-                <div><div class="mod-count" style="color:#059669;" data-count="{{ stats.revenue }}" data-suffix=" DT" data-decimals="0">0</div><div class="mod-label">DT en wallets</div></div>
+                <div><div class="mod-count" style="color:#059669;" data-count="{{ (stats.revenue|default(0)) * 1000 }}" data-suffix=" m" data-decimals="0">0</div><div class="mod-label">Millimes en wallets</div></div>
             </a>
             <a href="{{ path('app_admin_cabinets') }}" class="mod-card">
                 <div class="mod-icon" style="background:#FFFBEB;"><i class="bi bi-calendar-check" style="color:#D97706;"></i></div>
@@ -295,22 +295,20 @@
                 <div class="rb-top"><span class="rb-name">Admins</span><span class="rb-count">{{ stats.admins }}</span></div>
                 <div class="rb-track"><div class="rb-fill" style="width:0%;background:#D97706;" data-width="{{ ((stats.admins/total)*100)|round }}"></div></div>
             </div>
-            <a href="{{ path('app_admin_users') }}" class="role-cta">Gérer les utilisateurs →</a>
         </div>
 
         {# ── Analytics ── #}
         <div class="analytics-grid">
 
-            {# Line chart #}
+            {# Bar chart — platform stats #}
             <div class="analytics-card">
                 <div class="analytics-card-header">
                     <div>
-                        <div class="analytics-card-title">Croissance des inscriptions</div>
-                        <div class="analytics-card-sub">Nouveaux comptes sur les 6 derniers mois</div>
+                        <div class="analytics-card-title">Vue d'ensemble de la plateforme</div>
+                        <div class="analytics-card-sub">Utilisateurs, réservations &amp; commandes</div>
                     </div>
-                    <span class="analytics-badge">6 mois</span>
                 </div>
-                <canvas id="chartRegistrations" height="130"></canvas>
+                <canvas id="chartOverview" height="130"></canvas>
             </div>
 
             {# Donut chart #}
@@ -320,7 +318,6 @@
                         <div class="analytics-card-title">Répartition des rôles</div>
                         <div class="analytics-card-sub">Distribution de la communauté</div>
                     </div>
-                    <span class="analytics-badge">Live</span>
                 </div>
                 <div class="donut-wrap">
                     <canvas id="chartRoles" width="150" height="150" class="donut-canvas"></canvas>
@@ -394,32 +391,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, 200);
 
-    /* ── Line chart ── */
-    var labels = {{ monthlyLabels|raw }};
-    var data   = {{ monthlyData|raw }};
-
-    new Chart(document.getElementById('chartRegistrations'), {
-        type: 'line',
+    /* ── Bar chart — platform overview ── */
+    new Chart(document.getElementById('chartOverview'), {
+        type: 'bar',
         data: {
-            labels: labels,
+            labels: ['Patients', 'Psychologues', 'Réservations', 'Commandes', 'Produits', 'Cabinets'],
             datasets: [{
-                label: 'Inscriptions',
-                data: data,
-                borderColor: '#2563EB',
-                backgroundColor: function(ctx) {
-                    var g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 200);
-                    g.addColorStop(0, 'rgba(37,99,235,0.12)');
-                    g.addColorStop(1, 'rgba(37,99,235,0.00)');
-                    return g;
-                },
+                label: 'Total',
+                data: [
+                    {{ stats.patients }},
+                    {{ stats.psychologues }},
+                    {{ stats.reservations }},
+                    {{ stats.commandes }},
+                    {{ stats.produits }},
+                    {{ stats.cabinets }}
+                ],
+                backgroundColor: [
+                    'rgba(5,150,105,0.75)',
+                    'rgba(37,99,235,0.75)',
+                    'rgba(124,58,237,0.75)',
+                    'rgba(217,119,6,0.75)',
+                    'rgba(220,38,38,0.75)',
+                    'rgba(8,145,178,0.75)',
+                ],
+                borderColor: [
+                    '#059669','#2563EB','#7C3AED','#D97706','#DC2626','#0891B2'
+                ],
                 borderWidth: 2,
-                pointBackgroundColor: '#2563EB',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                tension: 0.45,
-                fill: true,
+                borderRadius: 8,
+                borderSkipped: false,
             }]
         },
         options: {
@@ -434,7 +434,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     padding: 10,
                     cornerRadius: 8,
                     displayColors: false,
-                    callbacks: { label: function(c) { return c.parsed.y + ' inscription' + (c.parsed.y > 1 ? 's' : ''); } }
                 }
             },
             scales: {
@@ -444,11 +443,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     grid: { color: '#F1F5F9', drawBorder: false }
                 },
                 x: {
-                    ticks: { color: '#94A3B8', font: { size: 11 } },
+                    ticks: { color: '#64748B', font: { size: 11 } },
                     grid: { display: false }
                 }
             },
-            animation: { duration: 1000, easing: 'easeOutQuart' }
+            animation: { duration: 900, easing: 'easeOutQuart' }
         }
     });
 

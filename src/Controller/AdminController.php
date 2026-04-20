@@ -39,7 +39,7 @@ class AdminController extends AbstractController
                 'admins'       => $userRepository->countByRole(User::ROLE_ADMIN),
                 'active'       => $userRepository->countByStatus(User::STATUS_ACTIVE),
                 'suspended'    => $userRepository->countByStatus(User::STATUS_SUSPENDED),
-                'revenue'      => number_format($walletRepository->getTotalBalance(), 2),
+                'revenue'      => (float) $walletRepository->getTotalBalance(),
                 'reservations' => $reservationRepository->count([]),
                 'cabinets'     => $cabinetRepository->count([]),
                 'produits'     => $produitRepository->count([]),

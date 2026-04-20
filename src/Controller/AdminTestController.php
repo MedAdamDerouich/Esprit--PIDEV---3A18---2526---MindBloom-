@@ -9,15 +9,22 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 #[Route('/admin/tests')]
 #[IsGranted('ROLE_ADMIN')]
 class AdminTestController extends AbstractController
 {
     #[Route('', name: 'app_admin_test_index', methods: ['GET'])]
-    public function index(TestRepository $testRepository, ResultatTestRepository $resultatRepo): Response
+    public function index(TestRepository $testRepository, ResultatTestRepository $resultatRepo, Request $request, PaginatorInterface $paginator): Response
     {
-        $tests = $testRepository->findAll();
+        $query = $testRepository->createQueryBuilder('t')->getQuery();
+        $tests = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            10
+        );
         
         // Global statistics for charts
         $statesDistribution = $resultatRepo->createQueryBuilder('r')

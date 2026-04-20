@@ -13,6 +13,20 @@
         opacity: 0;
         animation: fadeUpPage 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+    /* Pagination Premium Styling */
+    .pagination { display: flex; justify-content: center; gap: 8px; list-style: none; padding: 0; }
+    .pagination li a, .pagination li span {
+        display: inline-block; padding: 8px 14px; border-radius: 10px; background: white; color: #4A90E2;
+        text-decoration: none; font-weight: 700; font-size: 13px; box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        transition: all 0.2s ease; border: 1px solid #F0F0F0;
+    }
+    .pagination li.active span {
+        background: #4A90E2; color: white; border-color: #4A90E2;
+    }
+    .pagination li a:hover {
+        background: #F4F8FF; border-color: #4A90E2;
+    }
+    .pagination li.disabled span { color: #BDC3C7; background: #FAFAFA; cursor: not-allowed; }
 </style>
 
 <div class="d-flex">
@@ -114,6 +128,11 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+
+        {# Pagination Navigation #}
+        <div class="navigation animate-entry" style="display: flex; justify-content: center; margin-top: 25px; animation-delay: 0.5s;">
+            {{ knp_pagination_render(tests) }}
         </div>
     </div>
 </div>

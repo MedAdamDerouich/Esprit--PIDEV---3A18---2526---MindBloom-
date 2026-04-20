@@ -39,6 +39,47 @@
     .btn-interactive:active {
         transform: translateY(1px) scale(0.95);
     }
+    /* Pagination Premium Styling */
+    .navigation {
+        margin-top: 40px;
+    }
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        list-style: none;
+        padding: 0;
+    }
+    .pagination li a, .pagination li span {
+        display: inline-block;
+        padding: 10px 18px;
+        border-radius: 12px;
+        background: white;
+        color: #4A90E2;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 14px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid #F0F0F0;
+    }
+    .pagination li.active span {
+        background: #4A90E2;
+        color: white;
+        border-color: #4A90E2;
+        box-shadow: 0 6px 15px rgba(74, 144, 226, 0.3);
+    }
+    .pagination li a:hover {
+        background: #F4F8FF;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        border-color: #4A90E2;
+    }
+    .pagination li.disabled span {
+        color: #BDC3C7;
+        background: #FAFAFA;
+        cursor: not-allowed;
+    }
 </style>
 
 {# ── MAIN CONTENT ── #}
@@ -92,7 +133,7 @@
             </div>
         </div>
 
-        <div id="testContainer" style="display: flex; flex-wrap: wrap; gap: 30px; justify-content: center;">
+        <div id="testContainer" style="display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; margin-bottom: 40px;">
             <div id="noResults" style="display: none; width: 100%; text-align: center; padding: 60px; background: white; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.03);">
                 <div style="font-size: 40px; margin-bottom: 20px;">🕵️</div>
                 <h4 style="font-size: 20px; font-weight: 700; color: #2C3E50; margin-bottom: 10px;">Aucun test ne correspond à votre recherche</h4>
@@ -146,6 +187,11 @@
                     <p style="color: #7F8C8D;">Revenez plus tard pour découvrir nos nouveaux tests psychologiques.</p>
                 </div>
             {% endfor %}
+        </div>
+
+        {# Pagination Navigation #}
+        <div class="navigation animate-entry" style="display: flex; justify-content: center; margin-top: 20px; animation-delay: 0.8s;">
+            {{ knp_pagination_render(tests) }}
         </div>
     </div>
 </div>

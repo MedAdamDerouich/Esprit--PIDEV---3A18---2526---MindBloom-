@@ -66,9 +66,9 @@
                                     </button>
 
                                     {# Formulaire Supprimer #}
-                                    <form action="{{ path('app_admin_feedback_delete', {'id': feedback.id}) }}" method="post" onsubmit="return confirm('Supprimer ce feedback ?');">
+                                    <form id="admin-feedback-delete-form-{{ feedback.id }}" action="{{ path('app_admin_feedback_delete', {'id': feedback.id}) }}" method="post">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete_feedback' ~ feedback.id) }}">
-                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 js-open-admin-feedback-delete" data-feedback-id="{{ feedback.id }}">
                                             <i class="bi bi-trash me-1"></i> Supprimer
                                         </button>
                                     </form>
@@ -116,4 +116,46 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="adminFeedbackDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-body text-center p-4">
+                <h6 class="fw-bold mb-2">Supprimer ce feedback ?</h6>
+                <p class="text-muted small mb-4">Cette action est définitive.</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4" id="adminFeedbackDeleteConfirmBtn">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modalElement = document.getElementById('adminFeedbackDeleteModal');
+    const confirmButton = document.getElementById('adminFeedbackDeleteConfirmBtn');
+    const deleteButtons = document.querySelectorAll('.js-open-admin-feedback-delete');
+    let activeForm = null;
+
+    if (!modalElement || !confirmButton || deleteButtons.length === 0) {
+        return;
+    }
+
+    deleteButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            const feedbackId = this.dataset.feedbackId;
+            activeForm = document.getElementById('admin-feedback-delete-form-' + feedbackId);
+            bootstrap.Modal.getOrCreateInstance(modalElement).show();
+        });
+    });
+
+    confirmButton.addEventListener('click', function() {
+        if (activeForm) {
+            activeForm.submit();
+        }
+    });
+});
+</script>
 {% endblock %}

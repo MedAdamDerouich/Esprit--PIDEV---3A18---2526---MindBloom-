@@ -185,9 +185,9 @@
                                     <a href="{{ path('app_admin_produit_edit', {'id': produit.id}) }}" class="btn btn-sm btn-white bg-white border-0 border-start py-2 px-3" title="Modifier">
                                         <i class="bi bi-pencil-square text-primary"></i>
                                     </a>
-                                    <form action="{{ path('app_admin_produit_delete', {'id': produit.id}) }}" method="post" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');">
+                                    <form id="admin-product-delete-form-{{ produit.id }}" action="{{ path('app_admin_produit_delete', {'id': produit.id}) }}" method="post" class="d-inline">
                                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ produit.id) }}">
-                                        <button class="btn btn-sm btn-white bg-white border-0 border-start py-2 px-3" title="Supprimer">
+                                        <button type="button" class="btn btn-sm btn-white bg-white border-0 border-start py-2 px-3 js-open-admin-product-delete" title="Supprimer" data-product-id="{{ produit.id }}" data-product-name="{{ produit.nom }}">
                                             <i class="bi bi-trash text-danger"></i>
                                         </button>
                                     </form>
@@ -269,6 +269,21 @@
                 </div>
                 <div class="modal-footer border-top-0 pt-0 pb-4">
                     <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="adminProductDeleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-body text-center p-4">
+                    <h6 class="fw-bold mb-2">Supprimer ce produit ?</h6>
+                    <p class="text-muted small mb-4" id="adminProductDeleteModalText">Cette action est définitive.</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-danger rounded-pill px-4" id="adminProductDeleteConfirmBtn">Supprimer</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -364,6 +379,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             updateBulkButton();
+        });
+    }
+
+    const deleteModalEl = document.getElementById('adminProductDeleteModal');
+    const deleteModalText = document.getElementById('adminProductDeleteModalText');
+    const deleteConfirmBtn = document.getElementById('adminProductDeleteConfirmBtn');
+    const deleteTriggers = document.querySelectorAll('.js-open-admin-product-delete');
+    let activeDeleteForm = null;
+
+    if (deleteModalEl && deleteModalText && deleteConfirmBtn && deleteTriggers.length > 0) {
+        deleteTriggers.forEach(function(trigger) {
+            trigger.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                const productName = this.dataset.productName || 'ce produit';
+                activeDeleteForm = document.getElementById('admin-product-delete-form-' + productId);
+                deleteModalText.textContent = 'Supprimer ' + productName + ' ?';
+                bootstrap.Modal.getOrCreateInstance(deleteModalEl).show();
+            });
+        });
+
+        deleteConfirmBtn.addEventListener('click', function() {
+            if (activeDeleteForm) {
+                activeDeleteForm.submit();
+            }
         });
     }
 

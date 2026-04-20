@@ -191,8 +191,8 @@
                                         <a href="{{ path('app_produit_feedback_edit', {id: feedback.id}) }}" class="btn btn-sm btn-light rounded-pill border px-3">
                                             <i class="bi bi-pencil me-1"></i> Modifier
                                         </a>
-                                        <form action="{{ path('app_produit_feedback_delete', {id: feedback.id}) }}" method="post" onsubmit="return confirm('Supprimer votre avis ?');">
-                                            <button class="btn btn-sm btn-light text-danger rounded-pill border px-3">
+                                        <form id="delete-feedback-form-{{ feedback.id }}" action="{{ path('app_produit_feedback_delete', {id: feedback.id}) }}" method="post" data-feedback-name="{{ feedback.user ? feedback.user.fullName : 'votre avis' }}">
+                                            <button type="button" class="btn btn-sm btn-light text-danger rounded-pill border px-3 js-open-delete-feedback-modal" data-feedback-id="{{ feedback.id }}" data-feedback-name="{{ feedback.user ? feedback.user.fullName : 'votre avis' }}">
                                                 <i class="bi bi-trash me-1"></i> Supprimer
                                             </button>
                                         </form>
@@ -218,6 +218,36 @@
                     </div>
                 </div>
             {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteFeedbackModal" tabindex="-1" aria-labelledby="deleteFeedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-5 overflow-hidden">
+            <div class="modal-header border-0 bg-danger bg-opacity-10 px-4 pt-4 pb-3">
+                <div>
+                    <p class="text-danger fw-semibold text-uppercase small mb-1">Confirmation</p>
+                    <h5 class="modal-title fw-bold" id="deleteFeedbackModalLabel">Supprimer votre avis ?</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body px-4 pb-2">
+                <p class="text-muted mb-3" id="deleteFeedbackModalText">Cette action supprimera définitivement votre avis de la page produit.</p>
+                <div class="alert alert-warning border-0 rounded-4 mb-0 d-flex align-items-start gap-3">
+                    <i class="bi bi-exclamation-triangle-fill fs-4 text-warning"></i>
+                    <div>
+                        <div class="fw-semibold text-dark">Action irréversible</div>
+                        <small class="text-muted">Vous pourrez laisser un nouvel avis plus tard si vous changez d'avis.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-2">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger rounded-pill px-4 fw-semibold" id="confirmDeleteFeedbackBtn">
+                    <i class="bi bi-trash3 me-1"></i> Supprimer l'avis
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -315,6 +345,18 @@ body {
     box-shadow: 0 15px 30px rgba(0,0,0,0.1);
 }
 
+.feedback-delete-trigger {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feedback-delete-trigger:hover {
+    transform: translateY(-1px);
+}
+
+.feedback-delete-trigger:focus {
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15);
+}
+
 .btn-danger-soft {
     background-color: #fee2e2;
 }
@@ -353,5 +395,37 @@ function validateAddToCart(form, maxStock) {
     }
     return true;
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const modalElement = document.getElementById('deleteFeedbackModal');
+    const modalText = document.getElementById('deleteFeedbackModalText');
+    const confirmButton = document.getElementById('confirmDeleteFeedbackBtn');
+    const deleteButtons = document.querySelectorAll('.js-open-delete-feedback-modal');
+
+    if (!modalElement || !modalText || !confirmButton || deleteButtons.length === 0) {
+        return;
+    }
+
+    let activeForm = null;
+
+    deleteButtons.forEach(function(button) {
+        button.classList.add('feedback-delete-trigger');
+        button.addEventListener('click', function() {
+            const feedbackId = this.dataset.feedbackId;
+            const feedbackName = this.dataset.feedbackName || 'votre avis';
+            activeForm = document.getElementById('delete-feedback-form-' + feedbackId);
+            modalText.textContent = 'Vous êtes sur le point de supprimer ' + feedbackName + '. Cette action retirera définitivement l’avis de la page produit.';
+
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.show();
+        });
+    });
+
+    confirmButton.addEventListener('click', function() {
+        if (activeForm) {
+            activeForm.submit();
+        }
+    });
+});
 </script>
 {% endblock %}

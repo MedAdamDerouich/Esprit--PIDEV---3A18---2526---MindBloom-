@@ -5,7 +5,7 @@ doctrine:
         profiling_collect_backtrace: '%kernel.debug%'
         use_savepoints: true
         # Only manage our Symfony tables — ignore the JavaFX tables
-        schema_filter: ~^(users|wallets|transactions|test|resultat_test|question|reponse|doctrine_migration_versions)$~
+        schema_filter: ~^(users|wallets|transactions|test|resultattest|question|reponse|doctrine_migration_versions)$~
         mapping_types:
             enum: string
     orm:

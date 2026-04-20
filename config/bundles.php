@@ -11,4 +11,5 @@ return [
     KnpU\OAuth2ClientBundle\KnpUOAuth2ClientBundle::class => ['all' => true],
     Nucleos\DompdfBundle\NucleosDompdfBundle::class => ['all' => true],
     Knp\Bundle\PaginatorBundle\KnpPaginatorBundle::class => ['all' => true],
+    Bazinga\GeocoderBundle\BazingaGeocoderBundle::class => ['all' => true],
 ];

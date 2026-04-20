@@ -6,11 +6,12 @@ use App\Repository\ResultatTestRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ResultatTestRepository::class)]
+#[ORM\Table(name: 'resultattest')]
 class ResultatTest
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(name: 'id')]
     private ?int $id = null;
 
     #[ORM\Column]
@@ -23,11 +24,11 @@ class ResultatTest
     private ?string $etat = null;
 
     #[ORM\ManyToOne(inversedBy: 'resultats')]
-    #[ORM\JoinColumn(referencedColumnName: 'id_test', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_test', referencedColumnName: 'id_test', nullable: false)]
     private ?Test $test = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\JoinColumn(name: 'id_patient', nullable: true)]
     private ?User $patient = null;
 
     public function getId(): ?int

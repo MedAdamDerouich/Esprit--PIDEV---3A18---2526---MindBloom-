@@ -4,10 +4,28 @@
 {% block body %}
 <div style="background:#F5F3EF;min-height:calc(100vh - 85px); padding:40px; display:flex; flex-direction:column; align-items:center; gap:25px;">
     
-    <!-- Title -->
-    <div style="display:flex; align-items:center; gap:10px;">
-        <span style="font-size:24px;">📋</span>
-        <h1 style="color:#2C3E50; font-size:24px; font-weight:bold; margin:0;">Mes Réservations</h1>
+    <div style="text-align:center; margin-bottom:10px;">
+        <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
+            <span style="font-size:24px;">📋</span>
+            <h1 style="color:#2C3E50; font-size:24px; font-weight:bold; margin:0;">Mes Réservations</h1>
+        </div>
+
+        <!-- BOUTONS DE FILTRAGE -->
+        <div style="display:flex; justify-content:center; gap:10px; margin-top:20px;" id="filterButtons">
+            <button class="filter-btn active" data-filter="tous" style="background:#5FBF9F; color:white; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Tous</button>
+            <button class="filter-btn" data-filter="confirmes" style="background:#E0E0E0; color:#333333; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Confirmés</button>
+            <button class="filter-btn" data-filter="annules" style="background:#E0E0E0; color:#333333; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Annulés</button>
+            <button class="filter-btn" data-filter="passees" style="background:#E0E0E0; color:#333333; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Passés</button>
+        </div>
+    </div>
+
+    <!-- OPTION EXPORT -->
+    <div style="width:100%; max-width:900px; display:flex; justify-content:flex-start;" id="exportContainer">
+        <a href="{{ path('app_psychologue_reservations_export') }}" 
+           style="display:inline-flex; align-items:center; gap:8px; background:rgba(29, 111, 66, 0.1); color:#1D6F42; border:1px solid rgba(29, 111, 66, 0.2); border-radius:20px; padding:10px 20px; font-size:13px; font-weight:bold; text-decoration:none; margin-bottom:20px; transition:0.2s;"
+           onmouseover="this.style.background='rgba(29, 111, 66, 0.2)'" onmouseout="this.style.background='rgba(29, 111, 66, 0.1)'">
+            📊 Exporter en Excel
+        </a>
     </div>
 
     <!-- Conteneur principal blanc -->
@@ -31,7 +49,30 @@
                 <div style="text-align:center; padding: 20px; color:#8E8E8E; font-size:15px;">Aucune réservation trouvée.</div>
             {% else %}
                 {% for r in reservations %}
-                    <div style="display:grid; grid-template-columns: 180px 100px 120px 100px 100px 122px; gap:15px; align-items:center;">
+                    {% set isPast = false %}
+                    {% set todayDate = "now"|date("Y-m-d") %}
+                    {% set resDateStr = r.creneau.dateCreneau|date("Y-m-d") %}
+                    
+                    {% if resDateStr < todayDate %}
+                        {% set isPast = true %}
+                    {% elseif resDateStr == todayDate %}
+                        {% set nowTime = "now"|date("H:i") %}
+                        {% set resTime = r.creneau.heureDebut|date("H:i") %}
+                        {% if resTime < nowTime %}
+                            {% set isPast = true %}
+                        {% endif %}
+                    {% endif %}
+
+                    {% set statusCat = 'tous ' %}
+                    {% if isPast %}
+                        {% set statusCat = statusCat ~ 'passees ' %}
+                    {% elseif r.status.value == 'Confirmé' %}
+                        {% set statusCat = statusCat ~ 'confirmes ' %}
+                    {% else %}
+                        {% set statusCat = statusCat ~ 'annules ' %}
+                    {% endif %}
+
+                    <div class="reservation-card {{ statusCat }}" style="display:grid; grid-template-columns: 180px 100px 120px 100px 100px 122px; gap:15px; align-items:center;">
                         <span style="font-size:14px; color:#34495E; font-weight:bold;">{{ r.patient.fullName }}</span>
                         <span style="font-size:14px; color:#34495E;">{{ r.creneau.jour.value|capitalize }}</span>
                         <span style="font-size:14px; color:#34495E;">{{ r.creneau.dateCreneau|date('Y-m-d') }}</span> <!-- format brut comme dans JavaFX toString() -->
@@ -39,20 +80,6 @@
                         <span style="font-size:14px; color:#34495E;">{{ r.creneau.dureeMinutes }} min</span>
                         
                         <div style="display:flex; justify-content:center;">
-                            {% set isPast = false %}
-                            {% set todayDate = "now"|date("Y-m-d") %}
-                            {% set resDateStr = r.creneau.dateCreneau|date("Y-m-d") %}
-                            
-                            {% if resDateStr < todayDate %}
-                                {% set isPast = true %}
-                            {% elseif resDateStr == todayDate %}
-                                {% set nowTime = "now"|date("H:i") %}
-                                {% set resTime = r.creneau.heureDebut|date("H:i") %}
-                                {% if resTime < nowTime %}
-                                    {% set isPast = true %}
-                                {% endif %}
-                            {% endif %}
-
                             {% if isPast %}
                                 <span style="background:#95A5A6; color:white; padding:4px 12px; border-radius:15px; font-size:11px; font-weight:bold; text-transform:lowercase;">passé</span>
                             {% elseif r.status.value == 'Confirmé' %}
@@ -74,4 +101,59 @@
     </div>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // --- FILTRAGE DES CATEGORIES ---
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const cards = document.querySelectorAll('.reservation-card');
+
+    const countTotal = cards.length;
+    let countPassees = 0;
+    let countConfirmes = 0;
+    let countAnnules = 0;
+
+    cards.forEach(card => {
+        if (card.classList.contains('passees')) countPassees++;
+        if (card.classList.contains('confirmes')) countConfirmes++;
+        if (card.classList.contains('annules')) countAnnules++;
+    });
+
+    document.querySelector('[data-filter="tous"]').innerText = `Tous (${countTotal})`;
+    document.querySelector('[data-filter="passees"]').innerText = `Passés (${countPassees})`;
+    document.querySelector('[data-filter="confirmes"]').innerText = `Confirmés (${countConfirmes})`;
+    document.querySelector('[data-filter="annules"]').innerText = `Annulés (${countAnnules})`;
+
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            filterBtns.forEach(b => {
+                b.style.background = '#E0E0E0';
+                b.style.color = '#333333';
+                b.classList.remove('active');
+            });
+            this.style.background = '#5FBF9F';
+            this.style.color = 'white';
+            this.classList.add('active');
+
+            const filter = this.getAttribute('data-filter');
+            
+            // Toggle Excel button visibility (only for 'tous' and 'confirmes')
+            const exportContainer = document.getElementById('exportContainer');
+            if (filter === 'tous' || filter === 'confirmes') {
+                exportContainer.style.display = 'flex';
+            } else {
+                exportContainer.style.display = 'none';
+            }
+
+            cards.forEach(card => {
+                if (filter === 'tous') {
+                    card.style.display = 'grid'; // Grid car c'est un tableau
+                } else {
+                    card.style.display = card.classList.contains(filter) ? 'grid' : 'none';
+                }
+            });
+        });
+    });
+});
+</script>
 {% endblock %}

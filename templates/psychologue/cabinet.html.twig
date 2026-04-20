@@ -100,9 +100,9 @@
 
     <!-- Bouton Retour -->
     <div style="width:100%; max-width:1000px; display:flex; justify-content:flex-start;">
-        <button type="button" onclick="window.history.back();" style="background:transparent; border:none; color:#8E8E8E; font-size:15px; font-weight:bold; cursor:pointer;" title="Retour au Dashboard">
+        <a href="{{ path('app_psychologue_dashboard') }}" style="background:transparent; border:none; color:#8E8E8E; font-size:15px; font-weight:bold; text-decoration:none;" title="Retour à l'accueil">
             ← Retour
-        </button>
+        </a>
     </div>
 </div>
 {% endblock %}

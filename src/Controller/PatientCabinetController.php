@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\CabinetRepository;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -10,28 +11,41 @@ use Symfony\Component\Routing\Annotation\Route;
 class PatientCabinetController extends AbstractController
 {
     #[Route('/patient/cabinets', name: 'app_patient_cabinets_index')]
-    public function index(CabinetRepository $cabinetRepository, \Symfony\Component\HttpFoundation\Request $request): Response
+    public function index(
+        CabinetRepository $cabinetRepository, 
+        \Symfony\Component\HttpFoundation\Request $request, 
+        \App\Repository\CreneauRepository $creneauRepository,
+        PaginatorInterface $paginator
+    ): Response
     {
-        $cabinets = $cabinetRepository->findAllWithPsychologue();
+        $search = $request->query->get('search');
+        $cabinetsQuery = $cabinetRepository->findAllWithPsychologueQuery($search);
 
-        // Pagination setup
-        $page = $request->query->getInt('page', 1);
-        $limit = 3;
-        $totalCabinets = count($cabinets);
-        $totalPages = (int) ceil($totalCabinets / $limit);
-        
-        if ($page < 1) $page = 1;
-        if ($totalPages > 0 && $page > $totalPages) $page = $totalPages;
+        // Extraire les dates ayant des créneaux disponibles
+        $creneauxDispos = $creneauRepository->findBy(['disponible' => true]);
+        $availableDates = [];
+        $today = new \DateTime('today');
+        foreach($creneauxDispos as $c) {
+            $date = $c->getDateCreneau();
+            if ($date >= $today) {
+                 $availableDates[] = $date->format('Y-m-d');
+            }
+        }
+        $availableDates = array_values(array_unique($availableDates));
 
-        $offset = ($page - 1) * $limit;
-        
-        // Handle empty case
-        $paginatedCabinets = $totalCabinets > 0 ? array_slice($cabinets, $offset, $limit) : [];
+
+        // Pagination using KnpPaginatorBundle
+        $pagination = $paginator->paginate(
+            $cabinetsQuery, // source data (array or query)
+            $request->query->getInt('page', 1), // current page number
+            3 // limit per page
+        );
 
         return $this->render('patient/liste_cabinets.html.twig', [
-            'cabinets' => $paginatedCabinets,
-            'currentPage' => $page,
-            'totalPages' => $totalPages,
+            'cabinets' => $pagination,
+            'availableDates' => $availableDates,
+            'search' => $search,
+            'googleMapsApiKey' => $this->getParameter('google_maps_api_key'),
         ]);
     }
 
@@ -44,18 +58,68 @@ class PatientCabinetController extends AbstractController
             throw $this->createNotFoundException('Cabinet introuvable');
         }
 
-        // On récupère les créneaux du cabinet
-        $creneaux = [];
+        // On récupère les créneaux du cabinet groupés par date
+        $groupedCreneaux = [];
         if ($cabinet->getPsychologue()) {
             $creneaux = $creneauRepository->findBy(
                 ['cabinet' => $cabinet],
                 ['dateCreneau' => 'ASC', 'heureDebut' => 'ASC']
             );
+
+            foreach ($creneaux as $c) {
+                $dateKey = $c->getDateCreneau()->format('Y-m-d');
+                if (!isset($groupedCreneaux[$dateKey])) {
+                    $groupedCreneaux[$dateKey] = [
+                        'date' => $c->getDateCreneau(),
+                        'slots' => []
+                    ];
+                }
+                $groupedCreneaux[$dateKey]['slots'][] = $c;
+            }
         }
 
         return $this->render('patient/reserver.html.twig', [
             'cabinet' => $cabinet,
-            'creneaux' => $creneaux,
+            'groupedCreneaux' => $groupedCreneaux,
+            'groqApiKey' => $this->getParameter('groq_api_key'),
+        ]);
+    }
+
+
+    #[Route('/patient/availability/{date}', name: 'app_patient_availability')]
+    public function checkAvailability(string $date, \App\Repository\CreneauRepository $creneauRepository): Response
+    {
+        try {
+            $selectedDate = new \DateTime($date);
+        } catch (\Exception $e) {
+            return new Response('Date invalide', 400);
+        }
+
+        // On cherche tous les créneaux disponibles pour cette date
+        $creneaux = $creneauRepository->findBy(
+            ['dateCreneau' => $selectedDate, 'disponible' => true],
+            ['heureDebut' => 'ASC']
+        );
+
+        // Grouper les créneaux par cabinet/psychologue
+        $grouped = [];
+        foreach ($creneaux as $c) {
+            $cabinet = $c->getCabinet();
+            if (!$cabinet) continue;
+            
+            $id = $cabinet->getIdCabinet();
+            if (!isset($grouped[$id])) {
+                $grouped[$id] = [
+                    'cabinet' => $cabinet,
+                    'slots' => []
+                ];
+            }
+            $grouped[$id]['slots'][] = $c;
+        }
+
+        return $this->render('patient/_availability_modal.html.twig', [
+            'grouped' => $grouped,
+            'selectedDate' => $selectedDate
         ]);
     }
 }

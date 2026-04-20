@@ -5,6 +5,8 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 #[ORM\Entity(repositoryClass: \App\Repository\CabinetRepository::class)]
 #[ORM\Table(name: "cabinet")]
@@ -16,18 +18,35 @@ class Cabinet
     private ?int $idCabinet = null;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Assert\NotBlank(message: "Le nom du cabinet est obligatoire.")]
+    #[Assert\Length(
+        min: 3,
+        max: 255,
+        minMessage: "Le nom du cabinet doit faire au moins {{ limit }} caractères.",
+        maxMessage: "Le nom du cabinet ne peut pas dépasser {{ limit }} caractères."
+    )]
     private ?string $nomCabinet = null;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Assert\NotBlank(message: "L'adresse est obligatoire.")]
+    #[Assert\Length(min: 5, minMessage: "L'adresse doit faire au moins {{ limit }} caractères.")]
     private ?string $adresse = null;
 
     #[ORM\Column(type: "string", length: 255)]
+    #[Assert\NotBlank(message: "La spécialité est obligatoire.")]
     private ?string $specialite = null;
 
     #[ORM\Column(type: "string", length: 50)]
+    #[Assert\NotBlank(message: "Le numéro de téléphone est obligatoire.")]
+    #[Assert\Regex(
+        pattern: "/^[0-9]+$/",
+        message: "Le numéro de téléphone ne doit contenir que des chiffres."
+    )]
+
     private ?string $telephone = null;
 
     #[ORM\Column(type: "text", nullable: true)]
+    #[Assert\Length(max: 2000, maxMessage: "La description ne peut pas dépasser {{ limit }} caractères.")]
     private ?string $description = null;
 
     // Psychologue du cabinet
@@ -62,7 +81,8 @@ class Cabinet
         return $this->nomCabinet;
     }
 
-    public function setNomCabinet(string $nomCabinet): self
+    public function setNomCabinet(?string $nomCabinet): self
+
     {
         $this->nomCabinet = $nomCabinet;
         return $this;
@@ -73,7 +93,8 @@ class Cabinet
         return $this->adresse;
     }
 
-    public function setAdresse(string $adresse): self
+    public function setAdresse(?string $adresse): self
+
     {
         $this->adresse = $adresse;
         return $this;
@@ -84,7 +105,8 @@ class Cabinet
         return $this->specialite;
     }
 
-    public function setSpecialite(string $specialite): self
+    public function setSpecialite(?string $specialite): self
+
     {
         $this->specialite = $specialite;
         return $this;
@@ -95,7 +117,8 @@ class Cabinet
         return $this->telephone;
     }
 
-    public function setTelephone(string $telephone): self
+    public function setTelephone(?string $telephone): self
+
     {
         $this->telephone = $telephone;
         return $this;

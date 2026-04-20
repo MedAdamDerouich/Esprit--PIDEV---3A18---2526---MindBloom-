@@ -27,7 +27,7 @@ class FactureRepository extends ServiceEntityRepository
             ->leftJoin('f.commandes', 'c')
             ->leftJoin('c.produit', 'p')
             ->where('f.user = :user')
-            ->andWhere('(p.nom LIKE :query OR CAST(f.id AS string) LIKE :query)')
+            ->andWhere('(p.nom LIKE :query OR f.id LIKE :query)')
             ->setParameter('user', $user)
             ->setParameter('query', '%' . $query . '%')
             ->orderBy('f.dateFacture', 'DESC')

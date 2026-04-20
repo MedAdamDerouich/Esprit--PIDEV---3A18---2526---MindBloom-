@@ -27,11 +27,21 @@ class CabinetRepository extends ServiceEntityRepository
 
     public function findAllWithPsychologue(): array
     {
-        return $this->createQueryBuilder('c')
+        return $this->findAllWithPsychologueQuery()->getResult();
+    }
+
+    public function findAllWithPsychologueQuery(?string $search = null): \Doctrine\ORM\Query
+    {
+        $qb = $this->createQueryBuilder('c')
             ->leftJoin('c.psychologue', 'p')
-            ->addSelect('p')
-            ->getQuery()
-            ->getResult();
+            ->addSelect('p');
+
+        if ($search) {
+            $qb->andWhere('p.fullName LIKE :search OR c.specialite LIKE :search OR c.nomCabinet LIKE :search')
+               ->setParameter('search', '%' . $search . '%');
+        }
+
+        return $qb->getQuery();
     }
 
     public function remove(Cabinet $entity, bool $flush = false): void

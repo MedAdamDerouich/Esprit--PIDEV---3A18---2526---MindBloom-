@@ -34,15 +34,57 @@
     overflow: hidden;
 }
 
-#hero-canvas {
+/* ── Morphing orb background ── */
+.mb-orbs {
     position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    display: block;
+    inset: 0;
     pointer-events: none;
     z-index: 0;
+    overflow: hidden;
 }
-@media (prefers-reduced-motion: reduce) { #hero-canvas { display: none; } }
+.mb-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    will-change: transform;
+    --px: 0px; --py: 0px;
+    animation: orbDrift ease-in-out infinite alternate;
+}
+@keyframes orbDrift {
+    0%   { transform: translate(calc(var(--px) + 0px),   calc(var(--py) + 0px))   scale(1); }
+    33%  { transform: translate(calc(var(--px) + 40px),  calc(var(--py) + 25px))  scale(1.08); }
+    66%  { transform: translate(calc(var(--px) - 25px),  calc(var(--py) + 45px))  scale(0.94); }
+    100% { transform: translate(calc(var(--px) + 20px),  calc(var(--py) - 30px))  scale(1.05); }
+}
+.mb-orb-1 {
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(0,194,199,0.28) 0%, transparent 65%);
+    top: 30%; left: -200px;
+    animation-duration: 18s;
+    animation-delay: 0s;
+}
+.mb-orb-2 {
+    width: 560px; height: 560px;
+    background: radial-gradient(circle, rgba(78,203,113,0.28) 0%, transparent 65%);
+    bottom: -150px; right: -80px;
+    animation-duration: 24s;
+    animation-delay: -6s;
+}
+.mb-orb-3 {
+    width: 460px; height: 460px;
+    background: radial-gradient(circle, rgba(27,58,107,0.22) 0%, transparent 65%);
+    top: 55%; left: 55%;
+    animation-duration: 30s;
+    animation-delay: -12s;
+}
+.mb-orb-4 {
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(245,200,66,0.22) 0%, transparent 65%);
+    top: 70%; left: 8%;
+    animation-duration: 22s;
+    animation-delay: -4s;
+}
+@media (prefers-reduced-motion: reduce) { .mb-orbs { display: none; } }
 
 /* Hero text content */
 .ptdash-hero-content {
@@ -120,6 +162,10 @@
 }
 
 /* Hero logo */
+.ptdash-logo-dark { display: none; }
+body.dark-mode .ptdash-logo-light { display: none; }
+body.dark-mode .ptdash-logo-dark  { display: block; mix-blend-mode: screen; }
+
 .ptdash-logo-wrap {
     position: relative;
     z-index: 2;
@@ -513,7 +559,7 @@ body.dark-mode .mb-event-reminder {
     border-color: #252B3E !important;
 }
 
-/* Keep content above the fixed particle canvas */
+/* Keep content above the fixed orb background */
 .ptdash-page { position: relative; z-index: 1; }
 .ptdash-hero,
 .ptdash-stats,
@@ -940,13 +986,18 @@ body.dark-mode .ptdash-testi::after  { background: linear-gradient(-90deg, #0F11
         </script>
     {% endif %}
 
-    {# ── Full-page particle background (three.js) ── #}
-    <canvas id="hero-canvas"></canvas>
+    {# ── Morphing orb background ── #}
+    <div class="mb-orbs" id="mb-orbs" aria-hidden="true">
+        <div class="mb-orb mb-orb-1" id="orb1"></div>
+        <div class="mb-orb mb-orb-2" id="orb2"></div>
+        <div class="mb-orb mb-orb-3" id="orb3"></div>
+        <div class="mb-orb mb-orb-4" id="orb4"></div>
+    </div>
 
     {# ── Hero Section ── #}
     <div class="ptdash-hero">
         <div class="ptdash-hero-content">
-            <span class="ptdash-badge">✨ Votre bien-être mental compte</span>
+            <span class="ptdash-badge">Plateforme de santé mentale</span>
             <span class="ptdash-title">
                 Cultivez votre bien-être mental avec <em>MindBloom</em>
             </span>
@@ -966,7 +1017,8 @@ body.dark-mode .ptdash-testi::after  { background: linear-gradient(-90deg, #0F11
         </div>
 
         <div class="ptdash-logo-wrap">
-            <img class="ptdash-logo" src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom">
+            <img class="ptdash-logo ptdash-logo-light" src="{{ asset('images/mindbloom_logo.png') }}" alt="MindBloom">
+            <img class="ptdash-logo ptdash-logo-dark" src="{{ asset('images/mindbloom_logo_darkmode.png') }}" alt="MindBloom">
         </div>
     </div>
 
@@ -1276,132 +1328,34 @@ body.dark-mode .ptdash-testi::after  { background: linear-gradient(-90deg, #0F11
 
 {% block javascripts %}
 {{ parent() }}
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+
 <script>
-(function () {
-    'use strict';
-
-    if (typeof THREE === 'undefined') return;
+/* ── Orb mouse parallax ── */
+(function() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-    var canvas  = document.getElementById('hero-canvas');
-    if (!canvas) return;
-
-    /* ── Renderer ── */
-    var renderer = new THREE.WebGLRenderer({
-        canvas: canvas, alpha: true, antialias: true, powerPreference: 'low-power'
-    });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-    var scene  = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
-    camera.position.set(0, 0, 8);
-
-    /* ── Particles — logo palette ── */
-    var COUNT = 260;
-    var COLORS = [
-        new THREE.Color(0x00C2C7), // cyan
-        new THREE.Color(0x4ECB71), // green
-        new THREE.Color(0xF5C842), // yellow
-        new THREE.Color(0xF47B20), // orange
-        new THREE.Color(0xE63F8C), // pink
-        new THREE.Color(0x9B59B6), // purple
-        new THREE.Color(0x1B3A6B), // navy
+    var orbs = [
+        { el: document.getElementById('orb1'), depth: 0.018 },
+        { el: document.getElementById('orb2'), depth: -0.012 },
+        { el: document.getElementById('orb3'), depth: 0.022 },
+        { el: document.getElementById('orb4'), depth: -0.016 },
     ];
-    var FW = 24, FH = 32, FD = 8;
-
-    var geo = new THREE.BufferGeometry();
-    var pos = new Float32Array(COUNT * 3);
-    var col = new Float32Array(COUNT * 3);
-    var spd = new Float32Array(COUNT);
-    var pha = new Float32Array(COUNT);
-    var amp = new Float32Array(COUNT);
-    var bx  = new Float32Array(COUNT);
-
-    for (var i = 0; i < COUNT; i++) {
-        var x = (Math.random() - 0.5) * FW;
-        var y = (Math.random() - 0.5) * FH;
-        var z = (Math.random() - 0.5) * FD;
-        pos[i*3] = x; pos[i*3+1] = y; pos[i*3+2] = z;
-        bx[i]  = x;
-        spd[i] = 0.004 + Math.random() * 0.008;
-        pha[i] = Math.random() * Math.PI * 2;
-        amp[i] = 0.15 + Math.random() * 0.35;
-        var c = COLORS[Math.floor(Math.random() * COLORS.length)];
-        col[i*3] = c.r; col[i*3+1] = c.g; col[i*3+2] = c.b;
-    }
-
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute('color',    new THREE.BufferAttribute(col, 3));
-
-    /* Sprite */
-    var sc = document.createElement('canvas');
-    sc.width = sc.height = 64;
-    var ctx = sc.getContext('2d');
-    var grd = ctx.createRadialGradient(32,32,0,32,32,32);
-    grd.addColorStop(0,   'rgba(255,255,255,1)');
-    grd.addColorStop(0.35,'rgba(255,255,255,0.7)');
-    grd.addColorStop(1,   'rgba(255,255,255,0)');
-    ctx.fillStyle = grd;
-    ctx.fillRect(0,0,64,64);
-    var sprite = new THREE.CanvasTexture(sc);
-
-    var mat = new THREE.PointsMaterial({
-        size: 0.18, map: sprite, vertexColors: true,
-        transparent: true, opacity: 0.72,
-        depthWrite: false, blending: THREE.AdditiveBlending
-    });
-    scene.add(new THREE.Points(geo, mat));
-
-    /* ── Mouse parallax ── */
-    var pTarget = {x:0,y:0}, pCurr = {x:0,y:0};
+    var mx = 0, my = 0, cx = 0, cy = 0;
     window.addEventListener('mousemove', function(e) {
-        pTarget.x =  ((e.clientX/window.innerWidth)*2-1) * 0.6;
-        pTarget.y = -((e.clientY/window.innerHeight)*2-1) * 0.6;
+        mx = (e.clientX / window.innerWidth  - 0.5) * 2;
+        my = (e.clientY / window.innerHeight - 0.5) * 2;
     });
-
-    /* ── Resize ── */
-    function onResize() {
-        var w = window.innerWidth, h = window.innerHeight;
-        renderer.setSize(w,h,false);
-        camera.aspect = w/h;
-        camera.updateProjectionMatrix();
-    }
-    onResize();
-    window.addEventListener('resize', onResize);
-
-    /* ── Animate ── */
-    var clock = new THREE.Clock();
-    var rafId = null;
-
-    function animate() {
-        rafId = requestAnimationFrame(animate);
-        var t = clock.getElapsedTime();
-        pCurr.x += (pTarget.x - pCurr.x) * 0.04;
-        pCurr.y += (pTarget.y - pCurr.y) * 0.04;
-        camera.position.x = pCurr.x;
-        camera.position.y = pCurr.y;
-
-        var p = geo.attributes.position;
-        for (var i = 0; i < COUNT; i++) {
-            p.array[i*3+1] += spd[i];
-            p.array[i*3]    = bx[i] + Math.sin(t*0.5 + pha[i]) * amp[i];
-            if (p.array[i*3+1] > FH/2+0.5) {
-                p.array[i*3+1] = -FH/2-0.5;
-                var nx = (Math.random()-0.5)*FW;
-                p.array[i*3] = nx; bx[i] = nx;
-            }
-        }
-        p.needsUpdate = true;
-        renderer.render(scene, camera);
-    }
-    animate();
-
-    window.addEventListener('pagehide', function() {
-        if (rafId) cancelAnimationFrame(rafId);
-        window.removeEventListener('resize', onResize);
-        renderer.dispose(); geo.dispose(); mat.dispose(); sprite.dispose();
-    });
+    (function tick() {
+        cx += (mx - cx) * 0.06;
+        cy += (my - cy) * 0.06;
+        orbs.forEach(function(o) {
+            if (!o.el) return;
+            var tx = cx * window.innerWidth  * o.depth;
+            var ty = cy * window.innerHeight * o.depth;
+            o.el.style.setProperty('--px', tx + 'px');
+            o.el.style.setProperty('--py', ty + 'px');
+        });
+        requestAnimationFrame(tick);
+    })();
 })();
 </script>
 

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Facture;
 use App\Repository\CommandeRepository;
 use App\Repository\FactureRepository;
+use App\Service\EmailService;
 use App\Service\WalletService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -115,17 +116,43 @@ class OrderController extends AbstractController
     public function history(FactureRepository $factureRepository, Request $request): Response
     {
         $tri = $request->query->get('tri', 'date_desc');
-        
-        $orderBy = ['dateFacture' => 'DESC'];
-        if ($tri === 'date_asc') {
-            $orderBy = ['dateFacture' => 'ASC'];
-        } elseif ($tri === 'prix_desc') {
-            $orderBy = ['montantTotal' => 'DESC'];
-        } elseif ($tri === 'prix_asc') {
-            $orderBy = ['montantTotal' => 'ASC'];
+        $statut = $request->query->get('statut', '');
+        $search = $request->query->get('q', '');
+
+        $qb = $factureRepository->createQueryBuilder('f')
+            ->where('f.user = :user')
+            ->setParameter('user', $this->getUser());
+
+        // --- Filtrage par statut ---
+        if ($statut) {
+            if ($statut === Facture::STATUS_CANCELLED) {
+                $qb->andWhere('f.statutLivraison = :statut OR f.statutLivraison IS NULL OR f.statutLivraison = \'\'')
+                   ->setParameter('statut', $statut);
+            } else {
+                $qb->andWhere('f.statutLivraison = :statut')
+                   ->setParameter('statut', $statut);
+            }
         }
 
-        $factures = $factureRepository->findBy(['user' => $this->getUser()], $orderBy);
+        // --- Recherche par mot-clé (ID ou Adresse) ---
+        if ($search) {
+            $qb->andWhere('f.id = :searchNumeric OR f.adresseLivraison LIKE :searchText')
+               ->setParameter('searchNumeric', is_numeric($search) ? (int)$search : 0)
+               ->setParameter('searchText', '%' . $search . '%');
+        }
+
+        // --- Tri ---
+        if ($tri === 'date_asc') {
+            $qb->orderBy('f.dateFacture', 'ASC');
+        } elseif ($tri === 'prix_desc') {
+            $qb->orderBy('f.montantTotal', 'DESC');
+        } elseif ($tri === 'prix_asc') {
+            $qb->orderBy('f.montantTotal', 'ASC');
+        } else {
+            $qb->orderBy('f.dateFacture', 'DESC');
+        }
+
+        $factures = $qb->getQuery()->getResult();
         
         // Ensure commands with missing products don't crash the list rendering
         foreach ($factures as $facture) {
@@ -144,7 +171,12 @@ class OrderController extends AbstractController
 
         return $this->render('order/history.html.twig', [
             'factures' => $factures,
-            'tri' => $tri,
+            'tri'      => $tri,
+            'statut'   => $statut,
+            'search'   => $search,
+            'STATUS_PENDING' => Facture::STATUS_PENDING,
+            'STATUS_SHIPPED' => Facture::STATUS_SHIPPED,
+            'STATUS_CANCELLED' => Facture::STATUS_CANCELLED,
         ]);
     }
 
@@ -202,5 +234,41 @@ class OrderController extends AbstractController
                 'Content-Disposition' => sprintf('attachment; filename="facture-%s.pdf"', $facture->getId())
             ]
         );
+    }
+
+    #[Route('/annuler/{id}', name: 'app_order_cancel', methods: ['POST'])]
+    public function patientCancel(Facture $facture, EntityManagerInterface $entityManager, EmailService $emailService): Response
+    {
+        if ($facture->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException();
+        }
+
+        if ($facture->getStatutLivraison() !== Facture::STATUS_PENDING) {
+            $this->addFlash('error', 'Vous ne pouvez plus annuler cette commande.');
+            return $this->redirectToRoute('app_order_history');
+        }
+
+        $facture->setStatutLivraison(Facture::STATUS_CANCELLED);
+
+        // Restore stock
+        foreach ($facture->getCommandes() as $commande) {
+            $produit = $commande->getProduit();
+            if ($produit) {
+                try {
+                    $produit->setQuantite($produit->getQuantite() + $commande->getQuantite());
+                } catch (\Doctrine\ORM\EntityNotFoundException $e) {
+                    // ignore
+                }
+            }
+        }
+
+        $entityManager->flush();
+
+        // Send confirmation email via service
+        $emailService->sendOrderStatusEmail($facture, Facture::STATUS_CANCELLED);
+
+        $this->addFlash('success', 'Votre commande a été annulée avec succès.');
+
+        return $this->redirectToRoute('app_order_history');
     }
 }

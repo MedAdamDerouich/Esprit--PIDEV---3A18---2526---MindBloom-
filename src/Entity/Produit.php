@@ -20,9 +20,20 @@ class Produit
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Le nom est obligatoire')]
+    #[Assert\Length(
+        min: 3, 
+        max: 50, 
+        minMessage: 'Le nom doit faire au moins {{ limit }} caractères',
+        maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères'
+    )]
     private ?string $nom = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\NotBlank(message: 'La description est obligatoire')]
+    #[Assert\Length(
+        min: 10,
+        minMessage: 'La description doit faire au moins {{ limit }} caractères'
+    )]
     private ?string $description = null;
 
     #[ORM\Column]
@@ -40,6 +51,10 @@ class Produit
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
+
+    #[ORM\Column(options: ["default" => 10])]
+    #[Assert\PositiveOrZero(message: 'Le seuil de stock ne peut pas être négatif')]
+    private ?int $stockSeuil = 10;
 
     #[ORM\OneToMany(mappedBy: 'produit', targetEntity: Feedback::class, orphanRemoval: true)]
     private Collection $feedbacks;
@@ -123,6 +138,18 @@ class Produit
     public function setImage(?string $image): static
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+    public function getStockSeuil(): ?int
+    {
+        return $this->stockSeuil;
+    }
+
+    public function setStockSeuil(int $stockSeuil): static
+    {
+        $this->stockSeuil = $stockSeuil;
 
         return $this;
     }

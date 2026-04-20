@@ -1,8 +1,21 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Gestion des Produits - MindBloomAdmin{% endblock %}
+{% block title %}Gestion des Produits - MindBloom Admin{% endblock %}
 
-{% block admin_header %}Catalogue des Produits{% endblock %}
+{% block admin_header %}
+    <div class="d-flex align-items-center justify-content-between w-100">
+        <span>Catalogue des Produits</span>
+        {% if lowStockCount > 0 %}
+            <div class="position-relative cursor-pointer ms-3 animate__animated animate__swing animate__infinite" 
+                 style="cursor: pointer;" onclick="openStockAlerts()" id="stockNotificationIcon">
+                <i class="bi bi-bell-fill text-danger fs-3"></i>
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 0.7rem;">
+                    {{ lowStockCount }}
+                </span>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
 
 {% block admin_content %}
     <!-- Statistics Row -->
@@ -26,7 +39,7 @@
         </div>
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card border-0 shadow-sm rounded-4 h-100 border-start border-danger border-5">
-                <div class="card-body">
+                <div class="card-body" style="cursor: pointer;" onclick="openStockAlerts()">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0 me-3">
                             <div class="bg-danger bg-opacity-10 text-danger p-3 rounded-3">
@@ -51,8 +64,8 @@
                             </div>
                         </div>
                         <div>
-                            <h6 class="text-muted mb-1 small fw-bold text-uppercase">Stock Faible (< 10)</h6>
-                            <h4 class="mb-0 fw-bold">{{ stats.lowStock }}</h4>
+                            <h6 class="text-muted mb-1 small fw-bold text-uppercase">Alertes Stock</h6>
+                            <h4 class="mb-0 fw-bold">{{ lowStockCount }}</h4>
                         </div>
                     </div>
                 </div>
@@ -77,25 +90,40 @@
         </div>
     </div>
 
-    <div class="row mb-4">
+    <div class="row mb-4 align-items-center">
         <div class="col-md-3">
-            <p class="text-muted mb-0">Gérez votre inventaire et vos stocks.</p>
+            <p class="text-muted mb-0">Gestion de l'inventaire et des stocks.</p>
         </div>
-        <div class="col-md-9 text-end d-inline-flex gap-2 mb-0 align-items-center flex-wrap justify-content-end">
-            <div class="search-sort-wrapper">
-                <form action="{{ path('app_admin_produit_index') }}" method="GET" class="m-0 p-0" id="adminSortForm">
-                    <select name="tri" class="premium-select form-select" onchange="document.getElementById('adminSortForm').submit()">
+        <div class="col-md-9 text-end d-flex gap-2 justify-content-end align-items-center flex-wrap">
+            <div id="bulkDeleteWrapper" style="display: none;">
+                <form id="bulkDeleteForm" action="{{ path('app_admin_produit_bulk_delete') }}" method="POST" onsubmit="return confirm('Voulez-vous vraiment supprimer les produits sélectionnés ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('bulk_delete') }}">
+                    <input type="hidden" name="ids" id="bulkDeleteIds">
+                    <button type="submit" class="btn btn-outline-danger px-4 shadow-sm rounded-pill">
+                        <i class="bi bi-trash3-fill me-1"></i> Supprimer la sélection (<span id="selectedCount">0</span>)
+                    </button>
+                </form>
+            </div>
+            <div class="search-sort-wrapper d-flex gap-2">
+                <form action="{{ path('app_admin_produit_index') }}" method="GET" class="m-0" id="adminSortForm">
+                    <select name="tri" class="form-select rounded-pill shadow-sm border-0 px-3" style="height: 40px;" onchange="document.getElementById('adminSortForm').submit()">
                         <option value="default" {% if tri is defined and tri == 'default' %}selected{% endif %}>Trier par défaut</option>
                         <option value="prix_asc" {% if tri is defined and tri == 'prix_asc' %}selected{% endif %}>Prix : Croissant</option>
                         <option value="prix_desc" {% if tri is defined and tri == 'prix_desc' %}selected{% endif %}>Prix : Décroissant</option>
                     </select>
                 </form>
-                
-                <input type="text" id="liveAdminSearch" class="premium-input form-control" placeholder="Recherche en direct...">
-                <button class="premium-icon-btn" type="button"><i class="bi bi-search"></i></button>
+                <div class="position-relative">
+                    <input type="text" id="liveAdminSearch" class="form-control rounded-pill shadow-sm border-0 px-4" style="height: 40px; width: 250px;" placeholder="Rechercher...">
+                    <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                </div>
             </div>
-            
-            <a href="{{ path('app_admin_produit_new') }}" class="btn btn-success px-4 shadow-sm rounded-pill ms-2" style="height: 40px; display: flex; align-items: center;">
+            <a href="{{ path('app_admin_produit_stats') }}" class="btn btn-outline-primary px-4 shadow-sm rounded-pill">
+                <i class="bi bi-bar-chart-fill me-1"></i> Stats Stock
+            </a>
+            <a href="{{ path('app_admin_produit_marketing') }}" class="btn btn-outline-info px-4 shadow-sm rounded-pill">
+                <i class="bi bi-brain-fill me-1"></i> Analyse Marketing
+            </a>
+            <a href="{{ path('app_admin_produit_new') }}" class="btn btn-success px-4 shadow-sm rounded-pill">
                 <i class="bi bi-plus-circle me-1"></i> Nouveau Produit
             </a>
         </div>
@@ -105,35 +133,45 @@
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light text-uppercase small font-weight-bold text-muted">
+                    <thead class="bg-light text-uppercase small fw-bold text-muted">
                         <tr>
-                            <th class="ps-4 py-3 border-0">Produit</th>
-                            <th class="py-3 border-0">Stock</th>
+                            <th class="ps-4 py-3 border-0" style="width: 40px;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAllProducts">
+                                </div>
+                            </th>
+                            <th class="py-3 border-0">Produit</th>
+                            <th class="py-3 border-0 text-center">Stock</th>
                             <th class="py-3 border-0">Prix</th>
                             <th class="py-3 border-0 text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="adminProductTableBody">
-                    {% for produit in produits %}
+                    {% for produit in pagination %}
                         <tr class="admin-product-row">
                             <td class="ps-4 py-4 border-0">
+                                <div class="form-check">
+                                    <input class="form-check-input product-checkbox" type="checkbox" value="{{ produit.id }}">
+                                </div>
+                            </td>
+                            <td class="py-4 border-0">
                                 <div class="d-flex align-items-center">
                                     {% if produit.image %}
-                                        <img src="{{ asset('uploads/produits/' ~ produit.image) }}" alt="{{ produit.nom }}" class="rounded-3 me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                        <img src="{{ asset('uploads/produits/' ~ produit.image) }}" alt="{{ produit.nom }}" class="rounded-3 me-3 shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
                                     {% else %}
                                         <div class="bg-light rounded-3 me-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                            <i class="bi bi-box text-muted"></i>
+                                            <i class="bi bi-image text-muted"></i>
                                         </div>
                                     {% endif %}
                                     <div>
                                         <h6 class="mb-0 fw-bold product-title">{{ produit.nom }}</h6>
-                                        <small class="text-muted text-truncate d-inline-block product-desc" style="max-width: 200px;">{{ produit.description|slice(0, 50) }}...</small>
+                                        <small class="text-muted product-desc">{{ produit.description|slice(0, 40) }}...</small>
                                     </div>
                                 </div>
                             </td>
-                            <td class="border-0">
-                                <span class="badge {{ produit.quantite > 10 ? 'bg-success-subtle text-success' : (produit.quantite > 0 ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger') }} px-2 py-1 rounded-pill">
-                                    {{ produit.quantite }} en stock
+                            <td class="text-center border-0">
+                                <span class="badge {% if produit.quantite <= produit.stockSeuil %}bg-danger{% elseif produit.quantite <= (produit.stockSeuil * 1.5) %}bg-warning text-dark{% else %}bg-success{% endif %} px-3 py-2 rounded-pill shadow-sm" style="min-width: 80px;">
+                                    {{ produit.quantite }} restants
                                 </span>
                             </td>
                             <td class="fw-bold text-dark border-0">
@@ -158,14 +196,80 @@
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="4" class="py-5 text-center text-muted border-0"> Aucun produit trouvé dans le catalogue. </td>
+                            <td colspan="4" class="py-5 text-center text-muted border-0"> Aucun produit trouvé. </td>
                         </tr>
                     {% endfor %}
-                        <tr id="adminNoResults" style="display:none;">
-                            <td colspan="4" class="py-5 text-center text-muted border-0"> Aucun produit ne correspond à votre recherche en direct. </td>
-                        </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-center mt-4">
+        {{ knp_pagination_render(pagination) }}
+    </div>
+
+    <!-- Stock Alert Modal -->
+    <div class="modal fade" id="stockAlertModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-bottom-0 pt-4 px-4 bg-danger bg-opacity-10">
+                    <h5 class="modal-title fw-bold text-danger d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill me-2 fs-3"></i> Ruptures & Alertes Stock
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 pt-2">
+                    <p class="text-muted small mb-3">Produits nécessitant une attention immédiate.</p>
+                    <div class="list-group list-group-flush">
+                        {% for item in lowStockItems %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 py-3 border-bottom">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light p-2 rounded-2 me-3" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="bi bi-box-seam text-secondary fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold small">{{ item.nom }}</div>
+                                        <div class="text-danger fw-bold" style="font-size: 11px;">
+                                            {{ item.quantite }} en stock (Seuil: {{ item.stockSeuil }})
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="{{ path('app_admin_produit_edit', {'id': item.id}) }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                    <i class="bi bi-plus-lg"></i>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pb-4 px-4 bg-light">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold" onclick="loadStockAiAnalysisFromProduit()">
+                        <i class="bi bi-robot me-1"></i> Analyse IA Groq
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Analysis Modal -->
+    <div class="modal fade" id="stockAiModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-bottom-0 pt-4 px-4 bg-warning bg-opacity-10">
+                    <h5 class="modal-title fw-bold d-flex align-items-center">
+                        <i class="bi bi-lightning-stars-fill text-warning me-2 fs-3"></i> Intelligence Artificielle MindBloom
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 pt-0">
+                    <div id="stock-ai-modal-content" class="lh-lg text-dark">
+                        <!-- Content loaded via JS -->
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0 pb-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Fermer</button>
+                </div>
             </div>
         </div>
     </div>
@@ -175,41 +279,96 @@
 .bg-warning-subtle { background-color: #fff3cd; }
 .bg-danger-subtle { background-color: #f8d7da; }
 .btn-white:hover { background-color: #f8f9fa !important; }
+.animate__swing { animation-duration: 2s; }
+.cursor-pointer { cursor: pointer; }
 </style>
 
 <script>
+function openStockAlerts() {
+    const modalElement = document.getElementById('stockAlertModal');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
+}
+
+function loadStockAiAnalysisFromProduit() {
+    const alertModalEl = document.getElementById('stockAlertModal');
+    const alertModal = bootstrap.Modal.getInstance(alertModalEl);
+    if(alertModal) alertModal.hide();
+
+    const modalContent = document.getElementById('stock-ai-modal-content');
+    const aiModalEl = document.getElementById('stockAiModal');
+    const aiModal = new bootstrap.Modal(aiModalEl);
+    
+    modalContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-warning" role="status"></div><p class="mt-3 text-muted">L\'IA analyse vos stocks et priorise les approvisionnements...</p></div>';
+    aiModal.show();
+
+    fetch("{{ path('app_admin_stock_ai') }}")
+        .then(response => response.text())
+        .then(data => {
+            modalContent.innerHTML = '<div class="animate__animated animate__fadeIn p-3">' + data.replace(/\n/g, '<br>') + '</div>';
+        })
+        .catch(err => {
+            modalContent.innerHTML = '<div class="alert alert-danger">Erreur lors de l\'analyse des stocks.</div>';
+        });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('liveAdminSearch');
     const tableBody = document.getElementById('adminProductTableBody');
-    const rows = tableBody.querySelectorAll('.admin-product-row');
-    const noResultsRow = document.getElementById('adminNoResults');
+    if (!searchInput || !tableBody) return;
 
-    if (!searchInput) return;
+    const rows = tableBody.querySelectorAll('.admin-product-row');
 
     searchInput.addEventListener('input', function() {
         let searchQuery = this.value.toLowerCase().trim();
-        let visibleCount = 0;
-
         rows.forEach(row => {
-            const titleEl = row.querySelector('.product-title');
-            const descEl = row.querySelector('.product-desc');
-            
-            let titleText = titleEl ? titleEl.textContent.toLowerCase() : '';
-            let descText = descEl ? descEl.textContent.toLowerCase() : '';
+            const titleText = row.querySelector('.product-title').textContent.toLowerCase();
+            const descText = row.querySelector('.product-desc').textContent.toLowerCase();
 
             if (titleText.includes(searchQuery) || descText.includes(searchQuery)) {
                 row.style.display = '';
-                visibleCount++;
             } else {
                 row.style.display = 'none';
             }
         });
+    });
 
-        if (visibleCount === 0 && searchQuery !== '') {
-            noResultsRow.style.display = '';
+    // Bulk Delete Logic
+    const selectAll = document.getElementById('selectAllProducts');
+    const checkboxes = document.querySelectorAll('.product-checkbox');
+    const bulkWrapper = document.getElementById('bulkDeleteWrapper');
+    const selectedCount = document.getElementById('selectedCount');
+    const bulkIdsInput = document.getElementById('bulkDeleteIds');
+
+    function updateBulkButton() {
+        const checked = Array.from(checkboxes).filter(cb => cb.checked);
+        const count = checked.length;
+        
+        if (count > 0) {
+            bulkWrapper.style.display = 'block';
+            selectedCount.textContent = count;
+            bulkIdsInput.value = checked.map(cb => cb.value).join(',');
         } else {
-            noResultsRow.style.display = 'none';
+            bulkWrapper.style.display = 'none';
         }
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => {
+                // Only select visible rows (in case of search filtering)
+                if (cb.closest('tr').style.display !== 'none') {
+                    cb.checked = this.checked;
+                }
+            });
+            updateBulkButton();
+        });
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkButton);
     });
 });
 </script>

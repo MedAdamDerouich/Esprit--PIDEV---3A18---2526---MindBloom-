@@ -11,18 +11,37 @@
         <span style="font-size:32px; font-weight:bold; color:#4A90E2;">commandes</span>
         <span style="color:#718096; font-size:16px; margin-top:10px; text-align:center;">Suivez l'état de vos livraisons et gérez vos factures MindBloom.</span>
 
-        <!-- Triage -->
-        <div class="mt-4 w-100 d-flex justify-content-center" style="max-width: 500px;">
-            <div class="search-sort-wrapper px-4">
-                <form action="{{ path('app_order_history') }}" method="GET" class="position-relative m-0 p-0" id="historySortForm">
-                    <select name="tri" class="premium-select form-select" onchange="document.getElementById('historySortForm').submit()" style="border-right: none !important; width: auto; max-width: 100%;">
-                        <option value="date_desc" {% if tri == 'date_desc' %}selected{% endif %}>Trier par : Les plus récentes</option>
-                        <option value="date_asc" {% if tri == 'date_asc' %}selected{% endif %}>Trier par : Les plus anciennes</option>
-                        <option value="prix_desc" {% if tri == 'prix_desc' %}selected{% endif %}>Trier par : Prix Décroissant</option>
-                        <option value="prix_asc" {% if tri == 'prix_asc' %}selected{% endif %}>Trier par : Prix Croissant</option>
+        <!-- Barre de Filtres & Recherche -->
+        <div class="mt-4 w-100" style="max-width: 1000px;">
+            <form action="{{ path('app_order_history') }}" method="GET" id="historyFilterForm" class="row g-3 justify-content-center bg-white p-3 rounded-4 shadow-sm border-0">
+                <!-- Recherche par mot-clé -->
+                <div class="col-md-5">
+                    <div class="position-relative">
+                        <input type="text" name="q" value="{{ search }}" class="form-control rounded-pill border-0 bg-light px-4" placeholder="Rechercher par N° ou Adresse..." style="height: 48px;">
+                        <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+                    </div>
+                </div>
+
+                <!-- Filtre par Statut -->
+                <div class="col-md-3">
+                    <select name="statut" class="form-select rounded-pill border-0 bg-light px-3" style="height: 48px;" onchange="this.form.submit()">
+                        <option value="">Tous les statuts</option>
+                        <option value="{{ STATUS_PENDING }}" {% if statut == STATUS_PENDING %}selected{% endif %}>En préparation</option>
+                        <option value="{{ STATUS_SHIPPED }}" {% if statut == STATUS_SHIPPED %}selected{% endif %}>Expédiée</option>
+                        <option value="{{ STATUS_CANCELLED }}" {% if statut == STATUS_CANCELLED %}selected{% endif %}>Annulée</option>
                     </select>
-                </form>
-            </div>
+                </div>
+
+                <!-- Tri -->
+                <div class="col-md-4">
+                    <select name="tri" class="form-select rounded-pill border-0 bg-light px-3" style="height: 48px;" onchange="this.form.submit()">
+                        <option value="date_desc" {% if tri == 'date_desc' %}selected{% endif %}>Les plus récentes</option>
+                        <option value="date_asc" {% if tri == 'date_asc' %}selected{% endif %}>Les plus anciennes</option>
+                        <option value="prix_desc" {% if tri == 'prix_desc' %}selected{% endif %}>Prix Décroissant</option>
+                        <option value="prix_asc" {% if tri == 'prix_asc' %}selected{% endif %}>Prix Croissant</option>
+                    </select>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -33,8 +52,14 @@
             <div class="col-md-6 col-lg-4">
                 <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden order-card transition-hover">
                     <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
-                        <span class="badge {{ facture.statutLivraison == 'ENVOYE' ? 'bg-success-subtle text-success' : (facture.statutLivraison == 'ANNULE' ? 'bg-danger-subtle text-danger' : 'bg-warning-subtle text-warning') }} rounded-pill px-3 py-2 fw-bold" style="font-size: 11px;">
-                            {{ facture.statutLivraison == 'ENVOYE' ? 'EXPÉDIÉE' : (facture.statutLivraison == 'ANNULE' ? 'ANNULÉE' : 'EN PRÉPARATION') }}
+                        <span class="badge 
+                            {% if facture.statutLivraison == STATUS_SHIPPED %}bg-success-subtle text-success
+                            {% elseif facture.statutLivraison == STATUS_CANCELLED or facture.statutLivraison is empty %}bg-danger-subtle text-danger
+                            {% else %}bg-warning-subtle text-warning{% endif %} 
+                            rounded-pill px-3 py-2 fw-bold" style="font-size: 11px;">
+                            {% if facture.statutLivraison == STATUS_SHIPPED %}EXPÉDIÉE
+                            {% elseif facture.statutLivraison == STATUS_CANCELLED or facture.statutLivraison is empty %}ANNULÉE
+                            {% else %}EN PRÉPARATION{% endif %}
                         </span>
                         <span class="small text-muted fw-bold">#{{ facture.id }}</span>
                     </div>
@@ -59,9 +84,18 @@
                             {% endif %}
                         </div>
 
-                        <a href="{{ path('app_order_show', {id: facture.id}) }}" class="btn btn-outline-primary w-100 rounded-pill py-2 fw-bold small">
-                            <i class="bi bi-file-earmark-text me-1"></i> Détails & Facture
-                        </a>
+                        <div class="d-flex gap-2">
+                            <a href="{{ path('app_order_show', {id: facture.id}) }}" class="btn btn-outline-primary flex-grow-1 rounded-pill py-2 fw-bold small">
+                                <i class="bi bi-file-earmark-text me-1"></i> Détails
+                            </a>
+                            {% if facture.statutLivraison == STATUS_PENDING %}
+                                <form action="{{ path('app_order_cancel', {id: facture.id}) }}" method="POST" class="flex-grow-1" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette commande ?')">
+                                    <button type="submit" class="btn btn-outline-danger w-100 rounded-pill py-2 fw-bold small">
+                                        <i class="bi bi-x-circle me-1"></i> Annuler
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -76,8 +110,85 @@
             </div>
         {% endfor %}
     </div>
+    
+    <!-- AI Assistant Floating / Bottom Section -->
+    <div class="row mt-5 justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden animate__animated animate__fadeInUp">
+                <div class="card-header bg-primary text-white p-3 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-robot me-2"></i> Assistant IA MindBloom</h6>
+                    <span class="badge bg-white text-primary rounded-pill small">Online</span>
+                </div>
+                <div id="order-chat-messages" class="p-3 bg-light overflow-auto" style="height: 300px; scroll-behavior: smooth;">
+                    <div class="mb-3">
+                        <div class="bg-white p-3 rounded-4 shadow-sm smaller d-inline-block border-start border-primary border-4" style="max-width: 85%;">
+                            Bonjour {{ app.user.fullName }} ! Je suis là pour vous aider à tirer le meilleur parti de vos achats. Avez-vous des questions sur vos produits ou votre santé ?
+                        </div>
+                    </div>
+                </div>
+                <div class="p-3 border-top bg-white">
+                    <div class="input-group shadow-sm rounded-pill overflow-hidden border">
+                        <input type="text" id="order-chat-input" class="form-control border-0 ps-4" placeholder="Posez votre question..." onkeypress="if(event.key === 'Enter') sendOrderChatMessage()">
+                        <button class="btn btn-primary px-4" type="button" id="btn-order-chat-send" onclick="sendOrderChatMessage()">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+let chatHistory = [];
+
+function appendMessage(text, isUser = false) {
+    const container = document.getElementById('order-chat-messages');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'mb-3 ' + (isUser ? 'text-end' : '');
+    
+    const innerDiv = document.createElement('div');
+    innerDiv.className = 'p-3 rounded-4 shadow-sm smaller d-inline-block ' + 
+                         (isUser ? 'bg-primary text-white' : 'bg-white border-start border-primary border-4');
+    innerDiv.style.maxWidth = '85%';
+    innerDiv.innerHTML = text.replace(/\n/g, '<br>');
+    
+    msgDiv.appendChild(innerDiv);
+    container.appendChild(msgDiv);
+    container.scrollTop = container.scrollHeight;
+}
+
+function sendOrderChatMessage() {
+    const input = document.getElementById('order-chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = '';
+    appendMessage(text, true);
+    
+    const btn = document.getElementById('btn-order-chat-send');
+    btn.disabled = true;
+
+    fetch("{{ path('app_cart_chat') }}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history: chatHistory })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.reply) {
+            appendMessage(data.reply);
+            chatHistory.push({ role: 'user', content: text });
+            chatHistory.push({ role: 'assistant', content: data.reply });
+        }
+        btn.disabled = false;
+    })
+    .catch(() => {
+        appendMessage("Oups, je rencontre un problème technique.");
+        btn.disabled = false;
+    });
+}
+</script>
 
 <style>
 .order-card {

@@ -37,10 +37,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const descField = document.querySelector('textarea[id$="_description"]');
 
     if (btnAi && nomField && descField) {
+        // Validation temps réel du nom (pas de caractères spéciaux dangereux)
+        nomField.addEventListener('input', function() {
+            const forbidden = /[<>{}[]]/;
+            if (forbidden.test(this.value)) {
+                this.classList.add('is-invalid');
+                this.setCustomValidity("Les caractères spéciaux comme < > { } [ ] ne sont pas autorisés.");
+            } else {
+                this.classList.remove('is-invalid');
+                this.setCustomValidity("");
+            }
+        });
+
         btnAi.addEventListener('click', function() {
             const productName = nomField.value.trim();
-            if (!productName) {
-                alert("Veuillez d'abord saisir le nom du produit.");
+            if (!productName || nomField.classList.contains('is-invalid')) {
+                alert("Veuillez saisir un nom de produit valide avant de générer une description.");
                 return;
             }
 

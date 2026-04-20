@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Service\GroqService;
 use App\Entity\Produit;
 use App\Form\ProduitType;
 use App\Repository\ProduitRepository;
@@ -20,7 +21,11 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 class ProduitController extends AbstractController
 {
     #[Route('', name: 'app_admin_produit_index', methods: ['GET'])]
-    public function index(ProduitRepository $produitRepository, Request $request): Response
+    public function index(
+        ProduitRepository $produitRepository, 
+        Request $request, 
+        \Knp\Component\Pager\PaginatorInterface $paginator
+    ): Response
     {
         $q = $request->query->get('q');
         $tri = $request->query->get('tri', 'default');
@@ -40,30 +45,39 @@ class ProduitController extends AbstractController
             $qb->orderBy('p.id', 'DESC');
         }
 
-        $produits = $qb->getQuery()->getResult();
+        // Pagination
+        $pagination = $paginator->paginate(
+            $qb, // Query builder
+            $request->query->getInt('page', 1), // Numéro de page
+            8 // Produits par page
+        );
+
+        // On a besoin de tous pour les stats, mais la pagination pour l'affichage
+        $allProducts = $qb->getQuery()->getResult();
+        $lowStockProducts = array_filter($allProducts, fn($p) => $p->getQuantite() <= $p->getStockSeuil());
 
         // Calculate Stats
         $stats = [
-            'total' => count($produits),
+            'total' => count($allProducts),
             'outOfStock' => 0,
-            'lowStock' => 0,
+            'lowStock' => count($lowStockProducts),
             'totalValue' => 0
         ];
 
-        foreach ($produits as $p) {
+        foreach ($allProducts as $p) {
             $stats['totalValue'] += ($p->getQuantite() * $p->getPrix());
             if ($p->getQuantite() == 0) {
                 $stats['outOfStock']++;
-            } elseif ($p->getQuantite() <= 10) {
-                $stats['lowStock']++;
             }
         }
 
         return $this->render('admin/produit/index.html.twig', [
-            'produits' => $produits,
+            'pagination' => $pagination,
             'q' => $q,
             'tri' => $tri,
-            'stats' => $stats
+            'stats' => $stats,
+            'lowStockCount' => count($lowStockProducts),
+            'lowStockItems' => $lowStockProducts
         ]);
     }
 
@@ -143,7 +157,26 @@ class ProduitController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_admin_produit_delete', methods: ['POST'])]
+    #[Route('/suggest-description', name: 'app_admin_produit_suggest_description', methods: ['POST'])]
+    public function suggestDescription(Request $request, \App\Service\GroqService $groq): Response
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+            $name = $data['name'] ?? '';
+
+            if (empty($name)) {
+                return $this->json(['error' => 'Le nom du produit est requis.'], 400);
+            }
+
+            $description = $groq->generateDescription($name);
+
+            return $this->json(['description' => $description]);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Erreur technique : ' . $e->getMessage()], 500);
+        }
+    }
+
+    #[Route('/{id}', name: 'app_admin_produit_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(Request $request, Produit $produit, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$produit->getId(), $request->request->get('_token'))) {
@@ -154,12 +187,32 @@ class ProduitController extends AbstractController
         return $this->redirectToRoute('app_admin_produit_index', [], Response::HTTP_SEE_OTHER);
     }
 
-    #[Route('/{id}/feedbacks', name: 'app_admin_produit_feedbacks', methods: ['GET'])]
-    public function feedbacks(Produit $produit): Response
+    #[Route('/{id}/feedbacks', name: 'app_admin_produit_feedbacks', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function feedbacks(Produit $produit, \App\Service\SentimentService $sentimentService): Response
     {
+        $feedbacks = $produit->getFeedbacks();
+        
+        // 1. On prépare la liste pour le batch
+        $commentMap = [];
+        foreach ($feedbacks as $f) {
+            $commentMap[$f->getId()] = $f->getCommentaire() ?? '';
+        }
+
+        // 2. Un seul appel API pour tout analyser d'un coup !
+        $sentimentResults = $sentimentService->analyzeBatch($commentMap);
+
+        // 3. On prépare les données pour Twig
+        $analyzedFeedbacks = [];
+        foreach ($feedbacks as $f) {
+            $analyzedFeedbacks[] = [
+                'entity' => $f,
+                'sentiment' => $sentimentResults[$f->getId()] ?? new \App\Service\SentimentResult('neutral', 0)
+            ];
+        }
+
         return $this->render('admin/produit/feedbacks.html.twig', [
             'produit' => $produit,
-            'feedbacks' => $produit->getFeedbacks(),
+            'feedbacks' => $analyzedFeedbacks,
         ]);
     }
 
@@ -180,5 +233,87 @@ class ProduitController extends AbstractController
         }
 
         return $this->redirectToRoute('app_produit_show', ['id' => $produitId]);
+    }
+
+    #[Route('/bulk-delete', name: 'app_admin_produit_bulk_delete', methods: ['POST'])]
+    public function bulkDelete(Request $request, EntityManagerInterface $entityManager, ProduitRepository $produitRepository): Response
+    {
+        $idsString = $request->request->get('ids');
+        $token = $request->request->get('_token');
+
+        if (!$this->isCsrfTokenValid('bulk_delete', $token)) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_admin_produit_index');
+        }
+
+        if ($idsString) {
+            $ids = explode(',', $idsString);
+            $count = 0;
+            foreach ($ids as $id) {
+                $produit = $produitRepository->find($id);
+                if ($produit) {
+                    $entityManager->remove($produit);
+                    $count++;
+                }
+            }
+            $entityManager->flush();
+            $this->addFlash('success', "$count produits ont été supprimés avec succès.");
+        }
+
+        return $this->redirectToRoute('app_admin_produit_index');
+    }
+    #[Route('/stats', name: 'app_admin_produit_stats', methods: ['GET'])]
+    public function stats(ProduitRepository $produitRepository): Response
+    {
+        $produits = $produitRepository->findAll();
+        
+        $totalStock = 0;
+        $ruptureItems = [];
+        $critiqueItems = [];
+        $okItems = [];
+        
+        foreach ($produits as $p) {
+            $totalStock += $p->getQuantite();
+            if ($p->getQuantite() == 0) $ruptureItems[] = $p;
+            elseif ($p->getQuantite() < 3) $critiqueItems[] = $p;
+            else $okItems[] = $p;
+        }
+
+        return $this->render('admin/produit/stats.html.twig', [
+            'produits' => $produits,
+            'totalStock' => $totalStock,
+            'ruptureCount' => count($ruptureItems),
+            'critiqueCount' => count($critiqueItems),
+            'okCount' => count($okItems),
+        ]);
+    }
+
+    #[Route('/marketing-analyse', name: 'app_admin_produit_marketing', methods: ['GET'])]
+    public function marketingAnalyse(\App\Repository\FeedbackRepository $feedbackRepository, GroqService $groq): Response
+    {
+        $feedbacks = $feedbackRepository->findAll();
+        $analysis = $groq->analyzeMarketingFeedback($feedbacks);
+        
+        $avgNote = 0;
+        if (count($feedbacks) > 0) {
+            $sum = array_sum(array_map(fn($f) => $f->getNote(), $feedbacks));
+            $avgNote = round($sum / count($feedbacks), 1);
+        }
+
+        return $this->render('admin/produit/marketing.html.twig', [
+            'analysis' => $analysis,
+            'totalFeedbacks' => count($feedbacks),
+            'avgNote' => $avgNote,
+        ]);
+    }
+
+    #[Route('/stock-analyse-ajax', name: 'app_admin_produit_stock_ai', methods: ['GET'])]
+    public function ajaxStockAi(ProduitRepository $produitRepository, GroqService $groq): Response
+    {
+        $allProducts = $produitRepository->findAll();
+        $lowStockProducts = array_filter($allProducts, fn($p) => $p->getQuantite() < 3);
+        
+        $insights = $groq->getStockAnalysis($lowStockProducts);
+        return new Response($insights);
     }
 }

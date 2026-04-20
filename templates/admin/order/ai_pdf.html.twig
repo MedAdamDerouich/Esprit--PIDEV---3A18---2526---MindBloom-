@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport d'Analyse MindBloom AI</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; color: #333; line-height: 1.6; padding: 20px; }
+        .header { text-align: center; border-bottom: 2px solid #4A90E2; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo { color: #4A90E2; font-size: 28px; font-weight: bold; }
+        .title { font-size: 20px; color: #555; margin-top: 5px; }
+        .date { font-size: 12px; color: #888; margin-top: 10px; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 10px; border: 1px solid #eee; }
+        .ai-icon { color: #4A90E2; font-size: 14px; font-weight: bold; margin-bottom: 15px; display: block; }
+        .analysis-text { font-size: 14px; white-space: pre-wrap; }
+        .footer { text-align: center; font-size: 10px; color: #aaa; margin-top: 50px; border-top: 1px solid #eee; pt-10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">MindBloom</div>
+        <div class="title">Rapport Stratégique IA</div>
+        <div class="date">Généré le {{ date|date('d/m/Y à H:i') }}</div>
+    </div>
+
+    <div class="content">
+        <span class="ai-icon">Assistant Decision Maker AI</span>
+        <div class="analysis-text">
+            {{ analysisText|raw|nl2br }}
+        </div>
+    </div>
+
+    <div class="footer">
+        Document confidentiel à usage interne uniquement • MindBloom E-commerce Platform &copy; 2026
+    </div>
+</body>
+</html>

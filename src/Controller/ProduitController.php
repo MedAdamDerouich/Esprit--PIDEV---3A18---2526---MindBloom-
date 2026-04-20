@@ -17,45 +17,74 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ProduitController extends AbstractController
 {
     #[Route('', name: 'app_produit_index', methods: ['GET'])]
-    public function index(ProduitRepository $produitRepository, Request $request): Response
+    public function index(ProduitRepository $produitRepository, Request $request, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
         $query = $request->query->get('q');
+        
+        $qb = $produitRepository->createQueryBuilder('p');
+
         if ($query) {
-            $produits = $produitRepository->search($query);
-        } else {
-            $produits = $produitRepository->findAll();
+            $qb->where('p.nom LIKE :q OR p.description LIKE :q')
+               ->setParameter('q', '%' . $query . '%');
         }
 
+        $pagination = $paginator->paginate(
+            $qb, /* query NOT result */
+            $request->query->getInt('page', 1), /*page number*/
+            6 /*limit per page*/
+        );
+
         return $this->render('produit/index.html.twig', [
-            'produits' => $produits,
+            'pagination' => $pagination,
             'searchTerm' => $query,
         ]);
     }
 
     #[Route('/{id}', name: 'app_produit_show', methods: ['GET'])]
-    public function show(Produit $produit): Response
+    public function show(Produit $produit, \App\Service\ReviewSummaryService $summaryService): Response
     {
         return $this->render('produit/show.html.twig', [
             'produit' => $produit,
+            'summary' => $summaryService->summarize($produit),
         ]);
     }
 
     #[Route('/{id}/avis/nouveau', name: 'app_produit_feedback_new', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_USER')]
-    public function addFeedback(Produit $produit, Request $request, EntityManagerInterface $entityManager): Response
+    public function addFeedback(
+        Produit $produit, 
+        Request $request, 
+        EntityManagerInterface $entityManager,
+        \App\Service\ModerationService $moderation,
+        \App\Service\SentimentService $sentiment,
+        \App\Service\ReviewSummaryService $summaryService
+    ): Response
     {
         $feedback = new Feedback();
         $form = $this->createForm(FeedbackType::class, $feedback);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Bad word filter
             $comment = $feedback->getCommentaire();
-            if ($comment) {
-                // censor the word 'louay'
-                $comment = str_ireplace('louay', '****', $comment);
-                $feedback->setCommentaire($comment);
+            
+            // ÉTAPE 1 — Modération OpenAI
+            $moderationResult = $moderation->moderate($comment);
+            if ($moderationResult->flagged) {
+                $this->addFlash('error', 'Avis refusé (Contenu inapproprié) : ' . $moderationResult->getReason());
+                return $this->redirectToRoute('app_produit_show', ['id' => $produit->getId()]);
             }
+
+            // ÉTAPE 2 — Sentiment HuggingFace (seulement si non-flaggé)
+            $sentimentResult = $sentiment->analyze($comment);
+            $sentimentMsg = sprintf('Sentiment : %s %s (%d%%)', 
+                $sentimentResult->getEmoji(), 
+                $sentimentResult->label, 
+                $sentimentResult->score
+            );
+
+            // Censure basique résiduelle
+            $comment = str_ireplace('louay', '****', $comment);
+            $feedback->setCommentaire($comment);
 
             $feedback->setProduit($produit);
             $feedback->setUser($this->getUser());
@@ -64,7 +93,10 @@ class ProduitController extends AbstractController
             $entityManager->persist($feedback);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Votre avis a été ajouté avec succès !');
+            // Invalider le résumé IA car un nouvel avis est arrivé
+            $summaryService->invalidateCache($produit);
+
+            $this->addFlash('success', 'Votre avis a été ajouté ! — ' . $sentimentMsg);
 
             return $this->redirectToRoute('app_produit_show', ['id' => $produit->getId()]);
         }

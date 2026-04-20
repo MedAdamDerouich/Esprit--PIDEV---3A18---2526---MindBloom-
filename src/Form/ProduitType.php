@@ -23,41 +23,45 @@ class ProduitType extends AbstractType
         $builder
             ->add('nom', TextType::class, [
                 'label' => 'Nom du produit',
-                'attr' => ['placeholder' => 'Ex: Huile de lavande', 'class' => 'form-control'],
-                'constraints' => [
-                    new NotBlank(['message' => 'Le nom est obligatoire']),
+                'attr' => [
+                    'placeholder' => 'Ex: Huile de lavande', 
+                    'class' => 'form-control',
+                    'minlength' => 3,
+                    'maxlength' => 50
                 ],
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Description',
-                'required' => false,
-                'attr' => ['rows' => 5, 'class' => 'form-control'],
-                'constraints' => [
-                    new NotBlank(['message' => 'La description est obligatoire']),
+                'attr' => [
+                    'rows' => 5, 
+                    'class' => 'form-control',
+                    'minlength' => 10
                 ],
             ])
             ->add('prix', MoneyType::class, [
                 'label' => 'Prix',
-                'currency' => 'EUR',
-                'attr' => ['class' => 'form-control'],
-                'constraints' => [
-                    new NotBlank(['message' => 'Le prix est obligatoire']),
-                    new Positive(['message' => 'Le prix doit être positif']),
+                'currency' => false, // On gère le symbole manuellement ou via le label pour plus de flexibilité
+                'attr' => [
+                    'class' => 'form-control',
+                    'min' => '0.01',
+                    'step' => '0.01',
+                    'placeholder' => '0.00'
                 ],
+                'help' => 'Prix en Dinars Tunisiens (DT)',
             ])
             ->add('quantite', NumberType::class, [
                 'label' => 'Quantité en stock',
-                'attr' => ['class' => 'form-control'],
-                'constraints' => [
-                    new NotBlank(['message' => 'La quantité est obligatoire']),
-                    new PositiveOrZero(['message' => 'La quantité ne peut pas être négative']),
+                'attr' => [
+                    'class' => 'form-control',
+                    'min' => '0',
+                    'step' => '1'
                 ],
             ])
             ->add('imageFile', FileType::class, [
-                'label' => 'Image (JPEG, PNG)',
+                'label' => 'Image (JPEG, PNG) - Max 2Mo',
                 'mapped' => false,
                 'required' => false,
-                'attr' => ['class' => 'form-control'],
+                'attr' => ['class' => 'form-control', 'accept' => 'image/jpeg,image/png'],
                 'constraints' => [
                     new File([
                         'maxSize' => '2M',

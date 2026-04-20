@@ -124,4 +124,61 @@ class CartController extends AbstractController
         }
         return new Response((string)$count);
     }
+    #[Route('/ai-conseils', name: 'app_cart_ai', methods: ['GET'])]
+    public function aiInsights(\App\Service\GroqService $groq, CommandeRepository $commandeRepository): Response
+    {
+        $cartItems = $commandeRepository->findCartByUser($this->getUser());
+        if (empty($cartItems)) {
+            return new Response("Ajoutez des produits au panier pour recevoir des conseils personnalisés.");
+        }
+
+        // Format items for the service
+        $itemsData = array_map(fn($item) => ['produit' => $item->getProduit()], $cartItems);
+        
+        $insights = $groq->getCartInsights($itemsData);
+        return new Response($insights);
+    }
+    #[Route('/ai-chat', name: 'app_cart_chat', methods: ['POST'])]
+    public function aiChat(\Symfony\Component\HttpFoundation\Request $request, \App\Service\GroqService $groq): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        $message = $data['message'] ?? '';
+        $history = $data['history'] ?? [];
+
+        if (empty($message)) {
+            return $this->json(['error' => 'Message vide'], 400);
+        }
+
+        $reply = $groq->chat($message, $history);
+        return $this->json(['reply' => $reply]);
+    }
+
+    #[Route('/ai-recommandations', name: 'app_cart_ai_recommendations', methods: ['GET'])]
+    public function aiRecommendations(\App\Service\GroqService $groq, \App\Repository\ProduitRepository $produitRepository, CommandeRepository $commandeRepository): Response
+    {
+        $cartItems = $commandeRepository->findCartByUser($this->getUser());
+        if (empty($cartItems)) {
+            return $this->json(['recommandations' => []]);
+        }
+
+        $allProducts = $produitRepository->findAll();
+        $recommendationNames = $groq->getProductRecommendations($cartItems, $allProducts);
+        
+        $recommendedProducts = [];
+        if (isset($recommendationNames['recommandations'])) {
+            foreach ($recommendationNames['recommandations'] as $name) {
+                $p = $produitRepository->findOneBy(['nom' => $name]);
+                if ($p) {
+                    $recommendedProducts[] = [
+                        'id' => $p->getId(),
+                        'nom' => $p->getNom(),
+                        'prix' => $p->getPrix(),
+                        'image' => $p->getImage(),
+                    ];
+                }
+            }
+        }
+
+        return $this->json($recommendedProducts);
+    }
 }

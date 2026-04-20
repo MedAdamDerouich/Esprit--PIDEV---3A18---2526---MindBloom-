@@ -51,6 +51,16 @@
             <span class="nav-icon"><i class="bi bi-clipboard-data"></i></span> Tests
         </a>
 
+        <div class="sidebar-label mt-3 mb-2 px-3 small text-muted text-uppercase fw-bold" style="font-size: 10px;">Analyses IA</div>
+        <a href="{{ path('app_admin_produit_stats') }}"
+           class="{{ app.request.attributes.get('_route') == 'app_admin_produit_stats' ? 'active' : '' }}">
+            <span class="nav-icon"><i class="bi bi-bar-chart"></i></span> Stats Stock
+        </a>
+        <a href="{{ path('app_admin_produit_marketing') }}"
+           class="{{ app.request.attributes.get('_route') == 'app_admin_produit_marketing' ? 'active' : '' }}">
+            <span class="nav-icon"><i class="bi bi-brain"></i></span> Analyse Marketing
+        </a>
+
         <hr class="mb-divider">
 
         <a href="{{ path('app_logout') }}" class="nav-logout">

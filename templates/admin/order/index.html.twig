@@ -2,73 +2,197 @@
 
 {% block title %}Gestion des commandes - MindBloom Admin{% endblock %}
 
-{% block admin_header %}Gestion des commandes{% endblock %}
+{% block admin_header %}
+    Gestion des commandes 
+    {% if lowStockCount > 0 %}
+        <span class="badge bg-danger rounded-pill shadow-sm" style="font-size: 12px; vertical-align: middle;">{{ lowStockCount }} Alertes Stock</span>
+    {% endif %}
+{% endblock %}
 
 {% block admin_content %}
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 border-start border-success border-5">
+    {% if lowStockCount > 0 %}
+    <div class="alert alert-danger border-0 shadow-sm rounded-4 p-4 mb-4" style="background: #fff5f5; border-left: 5px solid #dc3545 !important;">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-octagon-fill text-danger fs-3 me-3"></i>
+                <div>
+                    <h5 class="mb-0 fw-bold text-danger">Stocks critiques à surveiller</h5>
+                    <p class="mb-0 text-muted">Voici les produits nécessitant votre attention :</p>
+                </div>
+            </div>
+            <button class="btn btn-danger rounded-pill px-4 fw-bold" onclick="loadStockAiAnalysis()">
+                <i class="bi bi-robot me-1"></i> Analyse Stratégique IA
+            </button>
+        </div>
+        
+        <div class="row g-2">
+            {% for item in lowStockItems %}
+                <div class="col-md-4">
+                    <div class="bg-white p-2 rounded-3 border-start border-danger border-3 shadow-sm d-flex justify-content-between align-items-center">
+                        <span class="small fw-bold text-dark text-truncate" style="max-width: 150px;">{{ item.nom }}</span>
+                        <span class="badge {% if item.quantite == 0 %}bg-danger{% else %}bg-warning text-dark{% endif %} rounded-pill">
+                            {{ item.quantite }} en stock
+                        </span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 border-start border-success border-5 h-100">
                 <div class="card-body py-3">
                     <div class="d-flex align-items-center">
                         <div class="bg-success bg-opacity-10 text-success p-2 rounded-3 me-3">
                             <i class="bi bi-currency-dollar fs-4"></i>
                         </div>
                         <div>
-                            <h6 class="text-muted mb-0 small fw-bold text-uppercase">Chiffre d'Affaires Total</h6>
+                            <h6 class="text-muted mb-0 small fw-bold text-uppercase">Chiffre d'Affaires</h6>
                             <h4 class="mb-0 fw-bold">{{ totalValue|number_format(2, ',', ' ') }} <small>DT</small></h4>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-5 text-end d-flex align-items-center justify-content-end gap-2">
-            <form action="{{ path('app_admin_order_index') }}" method="GET" class="d-flex gap-2">
-                <input type="text" name="q" class="form-control rounded-pill px-3 shadow-sm" placeholder="ID, Patient ou Email..." value="{{ q }}">
-                <button type="submit" class="btn btn-outline-primary rounded-circle"><i class="bi bi-search"></i></button>
-            </form>
-            <a href="{{ path('app_admin_order_customers') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-                <i class="bi bi-people-fill me-1"></i> Dépenses par Patient
-            </a>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 border-start border-primary border-5 h-100 position-relative overflow-hidden bg-primary bg-opacity-10">
+                <div class="card-body py-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary text-white p-2 rounded-3 me-3 shadow-sm">
+                                <i class="bi bi-robot fs-4"></i>
+                            </div>
+                            <div>
+                                <h6 class="text-primary mb-0 small fw-bold text-uppercase">Rapport IA Stratégique</h6>
+                                <div id="admin-ai-summary" class="small text-muted mt-1">Générez une analyse des ventes.</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm" onclick="loadAdminAiInsights()">
+                            <i class="bi bi-lightning-charge-fill me-1"></i> Analyser
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="position-relative w-100">
+                <input type="text" id="adminOrderSearch" class="form-control rounded-pill px-3 shadow-sm pe-5 border-0" style="height: 50px;" placeholder="Filtrer : ID, Patient...">
+                <div class="position-absolute top-50 end-0 translate-middle-y me-3 text-primary">
+                    <i class="bi bi-search"></i>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- TABS Navigation -->
     <ul class="nav nav-pills mb-4 gap-2" id="orderTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active rounded-pill px-4 shadow-sm" id="pending-tab" data-bs-toggle="pill" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true">
+            <button class="nav-link active rounded-pill px-4 shadow-sm position-relative" id="pending-tab" data-bs-toggle="pill" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true">
                 <i class="bi bi-clock-history me-1"></i> En attente
+                {% if countPending > 0 %}
+                    <span class="badge bg-warning text-dark ms-2">{{ countPending }}</span>
+                {% endif %}
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill px-4 shadow-sm" id="shipped-tab" data-bs-toggle="pill" data-bs-target="#shipped" type="button" role="tab" aria-controls="shipped" aria-selected="false">
                 <i class="bi bi-truck me-1"></i> Expédiées
+                <span class="badge bg-success ms-2">{{ countShipped }}</span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill px-4 shadow-sm" id="cancelled-tab" data-bs-toggle="pill" data-bs-target="#cancelled" type="button" role="tab" aria-controls="cancelled" aria-selected="false">
                 <i class="bi bi-x-circle me-1"></i> Annulées
+                <span class="badge bg-danger ms-2">{{ countCancelled }}</span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill px-4 shadow-sm" id="all-tab" data-bs-toggle="pill" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="false">
-                <i class="bi bi-list-check me-1"></i> Toutes les commandes
+                <i class="bi bi-list-check me-1"></i> Toutes
+                <span class="badge bg-secondary ms-2">{{ countAll }}</span>
             </button>
         </li>
     </ul>
 
-    <!-- TABS Content -->
     <div class="tab-content" id="orderTabContent">
         <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
-            {{ include('admin/order/_table.html.twig', {'factures': factures|filter(f => f.statutLivraison == 'NON_ENVOYE')}) }}
+            {{ include('admin/order/_table.html.twig', {'factures': factures|filter(f => f.statutLivraison == STATUS_PENDING)}) }}
         </div>
         <div class="tab-pane fade" id="shipped" role="tabpanel" aria-labelledby="shipped-tab">
-            {{ include('admin/order/_table.html.twig', {'factures': factures|filter(f => f.statutLivraison == 'ENVOYE')}) }}
+            {{ include('admin/order/_table.html.twig', {'factures': factures|filter(f => f.statutLivraison == STATUS_SHIPPED)}) }}
         </div>
         <div class="tab-pane fade" id="cancelled" role="tabpanel" aria-labelledby="cancelled-tab">
-            {{ include('admin/order/_table.html.twig', {'factures': factures|filter(f => f.statutLivraison == 'ANNULE')}) }}
+            {{ include('admin/order/_table.html.twig', {'factures': factures|filter(f => f.statutLivraison == STATUS_CANCELLED or f.statutLivraison is empty)}) }}
         </div>
         <div class="tab-pane fade" id="all" role="tabpanel" aria-labelledby="all-tab">
             {{ include('admin/order/_table.html.twig', {'factures': factures}) }}
+        </div>
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="row mt-5 mb-5 p-4 bg-light rounded-4 border">
+        <div class="col-md-8">
+            <h5 class="fw-bold mb-1">Rapports de fidélité</h5>
+            <p class="text-muted small">Consultez les statistiques détaillées des dépenses par patient pour identifier vos meilleurs clients.</p>
+        </div>
+        <div class="col-md-4 text-end d-flex align-items-center justify-content-end">
+            <a href="{{ path('app_admin_order_customers') }}" class="btn btn-primary rounded-pill px-4 shadow-sm py-2">
+                <i class="bi bi-people-fill me-2"></i> Voir les dépenses par Patient
+            </a>
+        </div>
+    </div>
+
+    <!-- AI Analysis Modal -->
+    <div class="modal fade" id="aiModal" tabindex="-1" aria-labelledby="aiModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-bottom-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold d-flex align-items-center" id="aiModalLabel">
+                        <i class="bi bi-robot text-primary me-2 fs-3"></i> Analyse MindBloom AI
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 pt-2">
+                    <div id="ai-modal-content" class="lh-lg text-dark" style="font-size: 15px;">
+                        <!-- AI Response will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0 pb-4 px-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Fermer</button>
+                    <a href="{{ path('app_admin_order_ai_pdf') }}" class="btn btn-outline-danger rounded-pill px-4">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> Télécharger PDF
+                    </a>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" onclick="loadAdminAiInsights()">
+                        <i class="bi bi-arrow-clockwise me-1"></i> Relancer l'analyse
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stock Analysis Modal -->
+    <div class="modal fade" id="stockAiModal" tabindex="-1" aria-labelledby="stockAiModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-bottom-0 pt-4 px-4 bg-warning bg-opacity-10">
+                    <h5 class="modal-title fw-bold d-flex align-items-center" id="stockAiModalLabel">
+                        <i class="bi bi-box-seam text-warning me-2 fs-3"></i> Analyse de Stock IA
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="stock-ai-modal-content" class="lh-lg text-dark">
+                        <!-- Content loaded via JS -->
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pb-4 px-4">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-warning rounded-pill px-4 fw-bold" onclick="loadStockAiAnalysis()">
+                        <i class="bi bi-arrow-clockwise me-1"></i> Actualiser
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -87,4 +211,88 @@
     background-color: #f8f9fa !important;
 }
 </style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('adminOrderSearch');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            const rows = document.querySelectorAll('.order-row');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Handle "No results" visibility per table
+            const tables = document.querySelectorAll('tbody');
+            tables.forEach(tbody => {
+                const rowsInThisTable = tbody.querySelectorAll('.order-row');
+                const visibleRows = tbody.querySelectorAll('.order-row:not([style*="display: none"])');
+                let noResultsMsg = tbody.querySelector('.no-results-live');
+                
+                if (visibleRows.length === 0 && rowsInThisTable.length > 0) {
+                    if (!noResultsMsg) {
+                        noResultsMsg = document.createElement('tr');
+                        noResultsMsg.className = 'no-results-live';
+                        noResultsMsg.innerHTML = `<td colspan="6" class="text-center py-5 text-muted">Aucun résultat trouvé</td>`;
+                        tbody.appendChild(noResultsMsg);
+                    }
+                    noResultsMsg.style.display = '';
+                } else if (noResultsMsg) {
+                    noResultsMsg.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+
+function loadAdminAiInsights() {
+    const summary = document.getElementById('admin-ai-summary');
+    const modalContent = document.getElementById('ai-modal-content');
+    const modal = new bootstrap.Modal(document.getElementById('aiModal'));
+    
+    summary.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Analyse en cours...';
+    modalContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3 text-muted">L\'IA analyse vos données de vente, veuillez patienter...</p></div>';
+    
+    // Show modal immediately with loading state
+    modal.show();
+
+    fetch("{{ path('app_admin_order_ai') }}")
+        .then(response => response.text())
+        .then(data => {
+            summary.innerHTML = '<span class="text-success fw-bold"><i class="bi bi-check-circle-fill"></i> Rapport généré</span>';
+            modalContent.innerHTML = '<div class="animate__animated animate__fadeIn">' + data.replace(/\n/g, '<br>') + '</div>';
+        })
+        .catch(err => {
+            summary.innerHTML = '<span class="text-danger">Erreur IA</span>';
+            modalContent.innerHTML = '<div class="alert alert-danger">Une erreur est survenue lors de l\'analyse des données.</div>';
+        });
+}
+
+function loadStockAiAnalysis() {
+    const modalContent = document.getElementById('stock-ai-modal-content');
+    const modal = new bootstrap.Modal(document.getElementById('stockAiModal'));
+    
+    modalContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-warning" role="status"></div><p class="mt-3 text-muted">L\'IA analyse vos stocks et priorise les commandes...</p></div>';
+    modal.show();
+
+    fetch("{{ path('app_admin_stock_ai') }}")
+        .then(response => response.text())
+        .then(data => {
+            modalContent.innerHTML = '<div class="animate__animated animate__fadeIn">' + data.replace(/\n/g, '<br>') + '</div>';
+        })
+        .catch(err => {
+            modalContent.innerHTML = '<div class="alert alert-danger">Erreur lors de l\'analyse des stocks.</div>';
+        });
+}
+</script>
 {% endblock %}

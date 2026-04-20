@@ -27,14 +27,14 @@
             </div>
             
             <div id="searchValidationMessage" class="text-danger mt-2 small fw-bold" style="display: none; text-align: center;"></div>
-            <div id="searchNoResults" class="text-muted mt-2 small" style="display: none; text-align: center;">Aucun produit trouvé pour cette recherche.</div>
+     <div id="searchNoResults" class="text-muted mt-2 small" style="display: none; text-align: center;">Aucun produit trouvé pour cette recherche.</div>
         </div>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="productGrid">
-        {% for produit in produits %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5" id="productGrid">
+        {% for produit in pagination %}
             <div class="col product-item" data-price="{{ produit.prix }}">
-                <div class="android-cardview h-100">
+                <div class="android-cardview h-100" style="cursor: pointer;" onclick="window.location.href='{{ path('app_produit_show', {'id': produit.id}) }}'">
                     <div class="image-wrapper">
                         {% if produit.image %}
                             <img src="{{ asset('uploads/produits/' ~ produit.image) }}" class="product-image" alt="{{ produit.nom }}">
@@ -61,14 +61,25 @@
                             <span class="review-count">({{ produit.feedbacks|length }})</span>
                         </div>
                         
-                        <p class="product-description">
+                        <p class="product-description mb-2">
                             {{ produit.description|slice(0, 80) }}...
                         </p>
+                        
+                        <div class="stock-status small fw-bold">
+                            {% if produit.quantite > 0 %}
+                                <span class="text-success"><i class="bi bi-check-circle me-1"></i> En stock</span>
+                            {% else %}
+                                <span class="text-danger"><i class="bi bi-x-circle me-1"></i> Rupture de stock</span>
+                            {% endif %}
+                        </div>
                     </div>
                     
                     <div class="card-actions">
-                        <a href="{{ path('app_produit_show', {'id': produit.id}) }}" class="btn-android-flat">DÉTAILS</a>
-                        <a href="{{ path('app_produit_feedback_new', {'id': produit.id}) }}" class="btn-android-raised">AVIS</a>
+                        <form action="{{ path('app_cart_add', {'id': produit.id}) }}" method="post" onclick="event.stopPropagation();">
+                            <button type="submit" class="btn-android-raised" {{ produit.quantite == 0 ? 'disabled' : '' }}>
+                                {{ produit.quantite > 0 ? 'AJOUTER AU PANIER' : 'RUPTURE DE STOCK' }}
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -77,6 +88,11 @@
                 <p class="text-muted">Aucun produit n'est disponible pour le moment.</p>
             </div>
         {% endfor %}
+    </div>
+
+    <!-- Pagination Bundle -->
+    <div class="d-flex justify-content-center mt-4">
+        {{ knp_pagination_render(pagination) }}
     </div>
 </div>
 
@@ -198,20 +214,41 @@
     background-color: #4A90E2;
     color: white;
     border: none;
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: 500;
+    padding: 10px 24px;
+    font-size: 13px;
+    font-weight: 600;
     text-transform: uppercase;
-    border-radius: 4px;
+    border-radius: 50px;
     text-decoration: none;
-    box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
-    transition: background-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 6px rgba(74, 144, 226, 0.2);
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-android-raised:hover {
     background-color: #357ABD;
     color: white;
-    box-shadow: 0 2px 4px -1px rgba(0,0,0,.2), 0 4px 5px 0 rgba(0,0,0,.14), 0 1px 10px 0 rgba(0,0,0,.12);
+    box-shadow: 0 6px 12px rgba(74, 144, 226, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-android-raised:disabled {
+    background-color: #e2e8f0 !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.pagination .page-link:hover {
+    background-color: #f8f9fa !important;
+    transform: translateY(-1px);
+    transition: all 0.2s;
+}
+.pagination .active .page-link:hover {
+    background-color: #357ABD !important;
 }
 </style>
 
@@ -222,8 +259,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const productGrid = document.getElementById('productGrid');
     const validationMessage = document.getElementById('searchValidationMessage');
     const noResultsMessage = document.getElementById('searchNoResults');
-    const emptyStateFallback = productGrid.querySelector('.col-12.text-center'); 
     
+    // Search on Enter
+    if (searchInput) {
+        searchInput.value = "{{ searchTerm }}";
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                window.location.href = "{{ path('app_produit_index') }}?q=" + encodeURIComponent(this.value);
+            }
+        });
+    }
+
     // Store original order
     let originalItems = Array.from(productGrid.querySelectorAll('.col.product-item'));
 
@@ -259,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sortedItems.sort((a, b) => parseFloat(b.dataset.price) - parseFloat(a.dataset.price));
         }
 
-        // Apply filter and re-append
+        // Apply filter (only for items on current page)
         sortedItems.forEach(col => {
             const titleEl = col.querySelector('.product-title');
             const descEl = col.querySelector('.product-description');
@@ -276,17 +322,10 @@ document.addEventListener('DOMContentLoaded', function() {
             productGrid.appendChild(col);
         });
 
-        // Add empty fallback to end if needed
-        if (emptyStateFallback) productGrid.appendChild(emptyStateFallback);
-
         if (hasRealItems && visibleCount === 0 && searchQuery !== '') {
             noResultsMessage.style.display = 'block';
-            if (emptyStateFallback) emptyStateFallback.style.display = 'none';
         } else {
             noResultsMessage.style.display = 'none';
-            if (emptyStateFallback && !hasRealItems) {
-                emptyStateFallback.style.display = 'block';
-            }
         }
     }
 

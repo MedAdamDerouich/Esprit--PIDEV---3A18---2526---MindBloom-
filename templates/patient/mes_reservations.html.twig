@@ -142,6 +142,18 @@
                             </form>
                         {% endif %}
 
+
+                        {# Bouton WhatsApp - seulement si confirmé et pas passé #}
+{% if not isPast and r.status.value == 'Confirmé' %}
+    <form action="{{ path('app_patient_send_whatsapp', {id: r.idReservation}) }}" method="post" style="margin:0;">
+        <button type="submit"
+            style="background:rgba(74,144,226,0.15); color:#4A90E2; border:none; border-radius:8px; font-weight:600; font-size:12px; padding:6px 12px; cursor:pointer; transition:0.2s;"
+            onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
+            📩 WhatsApp
+        </button>
+    </form>
+{% endif %}
+
                         {# Bouton Supprimer (Corbeille) - seulement si annulé #}
                         {% if r.status.value == 'Annulé' %}
                             <form id="delete-form-{{ r.idReservation }}" action="{{ path('app_patient_reservations_delete', {id: r.idReservation}) }}" method="post" style="margin:0;" title="Supprimer de l'historique">

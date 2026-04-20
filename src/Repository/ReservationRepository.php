@@ -52,4 +52,20 @@ class ReservationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+
+public function findPendingReminders(\DateTime $now, \DateTime $in24h): array
+{
+    return $this->createQueryBuilder('r')
+        ->join('r.creneau', 'c')
+        ->where('r.status = :status')
+        ->andWhere('r.reminderSent = false')
+        ->andWhere('c.dateCreneau >= :now')
+        ->andWhere('c.dateCreneau <= :in24h')
+        ->setParameter('status', \App\Entity\Status::CONFIRME)
+        ->setParameter('now', $now->format('Y-m-d'))
+        ->setParameter('in24h', $in24h->format('Y-m-d'))
+        ->getQuery()
+        ->getResult();
+}
 }

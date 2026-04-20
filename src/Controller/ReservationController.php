@@ -145,5 +145,85 @@ class ReservationController extends AbstractController
 
         return $this->redirectToRoute('app_patient_reservations');
     }
+
+
+    #[Route('/psychologue/reservations/{id}/reminder', name: 'app_psychologue_send_reminder', methods: ['POST'])]
+#[IsGranted('ROLE_PSYCHOLOGUE')]
+public function sendReminder(
+    int $id,
+    ReservationRepository $reservationRepository,
+    \App\Service\WhatsAppService $whatsAppService,
+    \Doctrine\ORM\EntityManagerInterface $em
+): Response {
+    $reservation = $reservationRepository->find($id);
+
+    if (!$reservation) {
+        $this->addFlash('error', 'Réservation introuvable.');
+        return $this->redirectToRoute('app_reservation_index');
+    }
+
+    $patient = $reservation->getPatient();
+    $creneau = $reservation->getCreneau();
+    $cabinet = $creneau?->getCabinet();
+
+    $sent = $whatsAppService->sendReminderMessage(
+        '+216' . $patient->getPhone(),
+        $patient->getFullName() ?? 'Patient',
+        $cabinet?->getPsychologue()?->getFullName() ?? 'Dr. Inconnu',
+        $creneau->getDateCreneau()->format('d/m/Y'),
+        $creneau->getHeureDebut()->format('H:i'),
+        $cabinet?->getAdresse() ?? 'Adresse inconnue'
+    );
+
+    if ($sent) {
+        $reservation->setReminderSent(true);
+        $em->flush();
+        $this->addFlash('success', '✅ Rappel WhatsApp envoyé au patient.');
+    } else {
+        $this->addFlash('error', '❌ Échec de l\'envoi WhatsApp.');
+    }
+
+    return $this->redirectToRoute('app_reservation_index');
+}
+#[Route('/patient/reservations/{id}/whatsapp', name: 'app_patient_send_whatsapp', methods: ['POST'])]
+#[IsGranted('ROLE_PATIENT')]
+public function sendWhatsApp(
+    int $id,
+    ReservationRepository $reservationRepository,
+    \App\Service\WhatsAppService $whatsAppService
+): Response {
+    $reservation = $reservationRepository->find($id);
+
+    if (!$reservation) {
+        $this->addFlash('error', 'Réservation introuvable.');
+        return $this->redirectToRoute('app_patient_reservations');
+    }
+
+    $patient = $reservation->getPatient();
+    $creneau = $reservation->getCreneau();
+    $cabinet = $creneau?->getCabinet();
+
+    if (!$patient->getPhone()) {
+        $this->addFlash('error', 'Aucun numéro de téléphone trouvé.');
+        return $this->redirectToRoute('app_patient_reservations');
+    }
+
+    $sent = $whatsAppService->sendReminderMessage(
+        '+216' . $patient->getPhone(),
+        $patient->getFullName() ?? 'Patient',
+        $cabinet?->getPsychologue()?->getFullName() ?? 'Dr. Inconnu',
+        $creneau->getDateCreneau()->format('d/m/Y'),
+        $creneau->getHeureDebut()->format('H:i'),
+        $cabinet?->getAdresse() ?? 'Adresse inconnue'
+    );
+
+    if ($sent) {
+        $this->addFlash('success', '✅ Rappel WhatsApp envoyé sur votre téléphone !');
+    } else {
+        $this->addFlash('error', '❌ Échec de l\'envoi WhatsApp.');
+    }
+
+    return $this->redirectToRoute('app_patient_reservations');
+}
 }
 

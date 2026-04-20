@@ -13,10 +13,19 @@
         <!-- BOUTONS DE FILTRAGE -->
         <div style="display:flex; justify-content:center; gap:10px; margin-top:20px;" id="filterButtons">
             <button class="filter-btn active" data-filter="tous" style="background:#5FBF9F; color:white; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Tous</button>
-            <button class="filter-btn" data-filter="passees" style="background:#E0E0E0; color:#333333; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Passés</button>
             <button class="filter-btn" data-filter="confirmes" style="background:#E0E0E0; color:#333333; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Confirmés</button>
             <button class="filter-btn" data-filter="annules" style="background:#E0E0E0; color:#333333; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Annulés</button>
+            <button class="filter-btn" data-filter="passees" style="background:#E0E0E0; color:#333333; border:none; border-radius:20px; font-size:13px; padding:8px 20px; cursor:pointer; transition:0.2s;">Passés</button>
         </div>
+    </div>
+
+    <!-- OPTION EXPORT -->
+    <div style="width:100%; max-width:900px; display:flex; justify-content:flex-start;" id="exportContainer">
+        <a href="{{ path('app_psychologue_reservations_export') }}" 
+           style="display:inline-flex; align-items:center; gap:8px; background:rgba(29, 111, 66, 0.1); color:#1D6F42; border:1px solid rgba(29, 111, 66, 0.2); border-radius:20px; padding:10px 20px; font-size:13px; font-weight:bold; text-decoration:none; margin-bottom:20px; transition:0.2s;"
+           onmouseover="this.style.background='rgba(29, 111, 66, 0.2)'" onmouseout="this.style.background='rgba(29, 111, 66, 0.1)'">
+            📊 Exporter en Excel
+        </a>
     </div>
 
     <!-- Conteneur principal blanc -->
@@ -127,6 +136,15 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active');
 
             const filter = this.getAttribute('data-filter');
+            
+            // Toggle Excel button visibility (only for 'tous' and 'confirmes')
+            const exportContainer = document.getElementById('exportContainer');
+            if (filter === 'tous' || filter === 'confirmes') {
+                exportContainer.style.display = 'flex';
+            } else {
+                exportContainer.style.display = 'none';
+            }
+
             cards.forEach(card => {
                 if (filter === 'tous') {
                     card.style.display = 'grid'; // Grid car c'est un tableau

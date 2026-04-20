@@ -13,26 +13,26 @@ class WhatsAppService
 
     public function sendMessage(string $phone, string $message): bool
     {
-        $phone = ltrim($phone, '+');
+        // Sanitize phone number to keep only digits
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+        // Automatically prepend 216 if it's a local 8-digit Tunisian number
+        if (strlen($phone) === 8) {
+            $phone = '216' . $phone;
+        }
 
-        $data = http_build_query([
-            'target'      => $phone,
-            'message'     => $message,
-            'countryCode' => '216',
-        ]);
-
-        $context = stream_context_create([
-            'http' => [
-                'method'  => 'POST',
-                'header'  => "Authorization: " . $this->token . "\r\n"
-                           . "Content-Type: application/x-www-form-urlencoded\r\n"
-                           . "Content-Length: " . strlen($data) . "\r\n",
-                'content' => $data,
-                'timeout' => 10,
+        $ch = curl_init('https://api.fonnte.com/send');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: ' . $this->token
             ],
-            'ssl' => [
-                'verify_peer'      => false,
-                'verify_peer_name' => false,
+            CURLOPT_POSTFIELDS => [
+                'target' => $phone,
+                'message' => $message,
+                'delay' => '2',
             ]
         ]);
 

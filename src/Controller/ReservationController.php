@@ -120,7 +120,7 @@ class ReservationController extends AbstractController
 
     #[Route('/patient/reserver/creneau/{id}', name: 'app_patient_reserver_creneau', methods: ['POST'])]
     #[IsGranted('ROLE_PATIENT')]
-    public function reserverCreneau(int $id, \App\Repository\CreneauRepository $creneauRepository, \Doctrine\ORM\EntityManagerInterface $em): Response
+    public function reserverCreneau(int $id, \App\Repository\CreneauRepository $creneauRepository, \Doctrine\ORM\EntityManagerInterface $em, \App\Service\WhatsAppService $whatsAppService): Response
     {
         $patient = $this->getUser();
         $creneau = $creneauRepository->find($id);
@@ -134,9 +134,26 @@ class ReservationController extends AbstractController
         $reservation->setPatient($patient);
         $reservation->setCreneau($creneau);
         $reservation->setStatus(\App\Entity\Status::CONFIRME);
+        $reservation->setReminderSent(false); // Init à false
 
         // Marquer le créneau comme indisponible
         $creneau->setDisponible(false);
+
+        // Envoyer automatiquement le message WhatsApp une seule fois
+        $cabinet = $creneau->getCabinet();
+        if ($patient->getPhone() && !$reservation->isReminderSent()) {
+            $sent = $whatsAppService->sendReminderMessage(
+                $patient->getPhone(),
+                $patient->getFullName() ?? 'Patient',
+                $cabinet?->getPsychologue()?->getFullName() ?? 'Dr. Inconnu',
+                $creneau->getDateCreneau()->format('d/m/Y'),
+                $creneau->getHeureDebut()->format('H:i'),
+                $cabinet?->getAdresse() ?? 'Adresse inconnue'
+            );
+            if ($sent) {
+                $reservation->setReminderSent(true);
+            }
+        }
 
         $em->persist($reservation);
         $em->flush();
@@ -167,7 +184,7 @@ public function sendReminder(
     $cabinet = $creneau?->getCabinet();
 
     $sent = $whatsAppService->sendReminderMessage(
-        '+216' . $patient->getPhone(),
+        $patient->getPhone(),
         $patient->getFullName() ?? 'Patient',
         $cabinet?->getPsychologue()?->getFullName() ?? 'Dr. Inconnu',
         $creneau->getDateCreneau()->format('d/m/Y'),
@@ -209,7 +226,7 @@ public function sendWhatsApp(
     }
 
     $sent = $whatsAppService->sendReminderMessage(
-        '+216' . $patient->getPhone(),
+        $patient->getPhone(),
         $patient->getFullName() ?? 'Patient',
         $cabinet?->getPsychologue()?->getFullName() ?? 'Dr. Inconnu',
         $creneau->getDateCreneau()->format('d/m/Y'),
@@ -224,6 +241,82 @@ public function sendWhatsApp(
     }
 
     return $this->redirectToRoute('app_patient_reservations');
+}
+
+
+#[Route('/psychologue/reservations/export', name: 'app_psychologue_reservations_export')]
+#[IsGranted('ROLE_PSYCHOLOGUE')]
+public function exportExcel(
+    ReservationRepository $reservationRepository,
+    \PhpOffice\PhpSpreadsheet\Spreadsheet $spreadsheet = null
+): Response {
+    $psychologue = $this->getUser();
+    $reservations = $reservationRepository->getReservationsByPsychologue($psychologue->getId());
+
+    // Filtrer seulement les confirmées
+    $reservationsConfirmees = array_filter($reservations, function($r) {
+        return $r->getStatus()->value === 'Confirmé';
+    });
+
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    $sheet->setTitle('Réservations Confirmées');
+
+    // En-têtes
+    $sheet->setCellValue('A1', 'Patient');
+    $sheet->setCellValue('B1', 'Téléphone');
+    $sheet->setCellValue('C1', 'Date');
+    $sheet->setCellValue('D1', 'Heure');
+    $sheet->setCellValue('E1', 'Durée (min)');
+
+    // Style en-têtes
+    $headerStyle = [
+        'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+        'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '1D6F42']],
+        'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+    ];
+    $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
+
+    // Largeur colonnes
+    foreach (range('A', 'E') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+
+    // Données
+    $row = 2;
+    foreach ($reservationsConfirmees as $r) {
+        $patient = $r->getPatient();
+        $creneau = $r->getCreneau();
+
+        $sheet->setCellValue('A' . $row, $patient->getFullName());
+        $sheet->setCellValue('B' . $row, $patient->getPhone() ?? 'N/A');
+        $sheet->setCellValue('C' . $row, $creneau->getDateCreneau()->format('d/m/Y'));
+        $sheet->setCellValue('D' . $row, $creneau->getHeureDebut()->format('H:i'));
+        $sheet->setCellValue('E' . $row, $creneau->getDureeMinutes() . ' min');
+
+        // Alternance couleurs lignes
+        if ($row % 2 === 0) {
+            $sheet->getStyle('A' . $row . ':E' . $row)->applyFromArray([
+                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'EBF5EE']],
+            ]);
+        }
+
+        $row++;
+    }
+
+    // Générer le fichier
+    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+    $fileName = 'reservations_confirmees_' . date('Y-m-d') . '.xlsx';
+
+    $response = new \Symfony\Component\HttpFoundation\StreamedResponse(function() use ($writer) {
+        $writer->save('php://output');
+    });
+
+    $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    $response->headers->set('Content-Disposition', 'attachment; filename="' . $fileName . '"');
+    $response->headers->set('Cache-Control', 'max-age=0');
+
+    return $response;
 }
 }
 

@@ -38,9 +38,7 @@ class WhatsAppService
 
         $response = @file_get_contents('https://api.fonnte.com/send', false, $context);
         
-        error_log('Fonnte response: ' . $response);
-        error_log('Fonnte phone: ' . $phone);
-        error_log('Fonnte token: ' . $this->token);
+    
 
         if (!$response) return false;
 
@@ -56,14 +54,18 @@ class WhatsAppService
         string $heure,
         string $adresse
     ): bool {
-        $message = "Bonjour {$patientName} 👋\n\n"
-            . "MindBloom vous rappelle votre rendez-vous :\n\n"
-            . "👨‍⚕️ Avec Dr. {$psyName}\n"
-            . "📅 Date : {$date}\n"
-            . "🕒 Heure : {$heure}\n"
-            . "📍 Adresse : {$adresse}\n\n"
-            . "Merci d'être à l'heure 😊\n"
-            . "— MindBloom";
+
+$googleMapsLink = 'https://www.google.com/maps/search/?api=1&query=' . urlencode($adresse);
+
+$message = "Bonjour {$patientName} 👋\n\n"
+    . "MindBloom vous rappelle votre rendez-vous :\n\n"
+    . "👨‍⚕️ Avec Dr. {$psyName}\n"
+    . "📅 Date : {$date}\n"
+    . "🕒 Heure : {$heure}\n"
+    . "📍 Adresse : {$adresse}\n\n"
+    . "🗺️ Voir l'itinéraire : " . $googleMapsLink . "\n\n"
+    . "Merci d'être à l'heure 😊\n"
+    . "— MindBloom";
 
         return $this->sendMessage($phone, $message);
     }

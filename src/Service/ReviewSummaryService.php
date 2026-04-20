@@ -4,14 +4,14 @@ namespace App\Service;
 
 use App\Entity\Produit;
 use App\Repository\FeedbackRepository;
-use App\Service\GeminiService;
+use App\Service\GroqService;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
 class ReviewSummaryService
 {
     public function __construct(
-        private GeminiService $geminiService,
+        private GroqService $groqService,
         private CacheInterface $cache,
         private FeedbackRepository $feedbackRepository
     ) {}
@@ -37,7 +37,7 @@ class ReviewSummaryService
             $prompt = "En tant qu'assistant MindBloom, résume ces avis clients pour le produit '" . $produit->getNom() . "'. Fais un résumé synthétique de 3 à 5 phrases en français soulignant les points forts et faibles.\n\nAvis :\n" . $comments;
 
             try {
-                return $this->geminiService->generateResponse($prompt);
+                return $this->groqService->generateResponse($prompt, "Tu es un assistant expert pour MindBloom.");
             } catch (\Exception $e) {
                 return "Le résumé IA est momentanément indisponible.";
             }

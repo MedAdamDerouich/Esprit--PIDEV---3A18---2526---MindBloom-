@@ -117,6 +117,12 @@
                     <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
                 </div>
             </div>
+            <a href="{{ path('app_admin_produit_stats') }}" class="btn btn-outline-primary px-4 shadow-sm rounded-pill">
+                <i class="bi bi-bar-chart-fill me-1"></i> Stats Stock
+            </a>
+            <a href="{{ path('app_admin_produit_marketing') }}" class="btn btn-outline-info px-4 shadow-sm rounded-pill">
+                <i class="bi bi-brain-fill me-1"></i> Analyse Marketing
+            </a>
             <a href="{{ path('app_admin_produit_new') }}" class="btn btn-success px-4 shadow-sm rounded-pill">
                 <i class="bi bi-plus-circle me-1"></i> Nouveau Produit
             </a>
@@ -239,7 +245,7 @@
                 <div class="modal-footer border-top-0 pb-4 px-4 bg-light">
                     <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Fermer</button>
                     <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold" onclick="loadStockAiAnalysisFromProduit()">
-                        <i class="bi bi-robot me-1"></i> Analyse IA Gemini
+                        <i class="bi bi-robot me-1"></i> Analyse IA Groq
                     </button>
                 </div>
             </div>

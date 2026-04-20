@@ -5,13 +5,12 @@ namespace App\Controller;
 use App\Entity\Facture;
 use App\Repository\CommandeRepository;
 use App\Repository\FactureRepository;
+use App\Service\EmailService;
 use App\Service\WalletService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -210,7 +209,7 @@ class OrderController extends AbstractController
     }
 
     #[Route('/annuler/{id}', name: 'app_order_cancel', methods: ['POST'])]
-    public function patientCancel(Facture $facture, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+    public function patientCancel(Facture $facture, EntityManagerInterface $entityManager, EmailService $emailService): Response
     {
         if ($facture->getUser() !== $this->getUser()) {
             throw $this->createAccessDeniedException();
@@ -237,40 +236,8 @@ class OrderController extends AbstractController
 
         $entityManager->flush();
 
-        // Send confirmation email
-        if ($facture->getUser() && $facture->getUser()->getEmail()) {
-            $user = $facture->getUser();
-            $email = (new TemplatedEmail())
-                ->from('mindbloom.platform@gmail.com')
-                ->to($user->getEmail())
-                ->subject('Confirmation d\'annulation de votre commande MindBloom ❌')
-                ->htmlTemplate('email/order_status.html.twig');
-
-            $context = [
-                'facture' => $facture,
-                'status' => Facture::STATUS_CANCELLED,
-                'user_image_exists' => false,
-                'product_images' => []
-            ];
-
-            // Embed Profile Image
-            $publicDir = $this->getParameter('kernel.project_dir') . '/public';
-            if ($user->getProfileImage()) {
-                $profilePath = $publicDir . '/uploads/profiles/' . $user->getProfileImage();
-                if (file_exists($profilePath)) {
-                    $email->embedFromPath($profilePath, 'user_profile');
-                    $context['user_image_exists'] = true;
-                }
-            }
-
-            $email->context($context);
-
-            try {
-                $mailer->send($email);
-            } catch (\Exception $e) {
-                // Silently fail if mailer not configured
-            }
-        }
+        // Send confirmation email via service
+        $emailService->sendOrderStatusEmail($facture, Facture::STATUS_CANCELLED);
 
         $this->addFlash('success', 'Votre commande a été annulée avec succès.');
 

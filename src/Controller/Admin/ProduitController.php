@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Service\GroqService;
 use App\Entity\Produit;
 use App\Form\ProduitType;
 use App\Repository\ProduitRepository;
@@ -260,5 +261,59 @@ class ProduitController extends AbstractController
         }
 
         return $this->redirectToRoute('app_admin_produit_index');
+    }
+    #[Route('/stats', name: 'app_admin_produit_stats', methods: ['GET'])]
+    public function stats(ProduitRepository $produitRepository): Response
+    {
+        $produits = $produitRepository->findAll();
+        
+        $totalStock = 0;
+        $ruptureItems = [];
+        $critiqueItems = [];
+        $okItems = [];
+        
+        foreach ($produits as $p) {
+            $totalStock += $p->getQuantite();
+            if ($p->getQuantite() == 0) $ruptureItems[] = $p;
+            elseif ($p->getQuantite() < 3) $critiqueItems[] = $p;
+            else $okItems[] = $p;
+        }
+
+        return $this->render('admin/produit/stats.html.twig', [
+            'produits' => $produits,
+            'totalStock' => $totalStock,
+            'ruptureCount' => count($ruptureItems),
+            'critiqueCount' => count($critiqueItems),
+            'okCount' => count($okItems),
+        ]);
+    }
+
+    #[Route('/marketing-analyse', name: 'app_admin_produit_marketing', methods: ['GET'])]
+    public function marketingAnalyse(\App\Repository\FeedbackRepository $feedbackRepository, GroqService $groq): Response
+    {
+        $feedbacks = $feedbackRepository->findAll();
+        $analysis = $groq->analyzeMarketingFeedback($feedbacks);
+        
+        $avgNote = 0;
+        if (count($feedbacks) > 0) {
+            $sum = array_sum(array_map(fn($f) => $f->getNote(), $feedbacks));
+            $avgNote = round($sum / count($feedbacks), 1);
+        }
+
+        return $this->render('admin/produit/marketing.html.twig', [
+            'analysis' => $analysis,
+            'totalFeedbacks' => count($feedbacks),
+            'avgNote' => $avgNote,
+        ]);
+    }
+
+    #[Route('/stock-analyse-ajax', name: 'app_admin_produit_stock_ai', methods: ['GET'])]
+    public function ajaxStockAi(ProduitRepository $produitRepository, GroqService $groq): Response
+    {
+        $allProducts = $produitRepository->findAll();
+        $lowStockProducts = array_filter($allProducts, fn($p) => $p->getQuantite() < 3);
+        
+        $insights = $groq->getStockAnalysis($lowStockProducts);
+        return new Response($insights);
     }
 }

@@ -4,11 +4,10 @@ namespace App\Controller\Admin;
 
 use App\Entity\Facture;
 use App\Repository\FactureRepository;
+use App\Service\EmailService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -82,12 +81,12 @@ class OrderController extends AbstractController
     }
 
     #[Route('/ai-stock', name: 'app_admin_stock_ai', methods: ['GET'])]
-    public function aiStockAnalysis(\App\Service\GeminiService $geminiService, \App\Repository\ProduitRepository $produitRepository): Response
+    public function aiStockAnalysis(\App\Service\GroqService $groq, \App\Repository\ProduitRepository $produitRepository): Response
     {
         $allProducts = $produitRepository->findAll();
         $lowStockProducts = array_filter($allProducts, fn($p) => $p->getQuantite() <= $p->getStockSeuil());
         
-        $insights = $geminiService->getStockAnalysis($lowStockProducts);
+        $insights = $groq->getStockAnalysis($lowStockProducts);
         return new Response($insights);
     }
 
@@ -141,67 +140,22 @@ class OrderController extends AbstractController
     }
 
     #[Route('/expedier/{id}', name: 'app_admin_order_ship', methods: ['POST'])]
-    public function ship(Facture $facture, EntityManagerInterface $entityManager, MailerInterface $mailer, \App\Service\PdfService $pdfService): Response
+    public function ship(Facture $facture, EntityManagerInterface $entityManager, EmailService $emailService): Response
     {
         $facture->setStatutLivraison(Facture::STATUS_SHIPPED);
         $entityManager->flush();
 
-        if ($facture->getUser() && $facture->getUser()->getEmail()) {
-            $user = $facture->getUser();
-            $email = (new TemplatedEmail())
-                ->from('mindbloom.platform@gmail.com')
-                ->to($user->getEmail())
-                ->subject('Votre commande MindBloom a été expédiée ! 📦')
-                ->htmlTemplate('email/order_status.html.twig');
-
-            $context = [
-                'facture' => $facture,
-                'status' => Facture::STATUS_SHIPPED,
-                'user_image_exists' => false,
-                'product_images' => []
-            ];
-
-            $publicDir = $this->getParameter('kernel.project_dir') . '/public';
-
-            // Embed Profile Image
-            if ($user->getProfileImage()) {
-                $profilePath = $publicDir . '/uploads/profiles/' . $user->getProfileImage();
-                if (file_exists($profilePath)) {
-                    $email->embedFromPath($profilePath, 'user_profile');
-                    $context['user_image_exists'] = true;
-                }
-            }
-
-            // Embed Product Images
-            foreach ($facture->getCommandes() as $commande) {
-                $produit = $commande->getProduit();
-                if ($produit && $produit->getImage()) {
-                    $prodPath = $publicDir . '/uploads/produits/' . $produit->getImage();
-                    if (file_exists($prodPath)) {
-                        $email->embedFromPath($prodPath, 'product_' . $produit->getId());
-                        $context['product_images'][$produit->getId()] = true;
-                    }
-                }
-            }
-
-            $email->context($context);
-
-            // Generate and attach PDF
-            $pdfContent = $pdfService->generateInvoicePdf($facture);
-            $email->attach($pdfContent, sprintf('facture-%s.pdf', $facture->getId()), 'application/pdf');
-
-            try {
-                $mailer->send($email);
-                $this->addFlash('success', 'Commande marquée comme expédiée. Un email avec images et facture PDF a été envoyé.');
-            } catch (\Exception $e) {
-                $this->addFlash('warning', 'Commande expédiée, mais l\'email n\'a pas pu être envoyé. Vérifiez votre configuration MAILER_DSN.');
-            }
+        if ($emailService->sendOrderStatusEmail($facture, Facture::STATUS_SHIPPED)) {
+            $this->addFlash('success', 'Commande marquée comme expédiée. Un email avec images et facture PDF a été envoyé.');
+        } else {
+            $this->addFlash('warning', 'Commande expédiée, mais l\'email n\'a pas pu être envoyé. Vérifiez votre configuration MAILER_DSN.');
         }
+
         return $this->redirectToRoute('app_admin_order_index');
     }
 
     #[Route('/annuler/{id}', name: 'app_admin_order_cancel', methods: ['POST'])]
-    public function cancel(Facture $facture, EntityManagerInterface $entityManager, MailerInterface $mailer, \App\Service\PdfService $pdfService): Response
+    public function cancel(Facture $facture, EntityManagerInterface $entityManager, EmailService $emailService): Response
     {
         $facture->setStatutLivraison(Facture::STATUS_CANCELLED);
         
@@ -218,70 +172,35 @@ class OrderController extends AbstractController
 
         $entityManager->flush();
 
-        if ($facture->getUser() && $facture->getUser()->getEmail()) {
-            $user = $facture->getUser();
-            $email = (new TemplatedEmail())
-                ->from('mindbloom.platform@gmail.com')
-                ->to($user->getEmail())
-                ->subject('Annulation de votre commande MindBloom ❌')
-                ->htmlTemplate('email/order_status.html.twig');
-
-            $context = [
-                'facture' => $facture,
-                'status' => Facture::STATUS_CANCELLED,
-                'user_image_exists' => false,
-                'product_images' => []
-            ];
-
-            $publicDir = $this->getParameter('kernel.project_dir') . '/public';
-
-            if ($user->getProfileImage()) {
-                $profilePath = $publicDir . '/uploads/profiles/' . $user->getProfileImage();
-                if (file_exists($profilePath)) {
-                    $email->embedFromPath($profilePath, 'user_profile');
-                    $context['user_image_exists'] = true;
-                }
-            }
-
-            $email->context($context);
-
-            // Attach PDF even on cancellation if needed
-            $pdfContent = $pdfService->generateInvoicePdf($facture);
-            $email->attach($pdfContent, sprintf('facture-annulee-%s.pdf', $facture->getId()), 'application/pdf');
-
-            try {
-                $mailer->send($email);
-                $this->addFlash('success', 'Commande annulée et stock restauré. Un email a été envoyé au client.');
-            } catch (\Exception $e) {
-                $this->addFlash('warning', 'Commande annulée, mais l\'email n\'a pas pu être envoyé. Vérifiez votre configuration MAILER_DSN.');
-            }
+        if ($emailService->sendOrderStatusEmail($facture, Facture::STATUS_CANCELLED)) {
+            $this->addFlash('success', 'Commande annulée et stock restauré. Un email a été envoyé au client.');
         } else {
-            $this->addFlash('success', 'Commande annulée et stock restauré.');
+            $this->addFlash('success', 'Commande annulée et stock restauré (l\'email n\'a pas pu être envoyé).');
         }
 
         return $this->redirectToRoute('app_admin_order_index');
     }
     #[Route('/ai-analyse', name: 'app_admin_order_ai', methods: ['GET'])]
-    public function aiAnalytics(\App\Service\GeminiService $geminiService, FactureRepository $factureRepository): Response
+    public function aiAnalytics(\App\Service\GroqService $groq, FactureRepository $factureRepository): Response
     {
         $factures = $factureRepository->findAll();
         if (empty($factures)) {
             return new Response("Pas de données suffisantes pour une analyse IA.");
         }
         
-        $insights = $geminiService->getOrderAnalytics($factures);
+        $insights = $groq->getOrderAnalytics($factures);
         return new Response($insights);
     }
 
     #[Route('/ai-analyse/pdf', name: 'app_admin_order_ai_pdf', methods: ['GET'])]
-    public function aiAnalyticsPdf(\App\Service\GeminiService $geminiService, \App\Service\PdfService $pdfService, FactureRepository $factureRepository): Response
+    public function aiAnalyticsPdf(\App\Service\GroqService $groq, \App\Service\PdfService $pdfService, FactureRepository $factureRepository): Response
     {
         $factures = $factureRepository->findAll();
         if (empty($factures)) {
             return new Response("Pas de données.");
         }
         
-        $insights = $geminiService->getOrderAnalytics($factures);
+        $insights = $groq->getOrderAnalytics($factures);
         $pdfContent = $pdfService->generateAiReportPdf($insights);
 
         return new Response($pdfContent, 200, [

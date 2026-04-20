@@ -22,19 +22,18 @@ class GeminiService
             return "Veuillez configurer votre clé API Gemini dans le fichier .env pour activer cette fonctionnalité.";
         }
 
-        // List of models to try if one fails with 404 (Ordered by stability/performance)
+        // List of models to try if one fails with 404 (Ordered by availability)
         $models = [
-            'gemini-2.5-flash-lite', 
             'gemini-1.5-flash', 
-            'gemini-1.5-flash-latest', 
-            'gemini-pro', 
-            'gemini-pro-latest',
-            'gemini-3.1-flash-lite-preview'
+            'gemini-1.5-flash-8b',
+            'gemini-1.5-pro',
+            'gemini-1.0-pro'
         ];
         $lastError = "";
 
         foreach ($models as $modelName) {
-            $url = "https://generativelanguage.googleapis.com/v1beta/models/" . $modelName . ":generateContent";
+            $version = str_contains($modelName, 'flash') ? 'v1' : 'v1beta';
+            $url = "https://generativelanguage.googleapis.com/" . $version . "/models/" . $modelName . ":generateContent";
 
             try {
                 $response = $this->httpClient->request('POST', $url, [
@@ -101,10 +100,11 @@ class GeminiService
             return "{\"recommandations\": []}";
         }
 
-        $models = ['gemini-2.5-flash-lite', 'gemini-1.5-flash', 'gemini-pro'];
+        $models = ['gemini-1.5-flash', 'gemini-1.5-pro'];
         
         foreach ($models as $modelName) {
-            $url = "https://generativelanguage.googleapis.com/v1beta/models/" . $modelName . ":generateContent";
+            $version = str_contains($modelName, 'flash') ? 'v1' : 'v1beta';
+            $url = "https://generativelanguage.googleapis.com/" . $version . "/models/" . $modelName . ":generateContent";
 
             try {
                 $response = $this->httpClient->request('POST', $url, [

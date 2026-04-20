@@ -1,0 +1,170 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Statistiques Stock - MindBloom Admin{% endblock %}
+
+{% block admin_header %}
+    <div class="d-flex align-items-center justify-content-between w-100">
+        <div>
+            <i class="bi bi-bar-chart-fill me-2"></i> Statistiques des Stocks
+        </div>
+        <a href="{{ path('app_admin_produit_index') }}" class="btn btn-outline-secondary rounded-pill px-4 shadow-sm">
+            <i class="bi bi-arrow-left me-1"></i> Retour aux produits
+        </a>
+    </div>
+{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid py-4">
+    <!-- Header Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-4 border-start border-4 border-primary">
+                    <h6 class="text-muted text-uppercase small fw-bold mb-2">Total Produits</h6>
+                    <div class="d-flex align-items-center">
+                        <h2 class="mb-0 fw-bold">{{ produits|length }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-4 border-start border-4 border-danger">
+                    <h6 class="text-muted text-uppercase small fw-bold mb-2">En Rupture</h6>
+                    <div class="d-flex align-items-center">
+                        <h2 class="mb-0 fw-bold">{{ ruptureCount }}</h2>
+                        <span class="ms-2 badge bg-danger-soft text-danger rounded-pill">Urgent</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-4 border-start border-4 border-warning">
+                    <h6 class="text-muted text-uppercase small fw-bold mb-2">Stock Critique (<3)</h6>
+                    <div class="d-flex align-items-center">
+                        <h2 class="mb-0 fw-bold">{{ critiqueCount }}</h2>
+                        <span class="ms-2 badge bg-warning-soft text-warning rounded-pill">A surveiller</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-body p-4 border-start border-4 border-success">
+                    <h6 class="text-muted text-uppercase small fw-bold mb-2">En Stock (OK)</h6>
+                    <div class="d-flex align-items-center">
+                        <h2 class="mb-0 fw-bold">{{ okCount }}</h2>
+                        <span class="ms-2 badge bg-success-soft text-success rounded-pill">Optimal</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Bar Chart -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-0 py-3 px-4">
+                    <h5 class="card-title mb-0 fw-bold">Quantité par Produit</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="barChart" style="height: 400px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Pie Chart -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-0 py-3 px-4">
+                    <h5 class="card-title mb-0 fw-bold">Répartition du Stock</h5>
+                </div>
+                <div class="card-body p-4">
+                    <canvas id="pieChart" style="height: 300px;"></canvas>
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between mb-2 small">
+                            <span><i class="bi bi-circle-fill text-danger me-2"></i>Rupture</span>
+                            <span class="fw-bold">{{ ((ruptureCount / produits|length) * 100)|round }}%</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 small">
+                            <span><i class="bi bi-circle-fill text-warning me-2"></i>Critique</span>
+                            <span class="fw-bold">{{ ((critiqueCount / produits|length) * 100)|round }}%</span>
+                        </div>
+                        <div class="d-flex justify-content-between small">
+                            <span><i class="bi bi-circle-fill text-success me-2"></i>Optimal</span>
+                            <span class="fw-bold">{{ ((okCount / produits|length) * 100)|round }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-danger-soft { background-color: rgba(220, 53, 69, 0.1); }
+    .bg-warning-soft { background-color: rgba(255, 193, 7, 0.1); }
+    .bg-success-soft { background-color: rgba(40, 167, 69, 0.1); }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const labels = [{% for p in produits %}'{{ p.nom }}',{% endfor %}];
+    const data = [{% for p in produits %}{{ p.quantite }},{% endfor %}];
+    const colors = data.map(q => {
+        if (q === 0) return '#dc3545';
+        if (q < 3) return '#ffc107';
+        if (q < 5) return '#f39c12';
+        return '#28a745';
+    });
+
+    const ctxBar = document.getElementById('barChart').getContext('2d');
+    new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Quantité en stock',
+                data: data,
+                backgroundColor: colors,
+                borderRadius: 8,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    const ctxPie = document.getElementById('pieChart').getContext('2d');
+    new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+            labels: ['Rupture', 'Critique', 'Optimal'],
+            datasets: [{
+                data: [{{ ruptureCount }}, {{ critiqueCount }}, {{ okCount }}],
+                backgroundColor: ['#dc3545', '#ffc107', '#28a745'],
+                borderWidth: 0,
+                cutout: '70%'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

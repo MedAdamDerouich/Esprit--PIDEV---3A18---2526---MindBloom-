@@ -240,7 +240,7 @@ HTML;
 
     private function buildRappelHtml(Participation $participation, int $joursRestants): string
     {
-        $event = $participation->getEvenements();
+        $event = $participation->getEvenement();
         $user  = $participation->getUser();
 
         $prenom  = $this->getPrenom($user?->getFullName());

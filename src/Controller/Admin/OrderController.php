@@ -83,11 +83,13 @@ class OrderController extends AbstractController
     #[Route('/ai-stock', name: 'app_admin_stock_ai', methods: ['GET'])]
     public function aiStockAnalysis(\App\Service\GroqService $groq, \App\Repository\ProduitRepository $produitRepository): Response
     {
+        $salesStats  = $produitRepository->getProductSalesStats();
         $allProducts = $produitRepository->findAll();
-        $lowStockProducts = array_filter($allProducts, fn($p) => $p->getQuantite() <= $p->getStockSeuil());
-        
-        $insights = $groq->getStockAnalysis($lowStockProducts);
-        return new Response($insights);
+        $lowStockProducts = array_values(array_filter($allProducts, fn($p) => $p->getQuantite() <= $p->getStockSeuil()));
+
+        $analysis = $groq->analyzeStockAndSales($salesStats, $lowStockProducts);
+
+        return $this->json($analysis);
     }
 
     #[Route('/patients', name: 'app_admin_order_customers', methods: ['GET'])]

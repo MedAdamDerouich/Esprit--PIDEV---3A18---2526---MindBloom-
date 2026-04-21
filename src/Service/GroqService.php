@@ -163,6 +163,46 @@ class GroqService
         return $this->generateResponse("Analyse ces ruptures de stock prioritaires:\n" . $itemsStr, "Tu es un expert en logistique pharmaceutique.");
     }
 
+    public function analyzeStockAndSales(array $salesStats, array $lowStockItems): array
+    {
+        if (empty($salesStats)) return [];
+
+        $lowStockNames = array_map(fn($p) => $p->getNom(), $lowStockItems);
+
+        $statsLines = array_map(function($s) use ($lowStockNames) {
+            $alert = in_array($s['nom'], $lowStockNames) ? ' [STOCK CRITIQUE]' : '';
+            return sprintf(
+                "- %s%s : vendu=%d unités, stock=%d, seuil=%d, CA=%.2f DT",
+                $s['nom'], $alert, $s['totalVendu'], $s['stock'], $s['stockSeuil'], $s['chiffreAffaires']
+            );
+        }, $salesStats);
+
+        $prompt = "Tu es un expert en gestion de stock et marketing pour MindBloom, une boutique de bien-être.\n\n"
+            . "Voici les données de vente et stock de tous les produits :\n"
+            . implode("\n", $statsLines) . "\n\n"
+            . "Génère une analyse critique en JSON avec ce format EXACT (rien d'autre) :\n"
+            . "{\n"
+            . "  \"resume\": \"Résumé exécutif en 2 phrases\",\n"
+            . "  \"produitsCritiques\": [\n"
+            . "    {\"nom\": \"...\", \"probleme\": \"stock critique / peu vendu / les deux\", \"urgence\": \"haute|moyenne|faible\", \"conseil\": \"action concrète à faire\"}\n"
+            . "  ],\n"
+            . "  \"produitsStagnants\": [\n"
+            . "    {\"nom\": \"...\", \"totalVendu\": 0, \"conseil\": \"promotion / bundle / retirage\"}\n"
+            . "  ],\n"
+            . "  \"actionsRecommandees\": [\"action 1\", \"action 2\", \"action 3\"],\n"
+            . "  \"scoreStock\": 72\n"
+            . "}";
+
+        $data = $this->generateJsonResponse($prompt, "Tu es un expert en gestion de stock et stratégie commerciale. Réponds UNIQUEMENT en JSON valide.");
+
+        if (isset($data['choices'][0]['message']['content'])) {
+            $decoded = json_decode($data['choices'][0]['message']['content'], true);
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        return [];
+    }
+
     /**
      * Replicates Java handleMarketingAnalysis
      */

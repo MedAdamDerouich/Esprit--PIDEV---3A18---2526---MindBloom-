@@ -964,74 +964,72 @@ body.dark-mode .ptdash-testi::after  { background: linear-gradient(-90deg, #0F11
 </style>
 {% endblock %}
 
-{% block body %}
-<div class="ptdash-page">
-
-    {# ── Upcoming Event Notification (10 seconds) ── #}
+{% block event_banner %}
     {% if next_event %}
-        <div id="mb-event-reminder" class="mb-event-reminder">
-            <div class="mb-er-content">
-                <span class="mb-er-icon">📅</span>
-                <div class="mb-er-text">
-                    <strong>Rappel :</strong> Votre prochain événement <em>"{{ next_event.titre }}"</em> 
-                    est prévu pour le {{ next_event.dateDebut|date('d/m/Y à H:i') }} 
-                    (dans {{ next_event_jours_restants }} jour{{ next_event_jours_restants > 1 ? 's' : '' }}).
+        <div id="mb-event-reminder" style="
+            position: fixed;
+            top: 100px;
+            right: 24px;
+            z-index: 99999;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+            border-left: 4px solid #ED8F03;
+            padding: 14px 16px 14px 16px;
+            max-width: 300px;
+            min-width: 260px;
+            font-family: inherit;
+            animation: mbSlideIn 0.4s cubic-bezier(0.22,1,0.36,1) forwards;
+        ">
+            <style>
+                @keyframes mbSlideIn {
+                    from { opacity: 0; transform: translateX(40px); }
+                    to   { opacity: 1; transform: translateX(0); }
+                }
+                @keyframes mbSlideOut {
+                    from { opacity: 1; transform: translateX(0); }
+                    to   { opacity: 0; transform: translateX(40px); }
+                }
+            </style>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+                <div style="display:flex;gap:10px;align-items:flex-start;">
+                    <div style="background:#fff8e1;border-radius:8px;padding:6px;flex-shrink:0;">
+                        <span style="font-size:18px;line-height:1;">📅</span>
+                    </div>
+                    <div>
+                        <div style="font-size:11px;font-weight:700;color:#ED8F03;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px;">Rappel événement</div>
+                        <div style="font-size:13px;font-weight:700;color:#1a202c;margin-bottom:4px;line-height:1.3;">{{ next_event.titre }}</div>
+                        <div style="font-size:12px;color:#6b7280;">{{ next_event.dateDebut|date('d/m/Y à H:i') }}</div>
+                        <div style="margin-top:6px;">
+                            {% if next_event_jours_restants == 0 %}
+                                <span style="background:#fef3c7;color:#d97706;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">Aujourd'hui !</span>
+                            {% else %}
+                                <span style="background:#f0f9ff;color:#0369a1;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;">Dans {{ next_event_jours_restants }} jour{{ next_event_jours_restants > 1 ? 's' : '' }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
+                <button onclick="
+                    var el=document.getElementById('mb-event-reminder');
+                    el.style.animation='mbSlideOut 0.3s forwards';
+                    setTimeout(function(){el.style.display='none'},300);
+                " style="background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;line-height:1;padding:0;flex-shrink:0;">&times;</button>
             </div>
-            <button class="mb-er-close" onclick="document.getElementById('mb-event-reminder').style.display='none'">&times;</button>
         </div>
-        <style>
-            .mb-event-reminder {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                background: linear-gradient(135deg, #FFB75E, #ED8F03);
-                color: #fff;
-                z-index: 9999;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 14px 20px;
-                box-shadow: 0 4px 15px rgba(237, 143, 3, 0.3);
-                animation: slideDown 0.5s cubic-bezier(0.22,1,0.36,1) forwards;
-                transform: translateY(-100%);
-            }
-            .mb-er-content {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                max-width: 800px;
-                width: 100%;
-                font-size: 14px;
-            }
-            .mb-er-icon { font-size: 20px; }
-            .mb-er-text strong { font-weight: 800; letter-spacing: 0.5px; }
-            .mb-er-close {
-                background: none;
-                border: none;
-                color: #fff;
-                font-size: 24px;
-                cursor: pointer;
-                opacity: 0.8;
-                transition: opacity 0.2s;
-                margin-left: 20px;
-            }
-            .mb-er-close:hover { opacity: 1; }
-            @keyframes slideDown { to { transform: translateY(0); } }
-            @keyframes slideUpFade { to { transform: translateY(-100%); opacity: 0; visibility: hidden; } }
-            .mb-event-reminder.hiding {
-                animation: slideUpFade 0.6s cubic-bezier(0.22,1,0.36,1) forwards;
-            }
-        </style>
         <script>
-            // Disparition automatique après 10 secondes
             setTimeout(function() {
                 var el = document.getElementById('mb-event-reminder');
-                if(el) { el.classList.add('hiding'); }
-            }, 10000);
+                if (el) {
+                    el.style.animation = 'mbSlideOut 0.4s forwards';
+                    setTimeout(function(){ el.style.display = 'none'; }, 400);
+                }
+            }, 8000);
         </script>
     {% endif %}
+{% endblock %}
+
+{% block body %}
+<div class="ptdash-page">
 
     {# ── Morphing orb background ── #}
     <div class="mb-orbs" id="mb-orbs" aria-hidden="true">

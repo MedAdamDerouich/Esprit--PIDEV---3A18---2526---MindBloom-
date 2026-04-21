@@ -41,9 +41,15 @@ class WhatsAppService
 
     $response = @file_get_contents('https://api.fonnte.com/send', false, $context);
 
+    error_log('[WhatsApp] phone=' . $phone);
+    error_log('[WhatsApp] token=' . substr($this->token, 0, 6) . '...');
+    error_log('[WhatsApp] response=' . ($response ?: 'EMPTY/FALSE'));
+
     if (!$response) return false;
     $result = json_decode($response, true);
     if (!is_array($result)) return false;
+
+    error_log('[WhatsApp] result=' . json_encode($result));
 
     // Fonnte returns status as boolean true or string "true"
     return isset($result['status']) && filter_var($result['status'], FILTER_VALIDATE_BOOLEAN);

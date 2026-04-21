@@ -173,23 +173,30 @@
 
     <!-- Stock Analysis Modal -->
     <div class="modal fade" id="stockAiModal" tabindex="-1" aria-labelledby="stockAiModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow-lg rounded-4">
-                <div class="modal-header border-bottom-0 pt-4 px-4 bg-warning bg-opacity-10">
-                    <h5 class="modal-title fw-bold d-flex align-items-center" id="stockAiModalLabel">
-                        <i class="bi bi-box-seam text-warning me-2 fs-3"></i> Analyse de Stock IA
-                    </h5>
+                <div class="modal-header border-bottom-0 pt-4 px-4" style="background: linear-gradient(135deg, #fff8e1 0%, #fff3cd 100%);">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-warning bg-opacity-25 rounded-3 p-2">
+                            <i class="bi bi-robot text-warning fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0" id="stockAiModalLabel">Analyse Stratégique IA — Stocks & Ventes</h5>
+                            <small class="text-muted">Produits critiques, stagnants et recommandations prioritaires</small>
+                        </div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-4">
-                    <div id="stock-ai-modal-content" class="lh-lg text-dark">
-                        <!-- Content loaded via JS -->
+                <div class="modal-body p-4" id="stock-ai-modal-content">
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-robot fs-1 text-warning"></i>
+                        <p class="mt-2">Cliquez sur "Analyse IA" pour démarrer l'analyse.</p>
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 pb-4 px-4">
                     <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Fermer</button>
                     <button type="button" class="btn btn-warning rounded-pill px-4 fw-bold" onclick="loadStockAiAnalysis()">
-                        <i class="bi bi-arrow-clockwise me-1"></i> Actualiser
+                        <i class="bi bi-arrow-clockwise me-1"></i> Actualiser l'analyse
                     </button>
                 </div>
             </div>
@@ -281,18 +288,103 @@ function loadAdminAiInsights() {
 function loadStockAiAnalysis() {
     const modalContent = document.getElementById('stock-ai-modal-content');
     const modal = new bootstrap.Modal(document.getElementById('stockAiModal'));
-    
-    modalContent.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-warning" role="status"></div><p class="mt-3 text-muted">L\'IA analyse vos stocks et priorise les commandes...</p></div>';
+
+    modalContent.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-warning" style="width:3rem;height:3rem;" role="status"></div>
+            <p class="mt-3 text-muted fw-semibold">L'IA analyse vos stocks et ventes...<br><small>Cela peut prendre quelques secondes.</small></p>
+        </div>`;
     modal.show();
 
     fetch("{{ path('app_admin_stock_ai') }}")
-        .then(response => response.text())
+        .then(r => r.json())
         .then(data => {
-            modalContent.innerHTML = '<div class="animate__animated animate__fadeIn">' + data.replace(/\n/g, '<br>') + '</div>';
+            if (!data || Object.keys(data).length === 0) {
+                modalContent.innerHTML = '<div class="alert alert-warning">Données insuffisantes pour générer une analyse.</div>';
+                return;
+            }
+            modalContent.innerHTML = renderStockAnalysis(data);
         })
-        .catch(err => {
-            modalContent.innerHTML = '<div class="alert alert-danger">Erreur lors de l\'analyse des stocks.</div>';
+        .catch(() => {
+            modalContent.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Erreur lors de l\'analyse des stocks.</div>';
         });
+}
+
+function renderStockAnalysis(d) {
+    const urgencyBadge = u => ({
+        haute:   '<span class="badge rounded-pill" style="background:#dc3545">🔴 Urgente</span>',
+        moyenne: '<span class="badge rounded-pill" style="background:#fd7e14">🟠 Moyenne</span>',
+        faible:  '<span class="badge rounded-pill" style="background:#6c757d">⚪ Faible</span>',
+    }[u?.toLowerCase()] || '<span class="badge bg-secondary rounded-pill">' + (u||'') + '</span>');
+
+    const score = d.scoreStock ?? 0;
+    const scoreColor = score >= 75 ? '#198754' : score >= 50 ? '#fd7e14' : '#dc3545';
+
+    let html = `
+    <div class="row g-3 mb-4">
+        <div class="col-md-8">
+            <div class="p-3 rounded-3 border-start border-4 border-warning bg-warning bg-opacity-10">
+                <p class="mb-0 fw-semibold text-dark"><i class="bi bi-stars text-warning me-2"></i>${d.resume ?? ''}</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 text-center p-3 h-100">
+                <div class="mb-1 small text-muted fw-bold text-uppercase">Score de santé stock</div>
+                <div class="display-5 fw-bold" style="color:${scoreColor}">${score}<small class="fs-6">/100</small></div>
+                <div class="progress mt-2" style="height:8px;border-radius:99px;">
+                    <div class="progress-bar" style="width:${score}%;background:${scoreColor};border-radius:99px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    if (d.produitsCritiques?.length) {
+        html += `<h6 class="fw-bold text-danger mb-3"><i class="bi bi-exclamation-octagon-fill me-2"></i>Produits critiques (${d.produitsCritiques.length})</h6>
+        <div class="row g-2 mb-4">`;
+        d.produitsCritiques.forEach(p => {
+            html += `
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 p-3 h-100" style="border-left:4px solid #dc3545 !important;">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="fw-bold text-dark">${p.nom}</span>
+                        ${urgencyBadge(p.urgence)}
+                    </div>
+                    <p class="text-muted small mb-2"><i class="bi bi-exclamation-circle me-1 text-danger"></i>${p.probleme}</p>
+                    <div class="p-2 rounded-2" style="background:#f8f9fa">
+                        <i class="bi bi-lightbulb-fill text-warning me-1"></i><small class="text-dark">${p.conseil}</small>
+                    </div>
+                </div>
+            </div>`;
+        });
+        html += `</div>`;
+    }
+
+    if (d.produitsStagnants?.length) {
+        html += `<h6 class="fw-bold text-secondary mb-3"><i class="bi bi-graph-down me-2"></i>Produits peu vendus (${d.produitsStagnants.length})</h6>
+        <div class="table-responsive mb-4">
+        <table class="table table-sm table-hover rounded-4 overflow-hidden">
+            <thead class="table-light"><tr><th>Produit</th><th class="text-center">Unités vendues</th><th>Conseil IA</th></tr></thead>
+            <tbody>`;
+        d.produitsStagnants.forEach(p => {
+            html += `<tr>
+                <td class="fw-semibold">${p.nom}</td>
+                <td class="text-center"><span class="badge bg-secondary rounded-pill">${p.totalVendu ?? 0}</span></td>
+                <td class="text-muted small">${p.conseil}</td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>`;
+    }
+
+    if (d.actionsRecommandees?.length) {
+        html += `<h6 class="fw-bold text-primary mb-3"><i class="bi bi-check2-all me-2"></i>Actions recommandées</h6>
+        <ol class="list-group list-group-numbered mb-2">`;
+        d.actionsRecommandees.forEach(a => {
+            html += `<li class="list-group-item border-0 bg-light rounded-3 mb-1 px-3 py-2"><small class="text-dark">${a}</small></li>`;
+        });
+        html += `</ol>`;
+    }
+
+    return html;
 }
 </script>
 {% endblock %}

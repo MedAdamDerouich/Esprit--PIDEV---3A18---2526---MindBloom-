@@ -31,10 +31,20 @@ class DashboardController extends AbstractController
         
         $user = $this->getUser();
         $nextUpcomingParticipation = $participationRepo->findNextUpcomingEventForUser($user);
-        
+
+        $nextEvent = null;
+        $joursRestants = null;
+
+        if ($nextUpcomingParticipation) {
+            $nextEvent = $nextUpcomingParticipation->getEvenement();
+            $now = new \DateTime();
+            $joursRestants = max(0, (int) ceil(($nextEvent->getDateDebut()->getTimestamp() - $now->getTimestamp()) / 86400));
+        }
+
+
         return $this->render('patient/dashboard.html.twig', [
-            'next_event' => $nextUpcomingParticipation ? $nextUpcomingParticipation->getEvenement() : null,
-            'next_event_jours_restants' => $nextUpcomingParticipation ? (new \DateTime())->diff($nextUpcomingParticipation->getEvenement()->getDateDebut())->days : null,
+            'next_event' => $nextEvent,
+            'next_event_jours_restants' => $joursRestants,
         ]);
     }
 

@@ -7,7 +7,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class EvenementAiService
 {
-    private const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=';
+    private const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=';
     private const MAX_CHARS = 240;
 
     public function __construct(

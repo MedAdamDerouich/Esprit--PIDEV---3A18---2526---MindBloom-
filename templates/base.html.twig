@@ -21,6 +21,8 @@
     {% endfor %}
 {% endfor %}
 
+{% block event_banner %}{% endblock %}
+
 {% block navbar %}
 {% if app.user %}
     {{ include('inc/_navbar.html.twig') }}

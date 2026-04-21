@@ -106,7 +106,7 @@ class ParticipationRepository extends ServiceEntityRepository
             ->join('p.evenement', 'e')
             ->where('p.user = :user')
             ->andWhere('p.statut != :cancelled')
-            ->andWhere('e.dateDebut > :now')
+            ->andWhere('e.dateDebut >= :now')
             ->setParameter('user', $user)
             ->setParameter('cancelled', Participation::STATUT_ANNULE)
             ->setParameter('now', new \DateTime())

@@ -183,12 +183,17 @@ public function sendReminder(
     $creneau = $reservation->getCreneau();
     $cabinet = $creneau?->getCabinet();
 
+    if (!$creneau) {
+        $this->addFlash('error', 'Créneau introuvable pour cette réservation.');
+        return $this->redirectToRoute('app_reservation_index');
+    }
+
     $sent = $whatsAppService->sendReminderMessage(
         $patient->getPhone(),
         $patient->getFullName() ?? 'Patient',
         $cabinet?->getPsychologue()?->getFullName() ?? 'Dr. Inconnu',
-        $creneau->getDateCreneau()->format('d/m/Y'),
-        $creneau->getHeureDebut()->format('H:i'),
+        $creneau->getDateCreneau()?->format('d/m/Y') ?? 'N/A',
+        $creneau->getHeureDebut()?->format('H:i') ?? 'N/A',
         $cabinet?->getAdresse() ?? 'Adresse inconnue'
     );
 
@@ -225,12 +230,17 @@ public function sendWhatsApp(
         return $this->redirectToRoute('app_patient_reservations');
     }
 
+    if (!$creneau) {
+        $this->addFlash('error', 'Créneau introuvable pour cette réservation.');
+        return $this->redirectToRoute('app_patient_reservations');
+    }
+
     $sent = $whatsAppService->sendReminderMessage(
         $patient->getPhone(),
         $patient->getFullName() ?? 'Patient',
         $cabinet?->getPsychologue()?->getFullName() ?? 'Dr. Inconnu',
-        $creneau->getDateCreneau()->format('d/m/Y'),
-        $creneau->getHeureDebut()->format('H:i'),
+        $creneau->getDateCreneau()?->format('d/m/Y') ?? 'N/A',
+        $creneau->getHeureDebut()?->format('H:i') ?? 'N/A',
         $cabinet?->getAdresse() ?? 'Adresse inconnue'
     );
 

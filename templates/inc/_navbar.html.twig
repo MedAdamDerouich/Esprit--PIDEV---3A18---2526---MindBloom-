@@ -330,16 +330,96 @@ body.dark-mode .service-card-3d .card-icon-box-green {
     background: #152B22 !important;
 }
 
-/* Dark-mode toggle button (desk lamp) */
+/* ── Dark-mode toggle — rotating sun/moon ── */
+@keyframes dm-spin-in {
+    0%   { transform: rotate(-180deg) scale(0.4); opacity: 0; }
+    60%  { transform: rotate(20deg)   scale(1.15); opacity: 1; }
+    80%  { transform: rotate(-8deg)   scale(0.95); }
+    100% { transform: rotate(0deg)    scale(1);    opacity: 1; }
+}
+@keyframes dm-spin-out {
+    0%   { transform: rotate(0deg)   scale(1);    opacity: 1; }
+    100% { transform: rotate(180deg) scale(0.3);  opacity: 0; }
+}
+@keyframes dm-ray-pulse {
+    0%,100% { opacity: 1; r: 1.4px; }
+    50%      { opacity: 0.5; r: 0.8px; }
+}
+@keyframes dm-glow-ring {
+    0%   { box-shadow: 0 0 0 0 rgba(245,166,35,0.55), 0 4px 14px rgba(245,166,35,0.25); }
+    50%  { box-shadow: 0 0 0 7px rgba(245,166,35,0), 0 4px 18px rgba(245,166,35,0.35); }
+    100% { box-shadow: 0 0 0 0 rgba(245,166,35,0), 0 4px 14px rgba(245,166,35,0.25); }
+}
+@keyframes dm-moon-glow {
+    0%   { box-shadow: 0 0 0 0 rgba(94,221,225,0.5), 0 4px 14px rgba(94,221,225,0.2); }
+    50%  { box-shadow: 0 0 0 7px rgba(94,221,225,0), 0 4px 18px rgba(94,221,225,0.35); }
+    100% { box-shadow: 0 0 0 0 rgba(94,221,225,0), 0 4px 14px rgba(94,221,225,0.2); }
+}
+
+#dm-toggle {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(245,166,35,0.25);
+    background: linear-gradient(145deg, #FFF8E7, #FFF0C8);
+    box-shadow: 0 4px 14px rgba(245,166,35,0.18), inset 0 1px 2px rgba(255,255,255,0.9);
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.4s ease, border-color 0.4s ease, transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
+}
+#dm-toggle:hover {
+    transform: translateY(-2px) scale(1.08);
+    animation: dm-glow-ring 1s ease-out;
+}
+#dm-toggle:active {
+    transform: scale(0.92);
+}
+/* icon wrapper — handles the spin */
+#dm-icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+}
+/* both icons stacked */
+#dm-icon-sun,
+#dm-icon-moon {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+#dm-icon-sun  { opacity: 1; transform: rotate(0deg) scale(1); }
+#dm-icon-moon { opacity: 0; transform: rotate(180deg) scale(0.3); }
+
+/* spin-out class added by JS on click */
+#dm-icon-sun.dm-leaving  { animation: dm-spin-out 0.32s ease-in  forwards; }
+#dm-icon-moon.dm-leaving { animation: dm-spin-out 0.32s ease-in  forwards; }
+#dm-icon-sun.dm-entering  { animation: dm-spin-in  0.45s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+#dm-icon-moon.dm-entering { animation: dm-spin-in  0.45s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
+/* rays pulse in light mode */
+#dm-ray { animation: dm-ray-pulse 2.4s ease-in-out infinite; }
+
+/* dark mode appearance */
 body.dark-mode #dm-toggle {
-    background: #1E2333 !important;
-    border-color: #2A3147 !important;
+    background: linear-gradient(145deg, #1B2640, #0F1925) !important;
+    border-color: rgba(94,221,225,0.3) !important;
+    box-shadow: 0 4px 14px rgba(94,221,225,0.2), inset 0 1px 2px rgba(255,255,255,0.05) !important;
 }
 body.dark-mode #dm-toggle:hover {
-    background: #252B3E !important;
-    border-color: #5EDDE1 !important;
-    box-shadow: 0 6px 16px rgba(94,221,225,0.25) !important;
+    animation: dm-moon-glow 1s ease-out !important;
 }
+body.dark-mode #dm-icon-sun  { opacity: 0; }
+body.dark-mode #dm-icon-moon { opacity: 1; transform: rotate(0deg) scale(1); }
 
 /* ── Icon action buttons (factures, cart) ── */
 .mnav-icon-btn {
@@ -574,57 +654,30 @@ body.dark-mode .mnav-logout:hover svg { stroke: white; }
             </div>
         </a>
 
-        {# Dark mode toggle — desk lamp (pull the cord) #}
-        <button id="dm-toggle" type="button" title="Basculer le mode sombre"
-                style="width:44px;height:44px;border:1.5px solid transparent;background:#EAF2FB;border-radius:12px;
-                       cursor:pointer;display:flex;align-items:center;justify-content:center;
-                       flex-shrink:0;transition:background 0.18s ease, border-color 0.18s ease, transform 0.2s ease, box-shadow 0.2s ease;padding:0;"
-                onmouseover="this.style.background='#DCE8F7';this.style.borderColor='#4A90E2';this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 14px rgba(74,144,226,0.25)';"
-                onmouseout="this.style.background='#EAF2FB';this.style.borderColor='transparent';this.style.transform='translateY(0)';this.style.boxShadow='none';">
-            <svg id="dm-lamp" width="36" height="36" viewBox="0 0 40 40"
-                 xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    {# Shade — brand navy/cyan gradient #}
-                    <linearGradient id="dm-shade" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%"  stop-color="#4A90E2"/>
-                        <stop offset="100%" stop-color="#1B3A6B"/>
-                    </linearGradient>
-                    {# Shade highlight #}
-                    <linearGradient id="dm-shade-hi" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="0.35"/>
-                        <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
-                    </linearGradient>
-                    {# Stem/base — cool grey #}
-                    <linearGradient id="dm-metal" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%"   stop-color="#B8C2D4"/>
-                        <stop offset="50%"  stop-color="#E5EAF2"/>
-                        <stop offset="100%" stop-color="#B8C2D4"/>
-                    </linearGradient>
-                </defs>
-
-                {# Mushroom shade — inset to fit the button frame #}
-                <path d="M10 17 Q10 8 20 8 Q30 8 30 17 Z"
-                      fill="url(#dm-shade)" stroke="#14294A" stroke-width="0.6"/>
-                {# Shade highlight sheen #}
-                <path d="M12 15 Q13 10 20 9.5 Q27 10 28 15 Z"
-                      fill="url(#dm-shade-hi)"/>
-                {# Shade rim #}
-                <line x1="10" y1="17" x2="30" y2="17" stroke="#0E1F3A" stroke-width="0.8" stroke-linecap="round"/>
-
-                {# Stem #}
-                <rect x="18.8" y="17" width="2.4" height="13" fill="url(#dm-metal)"/>
-                {# Base plate #}
-                <rect x="13.5" y="29.5" width="13" height="2.8" rx="1" fill="url(#dm-metal)" stroke="#8A94A8" stroke-width="0.4"/>
-                {# Base shadow #}
-                <ellipse cx="20" cy="33" rx="7.5" ry="1" fill="#000" opacity="0.15"/>
-
-                {# Pull cord + bead — anchored to the shade rim, hanging straight down #}
-                <g id="dm-lamp-pull" style="transform-origin: 27px 17px; transition: transform 0.28s cubic-bezier(0.34,1.56,0.64,1);">
-                    <line x1="27" y1="17" x2="27" y2="23.5" stroke="#7A8299" stroke-width="0.9" stroke-linecap="round"/>
-                    <circle id="dm-lamp-bead" cx="27" cy="24.7" r="1.5" fill="#F5C842" stroke="#B8891F" stroke-width="0.35"/>
-                    <circle cx="26.6" cy="24.3" r="0.45" fill="#FFF3B8" opacity="0.9"/>
-                </g>
-            </svg>
+        {# Dark mode toggle — rotating sun / moon #}
+        <button id="dm-toggle" type="button" title="Basculer le mode sombre" aria-label="Basculer le mode sombre">
+            <div id="dm-icon-wrap">
+                {# Sun SVG — shown in light mode #}
+                <svg id="dm-icon-sun" width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="#F5A623" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="4" fill="#F5A623" fill-opacity="0.15"/>
+                    <circle cx="12" cy="12" r="4"/>
+                    <line x1="12" y1="2"  x2="12" y2="5"/>
+                    <line x1="12" y1="19" x2="12" y2="22"/>
+                    <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/>
+                    <line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/>
+                    <line x1="2"  y1="12" x2="5"  y2="12"/>
+                    <line x1="19" y1="12" x2="22" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/>
+                    <line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>
+                </svg>
+                {# Moon SVG — shown in dark mode #}
+                <svg id="dm-icon-moon" width="20" height="20" viewBox="0 0 24 24"
+                     fill="#5EDDE1" fill-opacity="0.15" stroke="#5EDDE1" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="#5EDDE1" fill-opacity="0.2"/>
+                </svg>
+            </div>
         </button>
 
         {# Déconnexion #}
@@ -640,52 +693,84 @@ body.dark-mode .mnav-logout:hover svg { stroke: white; }
 </header>
 
 
-<script>/* dm-toggle-v5-lamp */
+<script>/* dm-toggle-v7-spin */
 (function () {
-    var btn = document.getElementById('dm-toggle');
+    var btn  = document.getElementById('dm-toggle');
     if (!btn) return;
 
+    var sun  = document.getElementById('dm-icon-sun');
+    var moon = document.getElementById('dm-icon-moon');
     var STORAGE_KEY = 'mindbloom-theme';
     var mql = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    var busy = false;
 
     function apply(dark) {
         document.body.classList.toggle('dark-mode', dark);
     }
 
-    // Initial theme: user preference wins; otherwise follow OS
+    // Set initial icon state without animation
+    function setIconsInstant(dark) {
+        if (!sun || !moon) return;
+        sun.style.cssText  = dark ? 'opacity:0;transform:rotate(180deg) scale(0.3);' : 'opacity:1;transform:rotate(0deg) scale(1);';
+        moon.style.cssText = dark ? 'opacity:1;transform:rotate(0deg) scale(1);'     : 'opacity:0;transform:rotate(-180deg) scale(0.3);';
+    }
+
+    // Initial theme
     var stored = localStorage.getItem(STORAGE_KEY);
     var initialDark = stored ? (stored === 'dark') : (mql && mql.matches);
     apply(initialDark);
+    setIconsInstant(initialDark);
 
-    // Follow system changes ONLY when user hasn't made a manual choice
+    // Follow OS changes when no manual preference
     if (mql) {
         var sysListener = function (e) {
-            if (!localStorage.getItem(STORAGE_KEY)) apply(e.matches);
+            if (!localStorage.getItem(STORAGE_KEY)) { apply(e.matches); setIconsInstant(e.matches); }
         };
         if (mql.addEventListener) mql.addEventListener('change', sysListener);
         else if (mql.addListener) mql.addListener(sysListener);
     }
 
-    var pull = document.getElementById('dm-lamp-pull');
+    function spinSwap(toDark) {
+        if (!sun || !moon || busy) return;
+        busy = true;
+
+        var leaving  = toDark ? sun  : moon;
+        var entering = toDark ? moon : sun;
+
+        // Reset entering so it starts hidden
+        entering.style.cssText = 'opacity:0;transform:rotate(-180deg) scale(0.3);';
+
+        // Spin out the current icon
+        leaving.classList.add('dm-leaving');
+
+        setTimeout(function () {
+            leaving.classList.remove('dm-leaving');
+            leaving.style.cssText = 'opacity:0;transform:rotate(180deg) scale(0.3);';
+
+            // Spin in the new icon
+            entering.classList.add('dm-entering');
+            setTimeout(function () {
+                entering.classList.remove('dm-entering');
+                entering.style.cssText = 'opacity:1;transform:rotate(0deg) scale(1);';
+                busy = false;
+            }, 460);
+        }, 300);
+    }
 
     btn.addEventListener('click', function () {
+        if (busy) return;
         var dark = !document.body.classList.contains('dark-mode');
         localStorage.setItem(STORAGE_KEY, dark ? 'dark' : 'light');
 
-        // Pull the cord down, then release (spring back)
-        if (pull) {
-            pull.style.transform = 'translateY(4.5px)';
-            setTimeout(function () { pull.style.transform = 'translateY(0)'; }, 240);
-        }
+        spinSwap(dark);
 
-        // Brief fade veil for a smooth theme swap
+        // Fade veil for smooth page transition
         var veil = document.createElement('div');
         veil.style.cssText = 'position:fixed;inset:0;background:' +
             (dark ? '#0F1117' : '#ffffff') +
-            ';opacity:0;pointer-events:none;z-index:99999;transition:opacity 0.25s ease;';
+            ';opacity:0;pointer-events:none;z-index:99999;transition:opacity 0.28s ease;';
         document.body.appendChild(veil);
-        requestAnimationFrame(function () { veil.style.opacity = '0.35'; });
-
+        requestAnimationFrame(function () { veil.style.opacity = '0.3'; });
         setTimeout(function () {
             apply(dark);
             veil.style.opacity = '0';

@@ -135,6 +135,30 @@
     50%      { opacity: 0.6; }
 }
 #doorKnobGlow { animation: knobGlow 2.4s ease-in-out infinite; }
+
+/* ── Dark mode — logout modal ── */
+body.dark-mode #logoutModal {
+    background: rgba(0,0,0,0.65) !important;
+}
+body.dark-mode #logoutModalBox {
+    background: #161A26 !important;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05) !important;
+}
+body.dark-mode #logoutModalBox h3 {
+    color: #E8EAF0 !important;
+}
+body.dark-mode #logoutModalBox p {
+    color: #7A8299 !important;
+}
+body.dark-mode #logoutModalBox button:first-of-type {
+    background: #1E2333 !important;
+    border-color: #2A3147 !important;
+    color: #D8DCE8 !important;
+}
+body.dark-mode #logoutModalBox button:first-of-type:hover {
+    background: #252B3E !important;
+    border-color: #3A4460 !important;
+}
 </style>
 
 <div id="logoutModal" style="display:none;position:fixed;inset:0;z-index:99999;

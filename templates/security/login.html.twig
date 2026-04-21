@@ -551,7 +551,7 @@
           </div>
 
           <div style="display:flex;justify-content:center;margin:6px 0 4px;">
-            <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
+            <div id="recaptcha-container"></div>
           </div>
 
           <button type="submit" class="auth-btn">
@@ -577,15 +577,6 @@
           <a href="#" id="btn-to-register">Créer un compte</a>
         </p>
 
-        {# DEV QUICK ACCESS #}
-        <div style="margin-top:12px;padding:10px;background:#f8f9fa;border-radius:8px;text-align:center;border:1px dashed #dee2e6;">
-          <p style="font-size:11px;color:#95a5a6;margin:0 0 8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">DEV ACCESS</p>
-          <div style="display:flex;gap:8px;justify-content:center;">
-            <a href="{{ path('dev_login', {role: 'admin'}) }}" style="font-size:12px;padding:4px 12px;background:#e74c3c;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;">Admin</a>
-            <a href="{{ path('dev_login', {role: 'patient'}) }}" style="font-size:12px;padding:4px 12px;background:#3498db;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;">Patient</a>
-            <a href="{{ path('dev_login', {role: 'psycho'}) }}" style="font-size:12px;padding:4px 12px;background:#27ae60;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;">Psycho</a>
-          </div>
-        </div>
 
       </div>
     </div>{# /auth-form-card--login #}
@@ -802,7 +793,21 @@
 
 {% block javascripts %}
 {{ parent() }}
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit" async defer></script>
+<script>
+var recaptchaWidgetId;
+function onRecaptchaLoad() {
+    recaptchaWidgetId = grecaptcha.render('recaptcha-container', {
+        sitekey: '{{ recaptcha_site_key }}',
+        size: 'normal',
+        callback: function(token) {
+            // token filled — form can submit
+        }
+    });
+    // Reset immediately so Google can't skip the challenge from a cached session
+    grecaptcha.reset(recaptchaWidgetId);
+}
+</script>
 <script>
 (function () {
   'use strict';

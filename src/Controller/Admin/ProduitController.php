@@ -176,6 +176,44 @@ class ProduitController extends AbstractController
         }
     }
 
+    #[Route('/export', name: 'app_admin_produit_export', methods: ['GET'])]
+    public function exportCsv(ProduitRepository $produitRepository): Response
+    {
+        $produits = $produitRepository->findAll();
+
+        $csv = "\xEF\xBB\xBF"; // UTF-8 BOM for Excel
+        $csv .= "ID;Nom;Description;Prix (DT);Quantite;Seuil Stock;Statut Stock;Nb Avis\n";
+
+        foreach ($produits as $p) {
+            $nom  = str_replace('"', '""', (string) $p->getNom());
+            $desc = str_replace('"', '""', strip_tags((string) $p->getDescription()));
+            $desc = str_replace(["\r", "\n"], ' ', $desc);
+
+            $statut = $p->getQuantite() <= 0
+                ? 'Rupture'
+                : ($p->getQuantite() <= $p->getStockSeuil() ? 'Alerte' : 'OK');
+
+            $nbAvis = count($p->getFeedbacks());
+
+            $csv .= sprintf(
+                "%d;\"%s\";\"%s\";%.2f;%d;%d;\"%s\";%d\n",
+                $p->getId(),
+                $nom,
+                $desc,
+                $p->getPrix(),
+                $p->getQuantite(),
+                $p->getStockSeuil(),
+                $statut,
+                $nbAvis
+            );
+        }
+
+        return new Response($csv, 200, [
+            'Content-Type'        => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="MindBloom_Produits_Export.csv"',
+        ]);
+    }
+
     #[Route('/{id}', name: 'app_admin_produit_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(Request $request, Produit $produit, EntityManagerInterface $entityManager): Response
     {

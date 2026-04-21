@@ -2,6 +2,62 @@
 
 {% block title %}Mes Résultats de Tests — MindBloom{% endblock %}
 
+{% block stylesheets %}
+{{ parent() }}
+<style>
+body.dark-mode .resultats-page {
+    background: linear-gradient(175deg,#0F1117 0%,#121826 45%,#101A18 100%) !important;
+}
+body.dark-mode .resultats-page .result-card {
+    background: #161A26 !important;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.4) !important;
+}
+body.dark-mode .resultats-page .result-card h3 {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .resultats-page .result-card [style*="color:#7F8C8D"],
+body.dark-mode .resultats-page .result-card [style*="color: #7F8C8D"] {
+    color: #A8B0C4 !important;
+}
+body.dark-mode .resultats-page .result-card [style*="color:#95A5A6"] {
+    color: #7A8299 !important;
+}
+body.dark-mode .resultats-page .result-card [style*="background:#F4F6F6"],
+body.dark-mode .resultats-page .result-card [style*="background: #F4F6F6"] {
+    background: #252B3E !important;
+    color: #A8B0C4 !important;
+}
+body.dark-mode .resultats-page .result-card .result-details-btn {
+    background: #152B22 !important;
+    color: #4ECB71 !important;
+}
+body.dark-mode .resultats-page .result-card .result-details-btn:hover {
+    background: #1A3529 !important;
+}
+body.dark-mode .resultats-page .empty-state {
+    background: #161A26 !important;
+}
+body.dark-mode .resultats-page .empty-state h4 {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .resultats-page .empty-state p {
+    color: #A8B0C4 !important;
+}
+body.dark-mode .resultats-page .hero-badge {
+    background: #1A2540 !important;
+    color: #7BB8F5 !important;
+}
+body.dark-mode .resultats-page h1 {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .resultats-page .btn-new-test {
+    background: #1E2333 !important;
+    color: #7BB8F5 !important;
+    border-color: #2A3147 !important;
+}
+</style>
+{% endblock %}
+
 {% block body %}
 <style>
     @keyframes fadeUpPage {
@@ -40,24 +96,24 @@
     }
 </style>
 
-<div class="animate-entry" style="background:#F5F3EF; min-height: calc(100vh - 85px); padding: 50px; animation-delay: 0s;">
+<div class="resultats-page animate-entry" style="background:linear-gradient(175deg,#F0F6FF 0%,#E8F4F8 45%,#EEF5F0 100%); min-height: calc(100vh - 85px); padding: 50px; animation-delay: 0s;">
     <div style="max-width: 1000px; margin: 0 auto;">
         
         <div class="animate-entry" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; animation-delay: 0.1s;">
             <div>
-                <span style="display:inline-block;background:#E8F1FC;color:#4A90E2;border-radius:20px;padding:6px 15px;font-size:13px;margin-bottom:10px;font-weight:600;">
+                <span class="hero-badge" style="display:inline-block;background:rgba(0,194,199,0.10);color:#008c91;border:1px solid rgba(0,194,199,0.20);border-radius:20px;padding:6px 15px;font-size:13px;margin-bottom:10px;font-weight:700;letter-spacing:.3px;">
                     📊 Historique
                 </span>
-                <h1 style="font-size:36px;font-weight:900;color:#2C3E50;">Mes Résultats de Tests</h1>
+                <h1 style="font-size:36px;font-weight:900;color:#1B3A6B;">Mes <span style="background:linear-gradient(135deg,#00C2C7,#4ECB71);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Résultats</span></h1>
             </div>
-            
+
             <div style="display: flex; gap: 15px;">
                 {% if resultat_tests|length > 0 %}
                 <a href="{{ path('app_resultat_test_generer_rapport') }}" class="btn-interactive" style="display: inline-block; background: linear-gradient(135deg, #8E2DE2, #4A00E0); color: white; padding: 12px 25px; border-radius: 12px; font-weight: 700; text-decoration: none; border: none; box-shadow: 0 4px 15px rgba(74, 0, 224, 0.3);">
                     ✨ Générer Rapport Analytique
                 </a>
                 {% endif %}
-                <a href="{{ path('app_test_index') }}" class="btn-interactive" style="display: inline-block; background: white; color: #4A90E2; padding: 12px 25px; border-radius: 12px; font-weight: 700; text-decoration: none; border: 2px solid #4A90E2;">
+                <a href="{{ path('app_test_index') }}" class="btn-interactive btn-new-test" style="display: inline-block; background: white; color: #00C2C7; padding: 12px 25px; border-radius: 12px; font-weight: 700; text-decoration: none; border: 2px solid #00C2C7;">
                     Passer un nouveau test
                 </a>
             </div>
@@ -65,15 +121,15 @@
 
         <div style="display: flex; flex-direction: column; gap: 20px;">
             {% for resultat in resultat_tests %}
-                <div class="animate-entry" style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; border-left: 6px solid {% if resultat.score > 80 %}#27AE60{% elseif resultat.score > 50 %}#F39C12{% else %}#E74C3C{% endif %}; animation-delay: {{ 0.2 + (loop.index0 * 0.1) }}s;">
-                    
+                <div class="result-card animate-entry" style="background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-left: 6px solid {% if resultat.score > 80 %}#27AE60{% elseif resultat.score > 50 %}#F39C12{% else %}#E74C3C{% endif %}; animation-delay: {{ 0.2 + (loop.index0 * 0.1) }}s;">
+
                     <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <h3 style="font-size: 20px; font-weight: 800; color: #34495E; margin: 0;">{{ resultat.test ? resultat.test.nomTest : 'Test supprimé' }}</h3>
+                        <h3 style="font-size: 20px; font-weight: 800; color: #1B3A6B; margin: 0;">{{ resultat.test ? resultat.test.nomTest : 'Test supprimé' }}</h3>
                         <div style="display: flex; gap: 15px; font-size: 13px; color: #7F8C8D;">
                             <span>Catégorie: <b>{{ resultat.test ? resultat.test.categorie : 'N/A' }}</b></span>
                         </div>
                     </div>
-                    
+
                     <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 5px;">
                         <span style="font-size: 24px; font-weight: 900; color: {% if resultat.score > 80 %}#27AE60{% elseif resultat.score > 50 %}#F39C12{% else %}#E74C3C{% endif %};">
                             {{ resultat.score }} pts
@@ -83,14 +139,14 @@
                         </span>
                     </div>
 
-                    <a href="{{ path('app_resultat_test_show', {'id': resultat.id}) }}" class="btn-interactive" style="display: inline-block; background:#EDF9F5; color:#5FBF9F; border-radius:10px; padding:10px 20px; text-decoration:none; font-weight:700; font-size:14px; box-shadow: 0 2px 5px rgba(95, 191, 159, 0.2);">
+                    <a href="{{ path('app_resultat_test_show', {'id': resultat.id}) }}" class="btn-interactive result-details-btn" style="display: inline-block; background:#EDF9F5; color:#27ae60; border-radius:10px; padding:10px 20px; text-decoration:none; font-weight:700; font-size:14px; box-shadow: 0 2px 5px rgba(78,203,113,0.2);">
                         Voir détails →
                     </a>
                 </div>
             {% else %}
-                <div style="text-align: center; padding: 60px; background: white; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.03);">
+                <div class="empty-state" style="text-align: center; padding: 60px; background: white; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
                     <div style="font-size: 40px; margin-bottom: 20px;">🏜️</div>
-                    <h4 style="font-size: 20px; font-weight: 700; color: #2C3E50; margin-bottom: 10px;">Vous n'avez passé aucun test</h4>
+                    <h4 style="font-size: 20px; font-weight: 700; color: #1B3A6B; margin-bottom: 10px;">Vous n'avez passé aucun test</h4>
                     <p style="color: #7F8C8D;">Passez votre premier test pour suivre l'évolution de votre bien-être.</p>
                 </div>
             {% endfor %}

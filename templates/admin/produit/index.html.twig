@@ -117,6 +117,9 @@
                     <i class="bi bi-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
                 </div>
             </div>
+            <a href="{{ path('app_admin_produit_export') }}" class="btn px-4 shadow-sm rounded-pill fw-bold" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                <i class="bi bi-file-earmark-excel-fill me-1"></i> Exporter CSV
+            </a>
             <a href="{{ path('app_admin_produit_stats') }}" class="btn btn-outline-primary px-4 shadow-sm rounded-pill">
                 <i class="bi bi-bar-chart-fill me-1"></i> Stats Stock
             </a>

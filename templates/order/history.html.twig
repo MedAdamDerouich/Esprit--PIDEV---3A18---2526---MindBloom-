@@ -5,21 +5,22 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
+/* ── Page background ── */
 body.dark-mode .order-history-page {
-    background: #0F1117 !important;
+    background: linear-gradient(175deg,#0F1117 0%,#121826 45%,#101A18 100%) !important;
 }
-body.dark-mode .order-history-page [style*="background:#F5F3EF"] {
-    background: #0F1117 !important;
+/* ── Hero text ── */
+body.dark-mode .order-history-page .order-hero-title {
+    color: #E8EAF0 !important;
 }
-body.dark-mode .order-history-page .card,
-body.dark-mode .order-history-page .card-header,
-body.dark-mode .order-history-page .card-body,
-body.dark-mode .order-history-page .bg-white,
-body.dark-mode .order-history-page .bg-light,
-body.dark-mode .order-history-page .order-card,
+body.dark-mode .order-history-page .order-hero-sub {
+    color: #A8B0C4 !important;
+}
+/* ── Filter form ── */
 body.dark-mode .order-history-page #historyFilterForm {
     background: #161A26 !important;
     border-color: #252B3E !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
 }
 body.dark-mode .order-history-page .form-control,
 body.dark-mode .order-history-page .form-select {
@@ -27,47 +28,112 @@ body.dark-mode .order-history-page .form-select {
     color: #E8EAF0 !important;
     border-color: #2A3147 !important;
 }
-body.dark-mode .order-history-page [style*="color:#2D3748"],
+body.dark-mode .order-history-page .form-control::placeholder {
+    color: #5A6275 !important;
+}
+body.dark-mode .order-history-page .bg-light {
+    background: #1A1F2E !important;
+}
+/* ── Order cards ── */
+body.dark-mode .order-history-page .card,
+body.dark-mode .order-history-page .order-card {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.4) !important;
+}
+body.dark-mode .order-history-page .card-header {
+    background: #1A1F2E !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode .order-history-page .card-body {
+    background: #161A26 !important;
+}
+/* ── Text inside cards ── */
 body.dark-mode .order-history-page h4,
-body.dark-mode .order-history-page h5,
-body.dark-mode .order-history-page .fw-bold {
+body.dark-mode .order-history-page h5 {
     color: #E8EAF0 !important;
 }
-body.dark-mode .order-history-page [style*="color:#718096"],
 body.dark-mode .order-history-page .text-muted,
-body.dark-mode .order-history-page .small,
-body.dark-mode .order-history-page p,
-body.dark-mode .order-history-page span {
+body.dark-mode .order-history-page .small {
     color: #7A8299 !important;
 }
+body.dark-mode .order-history-page .fw-bold {
+    color: #D8DCE8 !important;
+}
+body.dark-mode .order-history-page p {
+    color: #A8B0C4 !important;
+}
+/* ── Quantity chip ── */
+body.dark-mode .order-history-page .order-qty-chip {
+    background: #252B3E !important;
+    color: #D8DCE8 !important;
+}
+/* ── Buttons ── */
 body.dark-mode .order-history-page .btn-outline-primary {
-    border-color: #4A90E2 !important;
-    color: #7DB4FF !important;
+    border-color: #00C2C7 !important;
+    color: #5EDDE1 !important;
+    background: transparent !important;
+}
+body.dark-mode .order-history-page .btn-outline-primary:hover {
+    background: rgba(0,194,199,0.12) !important;
 }
 body.dark-mode .order-history-page .btn-outline-danger {
     border-color: #E57373 !important;
     color: #F2A4A4 !important;
+    background: transparent !important;
 }
+body.dark-mode .order-history-page .btn-outline-danger:hover {
+    background: rgba(239,68,68,0.12) !important;
+}
+body.dark-mode .order-history-page .btn-primary {
+    background: linear-gradient(135deg,#00C2C7,#4ECB71) !important;
+    border-color: transparent !important;
+    color: #fff !important;
+}
+/* ── Status badges ── */
 body.dark-mode .order-history-page .bg-success-subtle {
-    background-color: rgba(34, 197, 94, 0.18) !important;
+    background-color: rgba(78,203,113,0.18) !important;
+}
+body.dark-mode .order-history-page .text-success {
+    color: #4ECB71 !important;
 }
 body.dark-mode .order-history-page .bg-warning-subtle {
-    background-color: rgba(245, 158, 11, 0.2) !important;
+    background-color: rgba(245,200,66,0.18) !important;
+}
+body.dark-mode .order-history-page .text-warning {
+    color: #F5C842 !important;
 }
 body.dark-mode .order-history-page .bg-danger-subtle {
-    background-color: rgba(239, 68, 68, 0.2) !important;
+    background-color: rgba(239,68,68,0.18) !important;
+}
+body.dark-mode .order-history-page .text-danger {
+    color: #F87171 !important;
+}
+/* ── Empty state ── */
+body.dark-mode .order-history-page .order-empty {
+    background: #161A26 !important;
+    border-color: #252B3E !important;
+}
+body.dark-mode .order-history-page .order-empty h4 {
+    color: #E8EAF0 !important;
+}
+body.dark-mode .order-history-page .order-empty p {
+    color: #A8B0C4 !important;
+}
+body.dark-mode .order-history-page .order-empty .text-muted {
+    color: #5A6275 !important;
 }
 </style>
 {% endblock %}
 
 {% block body %}
-<div class="order-history-page" style="background:#F5F3EF; min-height:calc(100vh - 70px); padding:40px; display:flex; flex-direction:column; align-items:center;">
-    
-    <!-- Hero Header (Matched with Cabinet style) -->
+<div class="order-history-page" style="background:linear-gradient(175deg,#F0F6FF 0%,#E8F4F8 45%,#EEF5F0 100%); min-height:calc(100vh - 70px); padding:40px; display:flex; flex-direction:column; align-items:center;">
+
+    <!-- Hero Header -->
     <div style="width:100%; max-width:1200px; display:flex; flex-direction:column; align-items:center; gap:5px; margin-bottom:40px;">
-        <span style="font-size:32px; font-weight:bold; color:#2D3748;">Votre historique de</span>
-        <span style="font-size:32px; font-weight:bold; color:#4A90E2;">commandes</span>
-        <span style="color:#718096; font-size:16px; margin-top:10px; text-align:center;">Suivez l'état de vos livraisons et gérez vos factures MindBloom.</span>
+        <span class="order-hero-title" style="font-size:32px; font-weight:900; color:#1B3A6B;">Votre historique de</span>
+        <span style="font-size:32px; font-weight:900; background:linear-gradient(135deg,#00C2C7,#4ECB71);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">commandes</span>
+        <span class="order-hero-sub" style="color:#7F8C8D; font-size:16px; margin-top:10px; text-align:center;">Suivez l'état de vos livraisons et gérez vos factures MindBloom.</span>
 
         <!-- Barre de Filtres & Recherche -->
         <div class="mt-4 w-100" style="max-width: 1000px;">
@@ -131,7 +197,7 @@ body.dark-mode .order-history-page .bg-danger-subtle {
                         <div class="mb-4">
                             {% for cmd in facture.commandes|slice(0, 3) %}
                                 <div class="d-flex align-items-center mb-2">
-                                    <div class="bg-light rounded p-1 me-2" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                                    <div class="order-qty-chip bg-light rounded p-1 me-2" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
                                         <span style="font-size: 10px; font-weight: bold;">{{ cmd.quantite }}</span>
                                     </div>
                                     <span class="small text-truncate" style="max-width: 180px;">{{ cmd.produit.nom }}</span>
@@ -159,7 +225,7 @@ body.dark-mode .order-history-page .bg-danger-subtle {
             </div>
         {% else %}
             <div class="col-12">
-                <div class="text-center py-5 bg-white shadow-sm rounded-4">
+                <div class="order-empty text-center py-5 bg-white shadow-sm rounded-4">
                     <i class="bi bi-bag-x text-muted display-1 mb-3"></i>
                     <h4 class="fw-bold">Vous n'avez pas encore de commande</h4>
                     <p class="text-muted mb-4 pb-2">Dès que vous passez votre première commande, elle apparaîtra ici.</p>
